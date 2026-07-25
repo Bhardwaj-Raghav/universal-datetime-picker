@@ -1,9 +1,28 @@
 [![npm](https://img.shields.io/npm/v/react-calendar-time.svg)](https://www.npmjs.com/package/react-calendar-time)
+[![npm downloads](https://img.shields.io/npm/dm/react-calendar-time.svg)](https://www.npmjs.com/package/react-calendar-time)
+[![types](https://img.shields.io/npm/types/react-calendar-time.svg)](https://www.npmjs.com/package/react-calendar-time)
 [![CI](https://github.com/Bhardwaj-Raghav/react-calendar-time/actions/workflows/ci.yml/badge.svg)](https://github.com/Bhardwaj-Raghav/react-calendar-time/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/react-calendar-time.svg)](https://github.com/Bhardwaj-Raghav/react-calendar-time/blob/main/LICENSE)
 
 # react-calendar-time
 
-Accessible React date and time picker with TypeScript types, controlled/uncontrolled APIs, and CSS variable theming.
+**React date picker, time picker, datetime picker, and date range calendar** in one accessible TypeScript package.
+
+Use it as a React calendar component, date-time input, or range selector — dayjs-powered values, CSS-variable themes (including dark mode), 12/24-hour clocks, and locales.
+
+- **Live demo:** [react-calendar-time.vercel.app](https://react-calendar-time.vercel.app)
+- **npm:** [react-calendar-time](https://www.npmjs.com/package/react-calendar-time)
+- **GitHub:** [Bhardwaj-Raghav/react-calendar-time](https://github.com/Bhardwaj-Raghav/react-calendar-time)
+
+## Features
+
+- React date picker, time picker, and combined datetime picker
+- Date range picker with keyboard-friendly calendar grid
+- Input + popover or fully inline calendar modes
+- TypeScript types, ESM/CJS builds, React 17+
+- Accessible UI (dialog, focus trap, arrow-key navigation)
+- Themable via CSS variables; dark theme support
+- Locales via dayjs; custom labels; 12-hour AM/PM mode
 
 ## Install
 
@@ -15,17 +34,29 @@ npm install react-calendar-time
 yarn add react-calendar-time
 ```
 
+```bash
+pnpm add react-calendar-time
+```
+
 Peer dependencies: `react` and `react-dom` (≥ 17).
 
 ## Screenshots
 
-| Date | Time |
-|------|------|
-| ![Date picker](examples/date.png) | ![Time picker](examples/time.png) |
+| Date only | Time only |
+|-----------|-----------|
+| ![React date picker calendar](examples/date-only.png) | ![React time picker with hours, minutes, seconds](examples/time-only.png) |
 
-| Range | Input |
-|-------|-------|
-| ![Date range picker](examples/range.png) | ![DateTime input](examples/input.png) |
+| Combined date & time | Separate view (tabs) |
+|----------------------|----------------------|
+| ![React datetime picker with calendar and time panel](examples/date-time-combined.png) | ![React datetime picker with Date and Time tabs](examples/date-time-split.png) |
+
+| Date range | French locale · week starts Monday |
+|------------|------------------------------------|
+| ![React date range picker with start and end selection](examples/date-range.png) | ![Localized React calendar in French starting on Monday](examples/locale-date.png) |
+
+| Dark theme | Popover input |
+|------------|---------------|
+| ![React date time picker in dark theme](examples/dark-mode.png) | ![React datetime input that opens a popover picker](examples/input.png) |
 
 ## Quick start
 
@@ -50,9 +81,9 @@ function App() {
 
 | Export | Description |
 |--------|-------------|
-| `DateTime` | Overlay or inline picker |
-| `DateTime.Input` / `DateTimeInput` | Read-only input that opens a popover picker |
-| `DateTime.Range` / `DateTimeRange` | Date range selection |
+| `DateTime` | React datetime / date / time picker (overlay or inline) |
+| `DateTime.Input` / `DateTimeInput` | Date time input that opens a popover calendar |
+| `DateTime.Range` / `DateTimeRange` | React date range picker |
 
 ## Props
 
@@ -176,28 +207,9 @@ import { DateTime } from "react-calendar-time";
 <DateTime locale="fr" weekStartsOn={1} inline onChange={console.log} />
 ```
 
-## Development
+## Contributing
 
-```bash
-npm install
-npm test             # unit tests (Vitest)
-npm run test:watch   # watch mode
-npm run dev          # interactive playground (localhost:5173)
-npm run website      # Astro landing (SSG) at localhost:5174
-npm run storybook    # Storybook (localhost:6006)
-npm run build
-npm run website:build  # Astro static build → site-dist/
-npm run screenshots    # refresh examples/*.png for the README
-```
-
-Set `SITE_URL` when building for production if your domain differs from the default:
-
-```bash
-# PowerShell
-$env:SITE_URL="https://your-domain.com"; npm run website:build
-```
-
-Astro reads `SITE_URL` in [`website/astro.config.mjs`](website/astro.config.mjs) for canonical URLs and the sitemap.
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, scripts, and PR guidelines.
 
 ## License
 

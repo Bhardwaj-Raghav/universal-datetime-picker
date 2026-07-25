@@ -3,20 +3,20 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import CopyInstall from "../components/CopyInstall";
 import HeroDemo from "../components/HeroDemo";
 import ExamplesDemo from "../components/ExamplesDemo";
-import { GITHUB_URL, NPM_URL } from "../site.config";
+import { GITHUB_URL, NPM_URL, SITE_FAQS } from "../site.config";
 
 const features = [
   {
-    title: "Typed by default",
-    body: "First-class TypeScript exports, ESM/CJS builds, and a clean peer-dep story for React 17+.",
+    title: "Typed React date picker",
+    body: "First-class TypeScript exports for DateTime, DateTimeInput, and DateTimeRange — ESM/CJS builds ready for React 17+ apps.",
   },
   {
-    title: "Keyboard-first accessibility",
-    body: "Dialog semantics, focus trap, Escape to dismiss, and arrow-key calendar navigation.",
+    title: "Accessible calendar & time UI",
+    body: "Dialog semantics, focus trap, Escape to dismiss, and arrow-key navigation so your React datetime picker works with keyboards and assistive tech.",
   },
   {
-    title: "CSS-variable theming",
-    body: "Ship one stylesheet and restyle with variables — primary, surface, danger, and radius.",
+    title: "Themeable date time picker",
+    body: "One stylesheet, CSS variables for light/dark themes, 12-hour clocks, locales, and custom labels without forking.",
   },
 ];
 
@@ -44,6 +44,7 @@ function App() {
         <a href="#features">Features</a>
         <a href="#examples">Examples</a>
         <a href="#install">Install</a>
+        <a href="#faq">FAQ</a>
         <a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
       </nav>
     </header>
@@ -51,12 +52,15 @@ function App() {
     <main id="top">
       <section class="hero" aria-labelledby="hero-heading">
         <div class="hero-copy">
-          <p class="eyebrow">v1.1 · npm package for React</p>
+          <p class="eyebrow">v1.1 · npm React date time picker</p>
           <p class="brand-kicker">react-calendar-time</p>
-          <h1 id="hero-heading" class="hero-brand">React date and time picker</h1>
+          <h1 id="hero-heading" class="hero-brand">
+            React date time picker for calendar, time &amp; ranges
+          </h1>
           <p class="hero-lead">
-            An accessible, typed calendar and datetime component for React —
-            pick dates, times, or ranges with a themable UI.
+            An accessible React date picker, time picker, and datetime calendar
+            in one TypeScript package — themable UI, dayjs-powered values, ready
+            for production forms.
           </p>
           <CopyInstall client:load />
         </div>
@@ -66,7 +70,7 @@ function App() {
 
       <section class="features" id="features" aria-labelledby="features-heading">
         <h2 id="features-heading" class="section-heading">
-          Why developers choose this React calendar picker
+          Why teams pick this React calendar and datetime component
         </h2>
         <div class="features-grid">
           {
@@ -85,24 +89,46 @@ function App() {
 
       <section class="showcase" id="examples" aria-labelledby="examples-heading">
         <div class="showcase-head">
-          <h2 id="examples-heading">Date, time, and range examples</h2>
+          <h2 id="examples-heading">
+            React date picker, time picker, and date range examples
+          </h2>
           <p>
-            Date-only, time-only, combined datetime, ranges, locales, and dark
-            theme — same component API throughout.
+            Date-only, time-only, combined datetime, date range picker, locales,
+            and dark theme — one React calendar API for every mode.
           </p>
         </div>
         <ExamplesDemo client:visible />
       </section>
 
       <section class="snippet" id="install" aria-labelledby="install-heading">
-        <h2 id="install-heading">Install the React datetime picker</h2>
+        <h2 id="install-heading">
+          Install the React date time picker from npm
+        </h2>
+        <p class="snippet-lead">
+          Add <code>react-calendar-time</code> to any React app, import the
+          datetime picker, and ship a calendar with time selection in minutes.
+        </p>
         <pre><code>{installSnippet}</code></pre>
+      </section>
+
+      <section class="faq" id="faq" aria-labelledby="faq-heading">
+        <h2 id="faq-heading">React date time picker FAQ</h2>
+        <div class="faq-list">
+          {
+            SITE_FAQS.map((faq) => (
+              <details class="faq-item">
+                <summary>{faq.question}</summary>
+                <p>{faq.answer}</p>
+              </details>
+            ))
+          }
+        </div>
       </section>
     </main>
 
     <footer class="footer">
       <p>
-        MIT-licensed React calendar time picker ·{" "}
+        MIT-licensed React date time picker and calendar component ·{" "}
         <a href={NPM_URL} target="_blank" rel="noreferrer">
           react-calendar-time on npm
         </a>{" "}

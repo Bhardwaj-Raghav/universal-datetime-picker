@@ -401,6 +401,12 @@ a {
   font-size: 1.5rem;
 }
 
+.snippet-lead {
+  margin: 0 0 1rem;
+  max-width: 42rem;
+  color: var(--ink-soft);
+}
+
 .snippet pre {
   margin: 0;
   padding: 1.25rem 1.35rem;
@@ -410,6 +416,60 @@ a {
   color: #e4efda;
   font-size: 0.86rem;
   line-height: 1.55;
+}
+
+.faq {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+}
+
+.faq h2 {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+}
+
+.faq-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.faq-item {
+  border: 1px solid var(--fog);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.55);
+  padding: 0.15rem 1rem;
+}
+
+.faq-item summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 0.95rem 0;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  content: "+";
+  float: right;
+  color: var(--leaf-deep);
+  font-weight: 500;
+}
+
+.faq-item[open] summary::after {
+  content: "–";
+}
+
+.faq-item p {
+  margin: 0 0 1rem;
+  max-width: 48rem;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
 }
 
 .footer {
