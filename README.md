@@ -2,7 +2,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/universal-datetime-picker.svg)](https://www.npmjs.com/package/universal-datetime-picker)
 [![types](https://img.shields.io/npm/types/universal-datetime-picker.svg)](https://www.npmjs.com/package/universal-datetime-picker)
 [![CI](https://github.com/Bhardwaj-Raghav/universal-datetime-picker/actions/workflows/ci.yml/badge.svg)](https://github.com/Bhardwaj-Raghav/universal-datetime-picker/actions/workflows/ci.yml)
-[![license](https://img.shields.io/npm/l/universal-datetime-picker.svg)](https://github.com/Bhardwaj-Raghav/universal-datetime-picker/blob/main/LICENSE)
+[![license](https://img.shields.io/github/license/Bhardwaj-Raghav/universal-datetime-picker)](https://github.com/Bhardwaj-Raghav/universal-datetime-picker/blob/main/LICENSE)
 
 # universal-datetime-picker
 
