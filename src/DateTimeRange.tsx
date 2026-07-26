@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useId,
   useRef,
@@ -115,18 +116,18 @@ export function DateTimeRange(props: DateTimeRangeProps) {
     controller.getServerSnapshot
   ) as RangeSnapshot;
 
-  const close = () => {
+  const close = useCallback(() => {
     if (!inline) {
       setOpen(false);
     }
-  };
+  }, [inline, setOpen]);
 
   useEffect(() => {
     if (!(open && !inline)) {
       return;
     }
     return attachEscape(close, true);
-  }, [open, inline]);
+  }, [open, inline, close]);
 
   useEffect(() => {
     if (!(open && !inline) || !dialogRef.current) {
