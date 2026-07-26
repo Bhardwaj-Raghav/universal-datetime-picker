@@ -68,7 +68,7 @@ export function ensureStylesheet(href?: string): void {
   link.rel = "stylesheet";
   link.href =
     href ??
-    "https://cdn.jsdelivr.net/npm/universal-datetime-picker/style.css";
+    "https://cdn.jsdelivr.net/npm/universal-datetime-picker/dist/style.css";
   document.head.append(link);
 }
 

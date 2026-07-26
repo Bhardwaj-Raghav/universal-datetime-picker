@@ -20,7 +20,7 @@ Entry points: \`universal-datetime-picker\` (React), \`./vanilla\`, \`./wc\`, \`
 
 Custom elements: \`<datetime-picker>\`, \`<datetime-picker-input>\`, \`<datetime-picker-range>\` — listen for \`change\` CustomEvent (\`detail\` = value).
 
-CDN: \`https://cdn.jsdelivr.net/npm/universal-datetime-picker\` (+ \`/style.css\`).
+CDN: jsDelivr IIFE at \`https://cdn.jsdelivr.net/npm/universal-datetime-picker\` (or \`.../dist/cdn/universal-datetime-picker.iife.js\`); CSS at \`.../dist/style.css\`.
 
 ## Framework live demos
 

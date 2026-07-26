@@ -114,7 +114,7 @@ const handle = createDateTimePicker(root, {
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/universal-datetime-picker/style.css"
+  href="https://cdn.jsdelivr.net/npm/universal-datetime-picker/dist/style.css"
 />
 <script src="https://cdn.jsdelivr.net/npm/universal-datetime-picker"></script>
 

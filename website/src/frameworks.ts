@@ -293,7 +293,7 @@ el?.addEventListener("change", (e) => console.log((e as CustomEvent).detail));`,
       {
         title: "Plain HTML",
         code: `<link rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/universal-datetime-picker/style.css" />
+  href="https://cdn.jsdelivr.net/npm/universal-datetime-picker/dist/style.css" />
 <script src="https://cdn.jsdelivr.net/npm/universal-datetime-picker"></script>
 
 <datetime-picker inline mode="date" as-string="false"></datetime-picker>
@@ -305,7 +305,7 @@ el?.addEventListener("change", (e) => console.log((e as CustomEvent).detail));`,
     ],
     notes: [
       "The IIFE bundle registers custom elements and can inject the default stylesheet link.",
-      "Pin a version in production: /npm/universal-datetime-picker@2.0.0/…",
+      "Pin a version in production, e.g. …/universal-datetime-picker@2.0.0/dist/style.css and …/dist/cdn/universal-datetime-picker.iife.js",
     ],
   },
   {
@@ -536,7 +536,7 @@ createDateTimePicker(document.getElementById("picker"), {
   onChange: console.log,
 });`,
   cdn: `<link rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/universal-datetime-picker/style.css" />
+  href="https://cdn.jsdelivr.net/npm/universal-datetime-picker/dist/style.css" />
 <script src="https://cdn.jsdelivr.net/npm/universal-datetime-picker"></script>
 <datetime-picker inline mode="date" as-string="false"></datetime-picker>`,
   vue: `// main.ts — register once

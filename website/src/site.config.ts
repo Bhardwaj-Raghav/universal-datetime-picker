@@ -37,10 +37,10 @@ export const GITHUB_URL =
 export const NPM_URL =
   "https://www.npmjs.com/package/universal-datetime-picker";
 
-export const CDN_JS = "https://cdn.jsdelivr.net/npm/universal-datetime-picker";
+/** jsDelivr serves tarball paths; npm `exports` subpaths like `/style.css` are not on the CDN. */
+export const CDN_JS = `https://cdn.jsdelivr.net/npm/${SITE_NAME}@${PACKAGE_VERSION}/dist/cdn/universal-datetime-picker.iife.js`;
 
-export const CDN_CSS =
-  "https://cdn.jsdelivr.net/npm/universal-datetime-picker/style.css";
+export const CDN_CSS = `https://cdn.jsdelivr.net/npm/${SITE_NAME}@${PACKAGE_VERSION}/dist/style.css`;
 
 /** FAQ copy shared by the page and FAQPage JSON-LD. */
 export const SITE_FAQS = [

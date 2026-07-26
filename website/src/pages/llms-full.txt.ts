@@ -90,7 +90,7 @@ Attributes (common): \`mode\`, \`inline\`, \`open\`, \`use12hours\`, \`show-seco
 Event: \`change\` CustomEvent — \`event.detail\` is the selected value (same shapes as React \`onChange\`).
 
 \`\`\`html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/universal-datetime-picker/style.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/universal-datetime-picker/dist/style.css" />
 <script src="https://cdn.jsdelivr.net/npm/universal-datetime-picker"></script>
 <datetime-picker inline mode="date" as-string="false"></datetime-picker>
 \`\`\`
