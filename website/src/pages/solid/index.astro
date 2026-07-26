@@ -1,0 +1,11 @@
+---
+import FrameworkLayout from "../../layouts/FrameworkLayout.astro";
+import { FRAMEWORK_BY_SLUG } from "../../frameworks";
+import SolidDemo from "../../demos/solid/SolidDemo";
+
+const framework = FRAMEWORK_BY_SLUG.solid;
+---
+
+<FrameworkLayout framework={framework}>
+  <SolidDemo slot="demo" client:only="solid-js" />
+</FrameworkLayout>

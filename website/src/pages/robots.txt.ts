@@ -11,7 +11,7 @@ Sitemap: ${sitemapURL.href}
 `;
 
 export const GET: APIRoute = ({ site }) => {
-  const origin = (site?.origin || "https://react-calendar-time.vercel.app").replace(
+  const origin = (site?.origin || "https://universal-datetime-picker.vercel.app").replace(
     /\/$/,
     ""
   );

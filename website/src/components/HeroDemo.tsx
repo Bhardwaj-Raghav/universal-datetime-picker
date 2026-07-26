@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DateTimeInput } from "react-calendar-time";
+import { DateTimeInput } from "universal-datetime-picker";
 
 export default function HeroDemo() {
   const [value, setValue] = useState<Date | null>(null);

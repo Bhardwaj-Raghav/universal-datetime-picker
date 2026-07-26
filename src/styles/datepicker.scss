@@ -193,6 +193,24 @@
   transform: none;
 }
 
+.ctp-calendar-time-picker.ctp-mode-time {
+  overflow: visible;
+}
+
+.ctp-mode-time .ctp-main-time,
+.ctp-mode-time .ctp-main-time-body,
+.ctp-mode-time .ctp-box-time {
+  overflow: visible;
+}
+
+.ctp-mode-time .ctp-overflow-hours,
+.ctp-mode-time .ctp-overflow-minutes,
+.ctp-mode-time .ctp-overflow-seconds,
+.ctp-mode-time .ctp-overflow-am-pm {
+  margin-top: 0;
+  z-index: 3;
+}
+
 .ctp-mode-time .ctp-footer {
   padding: 8px;
   gap: 4px;

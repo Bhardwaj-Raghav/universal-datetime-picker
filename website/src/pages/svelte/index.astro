@@ -1,0 +1,11 @@
+---
+import FrameworkLayout from "../../layouts/FrameworkLayout.astro";
+import { FRAMEWORK_BY_SLUG } from "../../frameworks";
+import SvelteDemo from "../../demos/svelte/SvelteDemo.svelte";
+
+const framework = FRAMEWORK_BY_SLUG.svelte;
+---
+
+<FrameworkLayout framework={framework}>
+  <SvelteDemo slot="demo" client:only="svelte" />
+</FrameworkLayout>

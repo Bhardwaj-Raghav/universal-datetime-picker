@@ -1,5 +1,18 @@
 {
   "buildCommand": "npm run website:build",
   "outputDirectory": "site-dist",
-  "framework": "astro"
+  "framework": "astro",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "react-calendar-time.vercel.app"
+        }
+      ],
+      "destination": "https://universal-datetime-picker.vercel.app/:path*",
+      "permanent": true
+    }
+  ]
 }

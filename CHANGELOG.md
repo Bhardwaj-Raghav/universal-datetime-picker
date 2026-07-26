@@ -1,5 +1,28 @@
 # Changelog
 
+## 2.0.0
+
+Framework-agnostic release: headless core, vanilla renderer, Web Components, CDN IIFE, and multi-framework entry points.
+
+### Breaking
+- Package renamed from `react-calendar-time` to **`universal-datetime-picker`**. Update install commands and import specifiers.
+- React peer dependencies are now `>= 18` (React 17 no longer supported).
+- Custom elements renamed to `<datetime-picker>`, `<datetime-picker-input>`, and `<datetime-picker-range>` (never published under the old tag names in a stable release).
+
+### Added
+- Subpath exports: `./core`, `./vanilla`, `./wc`, `./vue`, `./svelte`, `./angular`.
+- CDN / unpkg / jsDelivr IIFE bundle with auto-registration.
+- `defineCustomElements({ prefix })` for collision-safe tag names.
+- Angular helper `registerDateTimePickerElements()` (`registerCalendarTimeElements` remains as deprecated alias).
+
+### Changed
+- React components use shared `PickerController` / `RangeController` via `useSyncExternalStore`.
+- React peers are **optional** when using vanilla, Web Components, or CDN only.
+- Inline pickers no longer show the overlay Close button.
+
+### Migrating
+See README section **Migrating from react-calendar-time**.
+
 ## 1.1.0
 
 Hardening and UI modernization for the post-v1 feature set.

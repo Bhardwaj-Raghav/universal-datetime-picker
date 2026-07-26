@@ -16,3 +16,4 @@ storybook-static
 !.env.example
 .cache
 *.tgz
+docs/PUBLISH-CUTOVER.md

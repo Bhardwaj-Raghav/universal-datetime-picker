@@ -1,0 +1,36 @@
+<div class="demo-trio" data-wc-demo>
+  <div class="demo-trio-block showcase-block">
+    <h3>Inline date · Date object</h3>
+    <div data-demo-date-mount>
+      <datetime-picker
+        data-demo-date
+        inline
+        mode="date"
+        as-string="false"
+      ></datetime-picker>
+    </div>
+    <pre class="demo-value" data-demo-date-out>null</pre>
+  </div>
+
+  <div class="demo-trio-block showcase-block">
+    <h3>Popover datetime input</h3>
+    <datetime-picker-input
+      data-demo-input
+      mode="datetime"
+      as-string="false"
+      use12hours
+      placeholder="Pick date & time"
+    ></datetime-picker-input>
+    <pre class="demo-value" data-demo-input-out>null</pre>
+  </div>
+
+  <div class="demo-trio-block showcase-block">
+    <h3>Date range</h3>
+    <datetime-picker-range
+      data-demo-range
+      inline
+      as-string="false"
+    ></datetime-picker-range>
+    <pre class="demo-value" data-demo-range-out>null → null</pre>
+  </div>
+</div>

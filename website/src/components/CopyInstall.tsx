@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
-const INSTALL = "npm install react-calendar-time";
+const INSTALL = "npm install universal-datetime-picker";
 
-export default function CopyInstall() {
+type Props = {
+  demoHref?: string;
+};
+
+export default function CopyInstall({ demoHref = "#live-demo" }: Props) {
   const [copied, setCopied] = useState(false);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -38,14 +42,12 @@ export default function CopyInstall() {
   return (
     <>
       <div className="hero-actions">
-        <a className="btn btn-ghost" href="#live-demo">
+        <a className="btn btn-ghost" href={demoHref}>
           Try the live demo
         </a>
       </div>
       <div className="install-line">
-        <pre tabIndex={0}>
-          <code>{INSTALL}</code>
-        </pre>
+        <code className="install-line__cmd">{INSTALL}</code>
         <button
           type="button"
           className="install-copy"
@@ -55,6 +57,7 @@ export default function CopyInstall() {
         >
           {copied ? (
             <svg
+              data-copy-icon="done"
               width="16"
               height="16"
               viewBox="0 0 24 24"
@@ -69,6 +72,7 @@ export default function CopyInstall() {
             </svg>
           ) : (
             <svg
+              data-copy-icon="default"
               width="16"
               height="16"
               viewBox="0 0 24 24"

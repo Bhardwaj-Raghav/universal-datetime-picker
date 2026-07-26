@@ -1,4 +1,4 @@
-# Contributing to react-calendar-time
+# Contributing to universal-datetime-picker
 
 Thanks for taking the time to contribute. This guide covers how to set up the project, make changes, and open a pull request.
 
@@ -12,8 +12,8 @@ By participating, you agree to keep interactions respectful and constructive.
 ## Setup
 
 ```bash
-git clone https://github.com/Bhardwaj-Raghav/react-calendar-time.git
-cd react-calendar-time
+git clone https://github.com/Bhardwaj-Raghav/universal-datetime-picker.git
+cd universal-datetime-picker
 npm install
 ```
 
@@ -82,11 +82,11 @@ These are the same steps CI runs, so a clean local run should mean a green PR.
 
 ## Reporting bugs and requesting features
 
-Open an issue at [github.com/Bhardwaj-Raghav/react-calendar-time/issues](https://github.com/Bhardwaj-Raghav/react-calendar-time/issues). For bugs, include:
+Open an issue at [github.com/Bhardwaj-Raghav/universal-datetime-picker/issues](https://github.com/Bhardwaj-Raghav/universal-datetime-picker/issues). For bugs, include:
 
 - What you expected and what happened
 - A minimal reproduction (code snippet or sandbox)
-- Versions of `react-calendar-time`, `react`, and your browser
+- Versions of `universal-datetime-picker`, `react`, and your browser
 
 ## License
 

@@ -4,7 +4,7 @@ import DateTime, {
   DateTimeRange,
   type DateTimeChangeValue,
   type TimeValue,
-} from "react-calendar-time";
+} from "universal-datetime-picker";
 import "dayjs/locale/fr";
 
 function previewValue(value: DateTimeChangeValue): string {

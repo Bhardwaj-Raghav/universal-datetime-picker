@@ -2,73 +2,87 @@ import {
   useCallback,
   useEffect,
   useId,
-  useMemo,
+  useLayoutEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
+  type RefObject,
 } from "react";
 import { createPortal } from "react-dom";
 import { CalendarHeader } from "./CalendarHeader";
-import { buildCalendarMonth } from "./calendar";
+import { PickerController } from "./core/controller";
 import {
-  useFocusTrap,
-  useOnClickOutside,
-  useOnEscape,
-  usePopoverPosition,
-} from "./hooks/useA11y";
+  attachClickOutside,
+  attachEscape,
+  attachFocusTrap,
+  computePopoverPosition,
+  DEFAULT_PICKER_HEIGHT,
+  DEFAULT_PICKER_WIDTH,
+  resolveThemeAttr,
+} from "./vanilla/a11y";
 import { useControllableState } from "./hooks/useControllableState";
-import {
-  DEFAULT_LABELS,
-  type CalendarPanel,
-  type DateTimeProps,
-} from "./types";
-import {
-  HOURS_12,
-  HOURS_24,
-  MINUTES,
-  buildTimeValue,
-  dayjs,
-  endOfWeek,
-  formatLocalized,
-  formatValue,
-  getWeekdayLabels,
-  parseValue,
-  resolveFormat,
-  startOfWeek,
-  to12Hour,
-  to24Hour,
-  warnAsStringDeprecation,
-  type Dayjs,
-} from "./utils/date";
+import type { DateTimeProps } from "./types";
+import { formatLocalized } from "./utils/date";
+import type { PickerSnapshot } from "./core/controller";
 
 function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(" ");
 }
 
-/** Resolve theme for portaled pickers (CSS vars don't cross portals). */
-function resolveThemeAttr(
-  theme: "light" | "dark" | undefined,
-  anchorEl: HTMLElement | null | undefined
-): "light" | "dark" | undefined {
-  if (theme === "light" || theme === "dark") {
-    return theme;
-  }
-  let node: HTMLElement | null | undefined = anchorEl ?? null;
-  while (node) {
-    const attr = node.getAttribute("data-ctp-theme");
-    if (attr === "dark" || attr === "light") {
-      return attr;
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+function usePopoverPosition(
+  anchorEl: HTMLElement | null | undefined,
+  open: boolean,
+  enabled: boolean,
+  floatingRef: RefObject<HTMLElement | null>
+): { top: number; left: number } | null {
+  const [position, setPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+
+  const update = useCallback(() => {
+    if (!enabled || !open || !anchorEl) {
+      setPosition(null);
+      return;
     }
-    node = node.parentElement;
-  }
-  if (typeof document !== "undefined") {
-    const root = document.documentElement.getAttribute("data-ctp-theme");
-    if (root === "dark" || root === "light") {
-      return root;
+    const floating = floatingRef.current;
+    const width = floating?.offsetWidth || DEFAULT_PICKER_WIDTH;
+    const height = floating?.offsetHeight || DEFAULT_PICKER_HEIGHT;
+    setPosition(computePopoverPosition(anchorEl, width, height));
+  }, [anchorEl, enabled, open, floatingRef]);
+
+  useIsomorphicLayoutEffect(() => {
+    update();
+  }, [update]);
+
+  useEffect(() => {
+    if (!open || !enabled) {
+      return;
     }
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    const floating = floatingRef.current;
+    let observer: ResizeObserver | undefined;
+    if (floating && typeof ResizeObserver !== "undefined") {
+      observer = new ResizeObserver(() => update());
+      observer.observe(floating);
+    }
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+      observer?.disconnect();
+    };
+  }, [open, enabled, update, floatingRef]);
+
+  if (!open || !enabled) {
+    return null;
   }
-  return undefined;
+  return position;
 }
 
 export function DateTime(props: DateTimeProps) {
@@ -100,33 +114,8 @@ export function DateTime(props: DateTimeProps) {
     popover = false,
   } = props;
 
-  const labels = useMemo(
-    () => ({ ...DEFAULT_LABELS, ...labelsProp }),
-    [labelsProp]
-  );
-
-  const resolvedFormat = useMemo(
-    () => resolveFormat({ mode, format, use12Hours, showSeconds }),
-    [mode, format, use12Hours, showSeconds]
-  );
-
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
-
-  const initial =
-    parseValue(value ?? defaultValue ?? dayjs(), resolvedFormat) ?? dayjs();
-
-  const [draft, setDraft] = useState<Dayjs>(initial);
-  const [viewMonth, setViewMonth] = useState<Dayjs>(initial.startOf("month"));
-  const [calPanel, setCalPanel] = useState<CalendarPanel>("day");
-  const [tab, setTab] = useState<"date" | "time">(
-    mode === "time" ? "time" : "date"
-  );
-  const [showHours, setShowHours] = useState(false);
-  const [showMinutes, setShowMinutes] = useState(false);
-  const [showSecondsOpen, setShowSecondsOpen] = useState(false);
-  const [showAmPm, setShowAmPm] = useState(false);
-  const [focusedDay, setFocusedDay] = useState<Dayjs>(initial);
 
   const [open, setOpen] = useControllableState({
     value: openProp,
@@ -134,25 +123,91 @@ export function DateTime(props: DateTimeProps) {
     onChange: onOpenChange,
   });
 
-  useEffect(() => {
-    if (value === null) {
-      const fallback = dayjs();
-      setDraft(fallback);
-      setViewMonth(fallback.startOf("month"));
-      setFocusedDay(fallback);
-      return;
-    }
-    const parsed = parseValue(value ?? null, resolvedFormat);
-    if (parsed) {
-      setDraft(parsed);
-      setViewMonth(parsed.startOf("month"));
-      setFocusedDay(parsed);
-    }
-  }, [value, resolvedFormat]);
+  const controllerRef = useRef<PickerController | null>(null);
+  if (!controllerRef.current) {
+    controllerRef.current = new PickerController({
+      value,
+      defaultValue,
+      onChange,
+      asString,
+      showSeconds,
+      format,
+      mode,
+      layout,
+      minDate,
+      maxDate,
+      disablePastDates,
+      disableFutureDates,
+      weekStartsOn,
+      use12Hours,
+      inline,
+      className,
+      locale,
+      labels: labelsProp,
+      theme,
+      open,
+      popover,
+      anchorEl,
+    });
+  }
+  const controller = controllerRef.current;
 
   useEffect(() => {
-    setTab(mode === "time" ? "time" : "date");
-  }, [mode]);
+    controller.setOptions({
+      value,
+      onChange,
+      asString,
+      showSeconds,
+      format,
+      mode,
+      layout,
+      minDate,
+      maxDate,
+      disablePastDates,
+      disableFutureDates,
+      weekStartsOn,
+      use12Hours,
+      inline,
+      className,
+      locale,
+      labels: labelsProp,
+      theme,
+      open,
+      popover,
+      anchorEl,
+      onOpenChange: setOpen,
+    });
+  }, [
+    controller,
+    value,
+    onChange,
+    asString,
+    showSeconds,
+    format,
+    mode,
+    layout,
+    minDate,
+    maxDate,
+    disablePastDates,
+    disableFutureDates,
+    weekStartsOn,
+    use12Hours,
+    inline,
+    className,
+    locale,
+    labelsProp,
+    theme,
+    open,
+    popover,
+    anchorEl,
+    setOpen,
+  ]);
+
+  const snap = useSyncExternalStore(
+    controller.subscribe,
+    controller.getSnapshot,
+    controller.getServerSnapshot
+  ) as PickerSnapshot;
 
   const close = useCallback(() => {
     if (!inline) {
@@ -160,32 +215,34 @@ export function DateTime(props: DateTimeProps) {
     }
   }, [inline, setOpen]);
 
-  const confirm = useCallback(() => {
-    if (asString === false) {
-      if (mode === "time") {
-        onChange?.(buildTimeValue(draft, resolvedFormat));
-      } else if (mode === "date") {
-        onChange?.(draft.startOf("day").toDate());
-      } else {
-        onChange?.(draft.toDate());
-      }
-    } else {
-      if (asString === undefined) {
-        warnAsStringDeprecation();
-      }
-      onChange?.(formatValue(draft, resolvedFormat));
+  useEffect(() => {
+    if (!(open && !inline)) {
+      return;
     }
-    close();
-  }, [asString, close, draft, mode, onChange, resolvedFormat]);
+    const el = dialogRef.current;
+    if (!el) {
+      return;
+    }
+    return attachEscape(close, true);
+  }, [open, inline, close]);
 
-  const clearAndClose = useCallback(() => {
-    onChange?.(null);
-    close();
-  }, [close, onChange]);
+  useEffect(() => {
+    if (!(open && !inline)) {
+      return;
+    }
+    const el = dialogRef.current;
+    if (!el) {
+      return;
+    }
+    return attachFocusTrap(el, true);
+  }, [open, inline]);
 
-  useOnEscape(close, open && !inline);
-  useFocusTrap(dialogRef, open && !inline);
-  useOnClickOutside(close, open && !inline && popover, dialogRef, anchorEl);
+  useEffect(() => {
+    if (!(open && !inline && popover)) {
+      return;
+    }
+    return attachClickOutside(close, true, dialogRef.current, anchorEl);
+  }, [open, inline, popover, close, anchorEl]);
 
   const position = usePopoverPosition(
     anchorEl,
@@ -194,104 +251,11 @@ export function DateTime(props: DateTimeProps) {
     dialogRef
   );
 
-  const weeks = useMemo(
-    () =>
-      buildCalendarMonth({
-        viewMonth,
-        selected: draft,
-        minDate,
-        maxDate,
-        disablePastDates,
-        disableFutureDates,
-        weekStartsOn,
-      }),
-    [
-      viewMonth,
-      draft,
-      minDate,
-      maxDate,
-      disablePastDates,
-      disableFutureDates,
-      weekStartsOn,
-    ]
-  );
-
-  const weekdayLabels = useMemo(
-    () => getWeekdayLabels(locale, weekStartsOn),
-    [locale, weekStartsOn]
-  );
-
-  const selectDay = useCallback((day: Dayjs) => {
-    setDraft((prev) =>
-      prev.year(day.year()).month(day.month()).date(day.date())
-    );
-    setFocusedDay(day);
-  }, []);
-
-  const setHour = useCallback((hourValue: number) => {
-    setDraft((prev) => prev.hour(hourValue));
-  }, []);
-
-  const setMinute = useCallback((minute: number) => {
-    setDraft((prev) => prev.minute(minute));
-  }, []);
-
-  const setSecond = useCallback((second: number) => {
-    setDraft((prev) => prev.second(second));
-  }, []);
-
   const onGridKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    let next = focusedDay;
-    switch (event.key) {
-      case "ArrowLeft":
-        next = focusedDay.subtract(1, "day");
-        break;
-      case "ArrowRight":
-        next = focusedDay.add(1, "day");
-        break;
-      case "ArrowUp":
-        next = focusedDay.subtract(7, "day");
-        break;
-      case "ArrowDown":
-        next = focusedDay.add(7, "day");
-        break;
-      case "Home":
-        next = startOfWeek(focusedDay, weekStartsOn);
-        break;
-      case "End":
-        next = endOfWeek(focusedDay, weekStartsOn);
-        break;
-      case "PageUp":
-        next = focusedDay.subtract(1, "month");
-        setViewMonth(next.startOf("month"));
-        break;
-      case "PageDown":
-        next = focusedDay.add(1, "month");
-        setViewMonth(next.startOf("month"));
-        break;
-      case "Enter":
-      case " ": {
-        event.preventDefault();
-        const cell = weeks.flat().find((d) => d.date.isSame(focusedDay, "day"));
-        if (cell && !cell.isDisabled && cell.isCurrentMonth) {
-          selectDay(cell.date);
-        }
-        return;
-      }
-      default:
-        return;
-    }
-    event.preventDefault();
-    setFocusedDay(next);
-    if (!next.isSame(viewMonth, "month")) {
-      setViewMonth(next.startOf("month"));
+    if (controller.handleGridKeyDown(event.key)) {
+      event.preventDefault();
     }
   };
-
-  const hour24 = draft.hour();
-  const { hour: hour12, isAm } = to12Hour(hour24);
-  const hourOptions = use12Hours ? HOURS_12 : HOURS_24;
-  const displayHour = use12Hours ? padDisplay(hour12) : padDisplay(hour24);
 
   const onBackdropClick = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
@@ -303,14 +267,7 @@ export function DateTime(props: DateTimeProps) {
     return null;
   }
 
-  const showDate = mode !== "time";
-  const showTime = mode !== "date";
-  const useTabs = mode === "datetime" && layout === "tabs";
-  const showDatePanel = showDate && (!useTabs || tab === "date");
-  const showTimePanel = showTime && (!useTabs || tab === "time");
-  const showModeTabs = useTabs;
   const themeAttr = resolveThemeAttr(theme, anchorEl);
-
   const pickerStyle =
     popover && !inline
       ? {
@@ -324,23 +281,23 @@ export function DateTime(props: DateTimeProps) {
   const datePanel = (
     <div className="ctp-body ctp-body-calendar-date">
       <CalendarHeader
-        viewMonth={viewMonth}
-        setViewMonth={setViewMonth}
-        panel={calPanel}
-        onPanelChange={setCalPanel}
-        locale={locale}
-        labels={labels}
-        titleId={showDatePanel ? titleId : undefined}
+        viewMonth={snap.viewMonth}
+        setViewMonth={(next) => controller.setViewMonth(next)}
+        panel={snap.calPanel}
+        onPanelChange={(p) => controller.setCalPanel(p)}
+        locale={snap.locale}
+        labels={snap.labels}
+        titleId={snap.showDatePanel ? titleId : undefined}
       />
-      {calPanel === "day" && (
+      {snap.calPanel === "day" && (
         <div
           className="ctp-main-calendar"
           role="grid"
-          aria-label={labels.chooseDate}
+          aria-label={snap.labels.chooseDate}
           tabIndex={0}
           onKeyDown={onGridKeyDown}
         >
-          {weekdayLabels.map((label) => (
+          {snap.weekdayLabels.map((label) => (
             <div
               key={label}
               className="ctp-box ctp-box-days"
@@ -349,10 +306,10 @@ export function DateTime(props: DateTimeProps) {
               {label}
             </div>
           ))}
-          {weeks.map((week) =>
+          {snap.weeks.map((week) =>
             week.map((dayData) => {
               const selected = dayData.isSelected;
-              const focused = dayData.date.isSame(focusedDay, "day");
+              const focused = dayData.date.isSame(snap.focusedDay, "day");
               const disabled = !dayData.isCurrentMonth || dayData.isDisabled;
               return (
                 <button
@@ -366,7 +323,7 @@ export function DateTime(props: DateTimeProps) {
                   aria-label={formatLocalized(
                     dayData.date,
                     "dddd, MMMM D, YYYY",
-                    locale
+                    snap.locale
                   )}
                   className={cx(
                     "ctp-box",
@@ -382,7 +339,7 @@ export function DateTime(props: DateTimeProps) {
                   )}
                   onClick={() => {
                     if (!disabled) {
-                      selectDay(dayData.date);
+                      controller.selectDay(dayData.date);
                     }
                   }}
                 >
@@ -398,72 +355,56 @@ export function DateTime(props: DateTimeProps) {
 
   const timePanel = (
     <div className="ctp-body ctp-body-calendar-time">
-      {showDatePanel && (
-        <div className="ctp-section-label">{labels.time}</div>
+      {snap.showDatePanel && (
+        <div className="ctp-section-label">{snap.labels.time}</div>
       )}
-      {!showDatePanel && (
+      {!snap.showDatePanel && (
         <span className="ctp-visually-hidden" id={titleId}>
-          {labels.time}
+          {snap.labels.time}
         </span>
       )}
       <div className="ctp-main-time">
         <div className="ctp-main-time-header">
           <div className="ctp-box">Hr</div>
           <div className="ctp-box">Min</div>
-          {showSeconds && <div className="ctp-box">Sec</div>}
-          {use12Hours && <div className="ctp-box">AM/PM</div>}
+          {snap.showSeconds && <div className="ctp-box">Sec</div>}
+          {snap.use12Hours && <div className="ctp-box">AM/PM</div>}
         </div>
         <div className="ctp-main-time-body">
           <TimeColumn
             label="hours"
-            open={showHours}
-            onToggle={() => setShowHours((v) => !v)}
-            display={displayHour}
-            options={hourOptions}
-            onSelect={(opt) => {
-              if (use12Hours) {
-                setHour(to24Hour(Number(opt), isAm));
-              } else {
-                setHour(Number(opt));
-              }
-              setShowHours(false);
-            }}
+            open={snap.showHours}
+            onToggle={() => controller.toggleHours()}
+            display={snap.displayHour}
+            options={snap.hourOptions}
+            onSelect={(opt) => controller.selectHourOption(opt)}
           />
           <TimeColumn
             label="minutes"
-            open={showMinutes}
-            onToggle={() => setShowMinutes((v) => !v)}
-            display={padDisplay(draft.minute())}
-            options={MINUTES}
-            onSelect={(opt) => {
-              setMinute(Number(opt));
-              setShowMinutes(false);
-            }}
+            open={snap.showMinutes}
+            onToggle={() => controller.toggleMinutes()}
+            display={snap.displayMinute}
+            options={snap.minuteOptions}
+            onSelect={(opt) => controller.selectMinuteOption(opt)}
           />
-          {showSeconds && (
+          {snap.showSeconds && (
             <TimeColumn
               label="seconds"
-              open={showSecondsOpen}
-              onToggle={() => setShowSecondsOpen((v) => !v)}
-              display={padDisplay(draft.second())}
-              options={MINUTES}
-              onSelect={(opt) => {
-                setSecond(Number(opt));
-                setShowSecondsOpen(false);
-              }}
+              open={snap.showSecondsOpen}
+              onToggle={() => controller.toggleSeconds()}
+              display={snap.displaySecond}
+              options={snap.minuteOptions}
+              onSelect={(opt) => controller.selectSecondOption(opt)}
             />
           )}
-          {use12Hours && (
+          {snap.use12Hours && (
             <TimeColumn
               label="am-pm"
-              open={showAmPm}
-              onToggle={() => setShowAmPm((v) => !v)}
-              display={isAm ? "AM" : "PM"}
+              open={snap.showAmPm}
+              onToggle={() => controller.toggleAmPm()}
+              display={snap.isAm ? "AM" : "PM"}
               options={["AM", "PM"]}
-              onSelect={(opt) => {
-                setHour(to24Hour(hour12, opt === "AM"));
-                setShowAmPm(false);
-              }}
+              onSelect={(opt) => controller.selectAmPmOption(opt)}
             />
           )}
         </div>
@@ -477,10 +418,10 @@ export function DateTime(props: DateTimeProps) {
       className={cx(
         "ctp-calendar-time-picker",
         popover && !inline && "ctp-popover",
-        use12Hours && "ctp-use-12h",
-        mode === "time" && "ctp-mode-time",
-        !showSeconds && "ctp-no-seconds",
-        showDatePanel && showTimePanel && "ctp-layout-combined",
+        snap.use12Hours && "ctp-use-12h",
+        snap.mode === "time" && "ctp-mode-time",
+        !snap.showSeconds && "ctp-no-seconds",
+        snap.showDatePanel && snap.showTimePanel && "ctp-layout-combined",
         className
       )}
       style={pickerStyle}
@@ -489,7 +430,7 @@ export function DateTime(props: DateTimeProps) {
       aria-modal={inline ? undefined : true}
       aria-labelledby={titleId}
     >
-      {showModeTabs && (
+      {snap.showModeTabs && (
         <div className="ctp-header">
           <div
             className="ctp-button-container"
@@ -499,39 +440,52 @@ export function DateTime(props: DateTimeProps) {
             <button
               type="button"
               role="tab"
-              aria-selected={tab === "date"}
-              className={cx("ctp-date", tab === "date" && "ctp-active")}
-              onClick={() => setTab("date")}
+              aria-selected={snap.tab === "date"}
+              className={cx("ctp-date", snap.tab === "date" && "ctp-active")}
+              onClick={() => controller.setTab("date")}
             >
-              {labels.date}
+              {snap.labels.date}
             </button>
             <button
               type="button"
               role="tab"
-              aria-selected={tab === "time"}
-              className={cx("ctp-time", tab === "time" && "ctp-active")}
-              onClick={() => setTab("time")}
+              aria-selected={snap.tab === "time"}
+              className={cx("ctp-time", snap.tab === "time" && "ctp-active")}
+              onClick={() => controller.setTab("time")}
             >
-              {labels.time}
+              {snap.labels.time}
             </button>
           </div>
         </div>
       )}
 
-      {showDatePanel && datePanel}
-      {showTimePanel && timePanel}
+      {snap.showDatePanel && datePanel}
+      {snap.showTimePanel && timePanel}
 
       <div className="ctp-footer">
-        <button type="button" className="close-button" onClick={clearAndClose}>
-          {labels.clear}
+        <button
+          type="button"
+          className="close-button"
+          onClick={() => {
+            onChange?.(null);
+            close();
+          }}
+        >
+          {snap.labels.clear}
         </button>
         {!inline && (
           <button type="button" className="ctp-cancel" onClick={close}>
-            {labels.close}
+            {snap.labels.close}
           </button>
         )}
-        <button type="button" onClick={confirm}>
-          {labels.ok}
+        <button
+          type="button"
+          onClick={() => {
+            controller.confirm();
+            close();
+          }}
+        >
+          {snap.labels.ok}
         </button>
       </div>
     </div>
@@ -557,10 +511,6 @@ export function DateTime(props: DateTimeProps) {
   );
 }
 
-function padDisplay(n: number): string {
-  return String(n).padStart(2, "0");
-}
-
 function TimeColumn(props: {
   label: string;
   open: boolean;
@@ -570,6 +520,14 @@ function TimeColumn(props: {
   onSelect: (value: string) => void;
 }) {
   const listId = useId();
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useIsomorphicLayoutEffect(() => {
+    if (props.open && listRef.current) {
+      listRef.current.scrollTop = 0;
+    }
+  }, [props.open]);
+
   return (
     <div
       className={cx("ctp-box", "ctp-box-time", !props.open && "not-opened")}
@@ -586,6 +544,7 @@ function TimeColumn(props: {
         {props.display}
       </button>
       <div
+        ref={listRef}
         id={listId}
         role="listbox"
         aria-label={props.label}

@@ -1,0 +1,11 @@
+---
+import FrameworkLayout from "../../layouts/FrameworkLayout.astro";
+import { FRAMEWORK_BY_SLUG } from "../../frameworks";
+import FrameworkTrioDemo from "../../demos/react/FrameworkTrioDemo";
+
+const framework = FRAMEWORK_BY_SLUG.nextjs;
+---
+
+<FrameworkLayout framework={framework}>
+  <FrameworkTrioDemo slot="demo" client:load />
+</FrameworkLayout>

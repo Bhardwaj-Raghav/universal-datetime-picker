@@ -1,19 +1,29 @@
 {
-  "name": "react-calendar-time",
-  "version": "1.2.0",
-  "description": "React date picker, time picker, datetime picker, and date range calendar — accessible, TypeScript, dayjs, CSS themes",
+  "name": "universal-datetime-picker",
+  "version": "2.0.0",
+  "description": "Universal date, time, datetime, and range picker for React, Vue, Svelte, Angular, vanilla JS, and CDN — accessible, TypeScript, dayjs, CSS themes",
   "license": "MIT",
   "author": "Raghav Bhardwaj",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Bhardwaj-Raghav/react-calendar-time.git"
+    "url": "https://github.com/Bhardwaj-Raghav/universal-datetime-picker.git"
   },
-  "homepage": "https://react-calendar-time.vercel.app",
+  "homepage": "https://universal-datetime-picker.vercel.app",
   "bugs": {
-    "url": "https://github.com/Bhardwaj-Raghav/react-calendar-time/issues"
+    "url": "https://github.com/Bhardwaj-Raghav/universal-datetime-picker/issues"
   },
   "keywords": [
+    "universal",
+    "framework-agnostic",
+    "headless",
     "react",
+    "vue",
+    "svelte",
+    "angular",
+    "vanilla",
+    "web-components",
+    "custom-elements",
+    "cdn",
     "reactjs",
     "react-component",
     "component",
@@ -89,10 +99,15 @@
     "npm",
     "open-source",
     "mit",
-    "react-calendar-time"
+    "universal-datetime-picker"
   ],
   "sideEffects": [
-    "**/*.css"
+    "**/*.css",
+    "./dist/cdn/*",
+    "./dist/wc/*",
+    "./dist/vue/*",
+    "./dist/svelte/*",
+    "./dist/angular/*"
   ],
   "files": [
     "dist"
@@ -100,11 +115,43 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "unpkg": "./dist/cdn/universal-datetime-picker.iife.js",
+  "jsdelivr": "./dist/cdn/universal-datetime-picker.iife.js",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.mjs",
+      "require": "./dist/core/index.js"
+    },
+    "./vanilla": {
+      "types": "./dist/vanilla/index.d.ts",
+      "import": "./dist/vanilla/index.mjs",
+      "require": "./dist/vanilla/index.js"
+    },
+    "./wc": {
+      "types": "./dist/wc/index.d.ts",
+      "import": "./dist/wc/index.mjs",
+      "require": "./dist/wc/index.js"
+    },
+    "./vue": {
+      "types": "./dist/vue/index.d.ts",
+      "import": "./dist/vue/index.mjs",
+      "require": "./dist/vue/index.js"
+    },
+    "./svelte": {
+      "types": "./dist/svelte/index.d.ts",
+      "import": "./dist/svelte/index.mjs",
+      "require": "./dist/svelte/index.js"
+    },
+    "./angular": {
+      "types": "./dist/angular/index.d.ts",
+      "import": "./dist/angular/index.mjs",
+      "require": "./dist/angular/index.js"
     },
     "./style.css": "./dist/style.css",
     "./package.json": "./package.json"
@@ -124,15 +171,27 @@
     "prepublishOnly": "npm run typecheck && npm run test && npm run build"
   },
   "peerDependencies": {
-    "react": ">=17.0.0",
-    "react-dom": ">=17.0.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
   },
   "dependencies": {
     "dayjs": "^1.11.13"
   },
   "devDependencies": {
+    "@astrojs/preact": "^6.0.1",
     "@astrojs/react": "^6.0.1",
     "@astrojs/sitemap": "^3.7.3",
+    "@astrojs/solid-js": "^7.0.1",
+    "@astrojs/svelte": "^9.0.1",
+    "@astrojs/vue": "^7.0.1",
     "@eslint/js": "^9.21.0",
     "@storybook/addon-docs": "^10.5.2",
     "@storybook/react": "^10.5.2",
@@ -151,17 +210,21 @@
     "globals": "^15.15.0",
     "jsdom": "^26.0.0",
     "mime-types": "^3.0.2",
+    "preact": "^10.29.7",
     "prettier": "^3.5.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "sass": "^1.85.0",
     "sharp": "^0.35.3",
+    "solid-js": "^1.9.14",
     "storybook": "^10.5.2",
+    "svelte": "^5.56.8",
     "tsup": "^8.3.6",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.1.0",
-    "vitest": "^3.0.5"
+    "vitest": "^3.0.5",
+    "vue": "^3.5.40"
   },
   "engines": {
     "node": ">=18"

@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "react-calendar-time": path.resolve(__dirname, "../src/index.ts"),
+      "universal-datetime-picker": path.resolve(__dirname, "../src/index.ts"),
     },
   },
   server: {

@@ -301,6 +301,20 @@ describe("DateTime", () => {
     );
     expect(screen.getByRole("button", { name: "Confirm" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Wipe" })).toBeInTheDocument();
+    // Close is omitted for inline pickers
+    expect(
+      screen.queryByRole("button", { name: "Dismiss" })
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows custom close label in overlay mode", () => {
+    render(
+      <DateTime
+        mode="date"
+        defaultValue={dayjs("2024-07-10")}
+        labels={{ ok: "Confirm", clear: "Wipe", close: "Dismiss" }}
+      />
+    );
     expect(screen.getByRole("button", { name: "Dismiss" })).toBeInTheDocument();
   });
 

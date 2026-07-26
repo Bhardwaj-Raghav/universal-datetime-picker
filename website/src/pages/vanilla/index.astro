@@ -1,0 +1,26 @@
+---
+import FrameworkLayout from "../../layouts/FrameworkLayout.astro";
+import VanillaTrioMarkup from "../../components/VanillaTrioMarkup.astro";
+import { FRAMEWORK_BY_SLUG } from "../../frameworks";
+
+const framework = FRAMEWORK_BY_SLUG.vanilla;
+---
+
+<FrameworkLayout framework={framework}>
+  <VanillaTrioMarkup slot="demo" />
+</FrameworkLayout>
+
+<script>
+  import { mountFrameworkDemo } from "../../demos/wcDemo.ts";
+
+  const root = document.querySelector("[data-vanilla-demo]");
+  let cleanup: () => void = () => {};
+
+  if (root instanceof HTMLElement) {
+    mountFrameworkDemo(root, "vanilla-mount").then((fn) => {
+      cleanup = fn;
+    });
+  }
+
+  document.addEventListener("astro:before-preparation", () => cleanup());
+</script>
