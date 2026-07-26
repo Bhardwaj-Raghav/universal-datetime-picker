@@ -11,6 +11,7 @@ describe("DateTimeRange", () => {
     render(
       <DateTimeRange
         inline
+        asString
         defaultValue={{
           start: dayjs("2024-07-10"),
           end: null,
@@ -32,6 +33,36 @@ describe("DateTimeRange", () => {
       start: "2024-07-10",
       end: "2024-07-20",
     });
+  });
+
+  it("returns Date objects when asString is false", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <DateTimeRange
+        inline
+        asString={false}
+        defaultValue={{
+          start: dayjs("2024-07-10"),
+          end: null,
+        }}
+        onChange={onChange}
+      />
+    );
+
+    await user.click(
+      screen.getByRole("gridcell", { name: /July 20, 2024/i })
+    );
+    await user.click(screen.getByRole("button", { name: /OK/i }));
+
+    const payload = onChange.mock.calls[0]![0] as {
+      start: Date;
+      end: Date;
+    };
+    expect(payload.start).toBeInstanceOf(Date);
+    expect(payload.end).toBeInstanceOf(Date);
+    expect(dayjs(payload.start).format("YYYY-MM-DD")).toBe("2024-07-10");
+    expect(dayjs(payload.end).format("YYYY-MM-DD")).toBe("2024-07-20");
   });
 
   it("clears controlled value when value becomes null", () => {
@@ -71,6 +102,7 @@ describe("DateTimeRange", () => {
     render(
       <DateTimeRange
         inline
+        asString
         defaultValue={{ start: dayjs("2024-07-10"), end: null }}
         onChange={onChange}
       />

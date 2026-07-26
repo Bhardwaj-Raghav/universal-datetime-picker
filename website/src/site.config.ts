@@ -89,6 +89,11 @@ export const SITE_FAQS = [
       "Yes. Use DateTime for single date, time, or datetime picking, DateTimeInput for a popover input, and DateTimeRange for start/end date range selection — all from one npm package.",
   },
   {
+    question: "What does onChange return?",
+    answer:
+      "With asString={false}, date and datetime modes return a native Date; time mode returns a TimeValue object { hour (1–12), hour24 (0–23), minute, second, ampm, formatted }. With asString={true} (or omitted today), onChange receives a formatted string. Prefer setting asString explicitly.",
+  },
+  {
     question: "Is react-calendar-time an accessible React calendar component?",
     answer:
       "The picker uses dialog semantics, focus trapping, Escape to close, and arrow-key calendar navigation so keyboard and screen-reader users can select dates and times.",
@@ -101,6 +106,6 @@ export const SITE_FAQS = [
   {
     question: "Can I theme or localize this React calendar picker?",
     answer:
-      "Override CSS variables for light or dark themes, set locale with dayjs locale modules, choose 12-hour or 24-hour clocks, and customize chrome labels without forking the component.",
+      "Override CSS variables for light or dark themes, set locale with dayjs locale modules, choose 12-hour or 24-hour clocks, toggle seconds with showSeconds, and customize chrome labels without forking the component.",
   },
 ] as const;

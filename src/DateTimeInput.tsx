@@ -1,15 +1,42 @@
 import { useCallback, useMemo, useState } from "react";
 import { DateTime } from "./DateTime";
 import { useControllableState } from "./hooks/useControllableState";
-import type { DateTimeInputProps } from "./types";
+import type { DateTimeChangeValue, DateTimeInputProps, TimeValue } from "./types";
 import {
-  DEFAULT_FORMAT,
+  dayjs,
   formatValue,
   parseValue,
+  resolveFormat,
 } from "./utils/date";
 
 function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(" ");
+}
+
+function isTimeValue(value: DateTimeChangeValue): value is TimeValue {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !(value instanceof Date) &&
+    "formatted" in value &&
+    "hour24" in value
+  );
+}
+
+function toDisplayString(
+  value: DateTimeChangeValue,
+  format: string
+): string | null {
+  if (value === null) {
+    return null;
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  if (isTimeValue(value)) {
+    return value.formatted;
+  }
+  return formatValue(dayjs(value), format);
 }
 
 export function DateTimeInput(props: DateTimeInputProps) {
@@ -17,7 +44,11 @@ export function DateTimeInput(props: DateTimeInputProps) {
     value,
     defaultValue = null,
     onChange,
-    format = DEFAULT_FORMAT,
+    asString,
+    showSeconds = true,
+    format,
+    mode = "datetime",
+    use12Hours = false,
     open: openProp,
     defaultOpen = false,
     onOpenChange,
@@ -34,15 +65,20 @@ export function DateTimeInput(props: DateTimeInputProps) {
     ...pickerProps
   } = props;
 
+  const resolvedFormat = useMemo(
+    () => resolveFormat({ mode, format, use12Hours, showSeconds }),
+    [mode, format, use12Hours, showSeconds]
+  );
+
   const [anchorEl, setAnchorEl] = useState<HTMLInputElement | null>(null);
 
   const controlledFormatted =
     value !== undefined
-      ? formatValue(parseValue(value, format), format)
+      ? formatValue(parseValue(value, resolvedFormat), resolvedFormat)
       : undefined;
 
   const defaultFormatted = useMemo(
-    () => formatValue(parseValue(defaultValue, format), format),
+    () => formatValue(parseValue(defaultValue, resolvedFormat), resolvedFormat),
     // only seed once from defaultValue
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
@@ -51,7 +87,7 @@ export function DateTimeInput(props: DateTimeInputProps) {
   const [internalValue, setInternalValue] = useControllableState<string | null>({
     value: controlledFormatted,
     defaultValue: defaultFormatted,
-    onChange,
+    onChange: undefined,
   });
 
   const [open, setOpen] = useControllableState({
@@ -99,13 +135,18 @@ export function DateTimeInput(props: DateTimeInputProps) {
       <DateTime
         {...pickerProps}
         format={format}
+        mode={mode}
+        use12Hours={use12Hours}
+        asString={asString}
+        showSeconds={showSeconds}
         value={internalValue}
         open={open}
         onOpenChange={setOpen}
         popover
         anchorEl={anchorEl}
         onChange={(next) => {
-          setInternalValue(next);
+          setInternalValue(toDisplayString(next, resolvedFormat));
+          onChange?.(next);
         }}
       />
     </div>

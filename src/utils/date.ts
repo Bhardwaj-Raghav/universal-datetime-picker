@@ -4,6 +4,7 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import localeData from "dayjs/plugin/localeData";
 import weekday from "dayjs/plugin/weekday";
+import type { DateTimeMode, TimeValue } from "../types";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(isSameOrAfter);
@@ -17,6 +18,71 @@ export type { Dayjs };
 export const DEFAULT_FORMAT = "YYYY-MM-DD HH:mm:ss";
 export const DATE_FORMAT = "YYYY-MM-DD";
 export const TIME_FORMAT = "HH:mm:ss";
+
+export function resolveFormat(options: {
+  mode?: DateTimeMode;
+  format?: string;
+  use12Hours?: boolean;
+  showSeconds?: boolean;
+}): string {
+  if (options.format) {
+    return options.format;
+  }
+
+  const mode = options.mode ?? "datetime";
+  const showSeconds = options.showSeconds !== false;
+  const use12Hours = Boolean(options.use12Hours);
+
+  const timePart = use12Hours
+    ? showSeconds
+      ? "hh:mm:ss A"
+      : "hh:mm A"
+    : showSeconds
+      ? "HH:mm:ss"
+      : "HH:mm";
+
+  if (mode === "date") {
+    return DATE_FORMAT;
+  }
+  if (mode === "time") {
+    return timePart;
+  }
+  return `${DATE_FORMAT} ${timePart}`;
+}
+
+export function buildTimeValue(value: Dayjs, format: string): TimeValue {
+  const hour24 = value.hour();
+  const { hour, isAm } = to12Hour(hour24);
+  return {
+    hour,
+    hour24,
+    minute: value.minute(),
+    second: value.second(),
+    ampm: isAm ? "AM" : "PM",
+    formatted: value.format(format),
+  };
+}
+
+let asStringDeprecationWarned = false;
+
+/** One-time warning when `asString` is omitted (string return is deprecated). */
+export function warnAsStringDeprecation(): void {
+  if (asStringDeprecationWarned) {
+    return;
+  }
+  if (
+    typeof process !== "undefined" &&
+    process.env.NODE_ENV === "production"
+  ) {
+    return;
+  }
+  asStringDeprecationWarned = true;
+  console.warn(
+    "[react-calendar-time] Omitting `asString` currently returns a formatted string. " +
+      "Set `asString={true}` to keep strings, or `asString={false}` to receive a Date / TimeValue. " +
+      "A future major release will default to Date / TimeValue."
+  );
+}
 
 export function parseValue(
   value: ConfigType | undefined | null,

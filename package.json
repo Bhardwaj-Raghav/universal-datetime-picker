@@ -1,6 +1,6 @@
 {
   "name": "react-calendar-time",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "React date picker, time picker, datetime picker, and date range calendar — accessible, TypeScript, dayjs, CSS themes",
   "license": "MIT",
   "author": "Raghav Bhardwaj",

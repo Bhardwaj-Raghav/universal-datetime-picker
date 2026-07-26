@@ -12,6 +12,7 @@ describe("DateTime", () => {
     render(
       <DateTime
         inline
+        asString
         defaultValue={dayjs("2024-07-15 10:00:00")}
         onChange={onChange}
         mode="date"
@@ -23,12 +24,104 @@ describe("DateTime", () => {
     expect(onChange.mock.calls[0]![0]).toMatch(/^2024-07-15/);
   });
 
+  it("returns a Date when asString is false for date mode", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <DateTime
+        inline
+        asString={false}
+        defaultValue={dayjs("2024-07-15 10:00:00")}
+        onChange={onChange}
+        mode="date"
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /OK/i }));
+    const result = onChange.mock.calls[0]![0];
+    expect(result).toBeInstanceOf(Date);
+    expect(dayjs(result as Date).format("YYYY-MM-DD")).toBe("2024-07-15");
+  });
+
+  it("returns a Date when asString is false for datetime mode", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <DateTime
+        inline
+        asString={false}
+        defaultValue={dayjs("2024-07-15 10:30:45")}
+        onChange={onChange}
+        mode="datetime"
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /OK/i }));
+    const result = onChange.mock.calls[0]![0];
+    expect(result).toBeInstanceOf(Date);
+    expect(dayjs(result as Date).format("YYYY-MM-DD HH:mm:ss")).toBe(
+      "2024-07-15 10:30:45"
+    );
+  });
+
+  it("returns a TimeValue when asString is false for time mode", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <DateTime
+        inline
+        asString={false}
+        defaultValue={dayjs("2024-07-10 14:30:15")}
+        onChange={onChange}
+        mode="time"
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /OK/i }));
+    expect(onChange.mock.calls[0]![0]).toEqual({
+      hour: 2,
+      hour24: 14,
+      minute: 30,
+      second: 15,
+      ampm: "PM",
+      formatted: "14:30:15",
+    });
+  });
+
+  it("hides seconds when showSeconds is false", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { container } = render(
+      <DateTime
+        inline
+        asString={false}
+        showSeconds={false}
+        defaultValue={dayjs("2024-07-10 14:30:15")}
+        onChange={onChange}
+        mode="time"
+      />
+    );
+
+    expect(screen.queryByRole("button", { name: /Select seconds/i })).toBeNull();
+    expect(container.querySelector(".ctp-no-seconds")).toBeTruthy();
+    expect(container.querySelector(".ctp-mode-time")).toBeTruthy();
+
+    await user.click(screen.getByRole("button", { name: /OK/i }));
+    expect(onChange.mock.calls[0]![0]).toMatchObject({
+      hour: 2,
+      hour24: 14,
+      minute: 30,
+      formatted: "14:30",
+    });
+  });
+
   it("selects a day and highlights by full date", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(
       <DateTime
         inline
+        asString
         defaultValue={dayjs("2024-07-10 12:00:00")}
         onChange={onChange}
         mode="date"
@@ -51,6 +144,7 @@ describe("DateTime", () => {
     render(
       <DateTime
         open
+        asString
         onOpenChange={onOpenChange}
         defaultValue={dayjs("2024-07-10 12:00:00")}
         onChange={onChange}
@@ -68,6 +162,7 @@ describe("DateTime", () => {
     render(
       <DateTime
         inline
+        asString
         defaultValue={dayjs("2024-07-10 12:00:00")}
         onChange={onChange}
       />
@@ -118,12 +213,67 @@ describe("DateTime", () => {
     ).toHaveAttribute("tabindex", "0");
   });
 
+  it("opens month then year selector from the title", async () => {
+    const user = userEvent.setup();
+    render(
+      <DateTime
+        inline
+        asString
+        defaultValue={dayjs("2024-07-10")}
+        mode="date"
+      />
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: /July 2024.*Choose month/i })
+    );
+    expect(screen.getByRole("grid", { name: /Choose month/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /2024.*Choose year/i }));
+    expect(screen.getByRole("grid", { name: /Choose year/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("gridcell", { name: "2025" }));
+    expect(screen.getByRole("grid", { name: /Choose month/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /2025.*Choose year/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("gridcell", { name: /March 2025/i }));
+    expect(screen.getByRole("grid", { name: /Choose date/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /March 2025.*Choose month/i })
+    ).toBeInTheDocument();
+  });
+
+  it("highlights the current month and year without selecting them", async () => {
+    const user = userEvent.setup();
+    const now = dayjs();
+    render(<DateTime inline asString defaultValue={now} mode="date" />);
+
+    await user.click(
+      screen.getByRole("button", { name: new RegExp("Choose month", "i") })
+    );
+    const currentMonthCell = screen.getByRole("gridcell", {
+      name: new RegExp(now.format("MMMM YYYY"), "i"),
+    });
+    expect(currentMonthCell).toHaveAttribute("aria-current", "date");
+    expect(currentMonthCell).not.toHaveAttribute("aria-selected");
+
+    await user.click(
+      screen.getByRole("button", { name: new RegExp("Choose year", "i") })
+    );
+    const currentYearCell = screen.getByRole("gridcell", {
+      name: String(now.year()),
+    });
+    expect(currentYearCell).toHaveAttribute("aria-current", "date");
+    expect(currentYearCell).not.toHaveAttribute("aria-selected");
+  });
+
   it("confirms 12-hour AM/PM selection", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(
       <DateTime
         inline
+        asString
         defaultValue={dayjs("2024-07-10 09:30:00")}
         onChange={onChange}
         mode="time"
@@ -200,6 +350,7 @@ describe("DateTimeInput", () => {
     const onChange = vi.fn();
     render(
       <DateTimeInput
+        asString
         value="2024-07-10 12:00:00"
         onChange={onChange}
         mode="date"
@@ -207,7 +358,7 @@ describe("DateTimeInput", () => {
     );
 
     const input = screen.getByRole("textbox");
-    expect(input).toHaveValue("2024-07-10 12:00:00");
+    expect(input).toHaveValue("2024-07-10");
     await user.click(input);
     expect(input).toHaveAttribute("aria-expanded", "true");
   });
@@ -219,6 +370,7 @@ describe("DateTimeInput", () => {
       <div>
         <button type="button">Outside</button>
         <DateTimeInput
+          asString
           defaultOpen
           onOpenChange={onOpenChange}
           value="2024-07-10 12:00:00"

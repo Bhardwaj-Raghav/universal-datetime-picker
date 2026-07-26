@@ -51,11 +51,11 @@ import DateTime, { DateTimeInput } from "react-calendar-time";
 import "react-calendar-time/style.css";
 
 function App() {
-  const [value, setValue] = useState<string | null>(null);
+  const [value, setValue] = useState<Date | null>(null);
   return (
     <>
-      <DateTimeInput value={value} onChange={setValue} />
-      <DateTime inline value={value} onChange={setValue} />
+      <DateTimeInput asString={false} value={value} onChange={setValue} />
+      <DateTime inline asString={false} value={value} onChange={setValue} />
     </>
   );
 }
@@ -69,18 +69,46 @@ function App() {
 | \`DateTime.Input\` / \`DateTimeInput\` | Read-only input opening a popover picker |
 | \`DateTime.Range\` / \`DateTimeRange\` | Start/end date range selection |
 
+## Return values
+
+| Mode / flags | \`asString\` | \`onChange\` receives |
+|--------------|------------|---------------------|
+| \`mode="date"\` | \`false\` | \`Date\` (start of day) |
+| \`mode="datetime"\` | \`false\` | \`Date\` |
+| \`mode="time"\` | \`false\` | \`TimeValue\` |
+| any mode | \`true\` / omitted | formatted \`string | null\` |
+| range | \`false\` | \`{ start: Date | null; end: Date | null }\` |
+| range | \`true\` / omitted | \`{ start: string | null; end: string | null }\` |
+
+\`TimeValue\` shape:
+
+\`\`\`ts
+{
+  hour: 2,         // 1–12
+  hour24: 14,      // 0–23
+  minute: 30,
+  second: 0,
+  ampm: "PM",
+  formatted: "14:30:00"
+}
+\`\`\`
+
+Omitting \`asString\` still returns a string today (deprecated warning). Prefer \`asString={false}\` for Date / TimeValue; a future major will default to objects.
+
 ## Important props
 
 Shared by \`DateTime\` / \`DateTimeInput\`:
 
 - \`value\` / \`defaultValue\`: \`Date | string | Dayjs | null\`
-- \`onChange\`: \`(value: string | null) => void\` (fires on OK / Clear)
-- \`format\`: dayjs format string (default \`YYYY-MM-DD HH:mm:ss\`)
+- \`onChange\`: \`(value: Date | TimeValue | string | null) => void\` (fires on OK / Clear)
+- \`asString\`: \`true\` = string; \`false\` = Date / TimeValue; omit = string + deprecation warning
+- \`showSeconds\`: show seconds column (default \`true\`); affects default format
+- \`format\`: dayjs format string (derived from mode / use12Hours / showSeconds when omitted)
 - \`mode\`: \`"datetime" | "date" | "time"\` (default \`"datetime"\`)
 - \`layout\`: \`"combined" | "tabs"\` for datetime mode
 - \`minDate\` / \`maxDate\`, \`disablePastDates\`, \`disableFutureDates\`
 - \`weekStartsOn\`: \`0–6\` (0 = Sunday)
-- \`use12Hours\`: 12-hour clock with AM/PM
+- \`use12Hours\`: 12-hour clock with AM/PM (\`false\` = 24-hour)
 - \`locale\`: dayjs locale string (import the locale module first)
 - \`labels\`: override chrome strings (ok, clear, close, date, time, …)
 - \`theme\`: \`"light" | "dark"\` (useful for portaled popovers)
@@ -88,9 +116,41 @@ Shared by \`DateTime\` / \`DateTimeInput\`:
 
 Overlay control: \`open\` / \`defaultOpen\`, \`onOpenChange\`, \`popover\`, \`anchorEl\`.
 
-\`DateTimeInput\` always uses popover mode (fixed positioning, flip, scroll/resize, outside click / Escape).
+\`DateTimeInput\` always uses popover mode (fixed positioning, flip, scroll/resize, outside click / Escape). Time-only popovers are compact.
 
-\`DateTimeRange\` \`onChange\` receives \`{ start: string | null; end: string | null }\`.
+\`DateTimeRange\` supports the same \`asString\` behavior for start/end values.
+
+## Custom trigger
+
+Use controlled \`open\` state to open \`DateTime\` from any button or input. For a popover beside the trigger, set \`popover\` and pass the trigger DOM element to \`anchorEl\`:
+
+\`\`\`tsx
+function CustomDateTrigger() {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState<Date | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+  return (
+    <>
+      <button ref={setAnchorEl} onClick={() => setOpen(true)}>
+        {value ? value.toLocaleDateString() : "Choose a date"}
+      </button>
+      <DateTime
+        mode="date"
+        open={open}
+        onOpenChange={setOpen}
+        popover
+        anchorEl={anchorEl}
+        asString={false}
+        value={value}
+        onChange={(next) => setValue(next instanceof Date ? next : null)}
+      />
+    </>
+  );
+}
+\`\`\`
+
+Leave out \`popover\` and \`anchorEl\` to render the picker as a centered modal.
 
 ## Theming
 

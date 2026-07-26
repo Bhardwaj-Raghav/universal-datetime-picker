@@ -23,8 +23,9 @@ function App() {
       <section>
         <h2>Input (popover)</h2>
         <DateTimeInput
+          asString
           value={value}
-          onChange={setValue}
+          onChange={(next) => setValue(typeof next === "string" ? next : null)}
           placeholder="Pick a date & time"
           use12Hours
         />
@@ -35,8 +36,9 @@ function App() {
         <h2>Inline datetime</h2>
         <DateTime
           inline
+          asString
           value={value}
-          onChange={setValue}
+          onChange={(next) => setValue(typeof next === "string" ? next : null)}
           disablePastDates
         />
       </section>
@@ -49,8 +51,9 @@ function App() {
         <DateTime
           open={open}
           onOpenChange={setOpen}
+          asString
           value={value}
-          onChange={setValue}
+          onChange={(next) => setValue(typeof next === "string" ? next : null)}
           mode="datetime"
         />
       </section>
@@ -59,8 +62,14 @@ function App() {
         <h2>Date range</h2>
         <DateTimeRange
           inline
+          asString
           value={range}
-          onChange={setRange}
+          onChange={(next) =>
+            setRange({
+              start: typeof next.start === "string" ? next.start : null,
+              end: typeof next.end === "string" ? next.end : null,
+            })
+          }
         />
         <p className="value">
           Range: {range.start ?? "—"} → {range.end ?? "—"}

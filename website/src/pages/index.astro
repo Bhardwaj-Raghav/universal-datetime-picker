@@ -26,8 +26,53 @@ import "react-calendar-time/style.css";
 
 function App() {
   const [value, setValue] = useState(null);
-  return <DateTimeInput value={value} onChange={setValue} />;
+  // asString={false} → Date (date/datetime) or TimeValue (time)
+  return <DateTimeInput asString={false} value={value} onChange={setValue} />;
 }`;
+
+const customTriggerSnippet = `function CustomDateTrigger() {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState<Date | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+  return (
+    <>
+      <button
+        ref={setAnchorEl}
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+      >
+        {value ? value.toLocaleDateString() : "Choose a date"}
+      </button>
+
+      <DateTime
+        mode="date"
+        open={open}
+        onOpenChange={setOpen}
+        popover
+        anchorEl={anchorEl}
+        asString={false}
+        value={value}
+        onChange={(next) =>
+          setValue(next instanceof Date ? next : null)
+        }
+      />
+    </>
+  );
+}`;
+
+const modalTriggerSnippet = `<button type="button" onClick={() => setOpen(true)}>
+  Choose a date
+</button>
+<DateTime
+  mode="date"
+  open={open}
+  onOpenChange={setOpen}
+  asString={false}
+  onChange={setValue}
+/>`;
 ---
 
 <BaseLayout>
@@ -43,6 +88,7 @@ function App() {
         <a href="#live-demo">Live demo</a>
         <a href="#features">Features</a>
         <a href="#examples">Examples</a>
+        <a href="#how-to-use">How to use</a>
         <a href="#install">Install</a>
         <a href="#faq">FAQ</a>
         <a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
@@ -98,6 +144,23 @@ function App() {
           </p>
         </div>
         <ExamplesDemo client:visible />
+      </section>
+
+      <section class="snippet" id="how-to-use" aria-labelledby="how-to-use-heading">
+        <h2 id="how-to-use-heading">Use any button or input as the trigger</h2>
+        <p class="snippet-lead">
+          Control <code>open</code> from your own element. Pass that element to
+          <code>anchorEl</code> with <code>popover</code> to place the calendar
+          beside it.
+        </p>
+        <pre><code>{customTriggerSnippet}</code></pre>
+
+        <h3>Open it as a modal</h3>
+        <p class="snippet-lead">
+          Leave out <code>popover</code> and <code>anchorEl</code> for a centered
+          modal.
+        </p>
+        <pre><code>{modalTriggerSnippet}</code></pre>
       </section>
 
       <section class="snippet" id="install" aria-labelledby="install-heading">

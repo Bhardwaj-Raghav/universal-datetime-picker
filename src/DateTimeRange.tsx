@@ -8,10 +8,15 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import { createPortal } from "react-dom";
+import { CalendarHeader } from "./CalendarHeader";
 import { buildCalendarMonth } from "./calendar";
 import { useFocusTrap, useOnEscape } from "./hooks/useA11y";
 import { useControllableState } from "./hooks/useControllableState";
-import { DEFAULT_LABELS, type DateRangeValue, type DateTimeRangeProps } from "./types";
+import {
+  DEFAULT_LABELS,
+  type CalendarPanel,
+  type DateTimeRangeProps,
+} from "./types";
 import {
   DATE_FORMAT,
   dayjs,
@@ -21,6 +26,7 @@ import {
   getWeekdayLabels,
   parseValue,
   startOfWeek,
+  warnAsStringDeprecation,
   type Dayjs,
 } from "./utils/date";
 
@@ -33,6 +39,7 @@ export function DateTimeRange(props: DateTimeRangeProps) {
     value,
     defaultValue = null,
     onChange,
+    asString,
     format = DATE_FORMAT,
     minDate,
     maxDate,
@@ -74,6 +81,7 @@ export function DateTimeRange(props: DateTimeRangeProps) {
   const [focusedDay, setFocusedDay] = useState<Dayjs>(
     initial.start ?? dayjs()
   );
+  const [calPanel, setCalPanel] = useState<CalendarPanel>("day");
 
   const [open, setOpen] = useControllableState({
     value: openProp,
@@ -109,13 +117,22 @@ export function DateTimeRange(props: DateTimeRangeProps) {
 
   const emit = useCallback(
     (nextStart: Dayjs | null, nextEnd: Dayjs | null) => {
-      const payload: DateRangeValue = {
-        start: formatValue(nextStart, format),
-        end: formatValue(nextEnd, format),
-      };
-      onChange?.(payload);
+      if (asString === false) {
+        onChange?.({
+          start: nextStart ? nextStart.toDate() : null,
+          end: nextEnd ? nextEnd.toDate() : null,
+        });
+      } else {
+        if (asString === undefined) {
+          warnAsStringDeprecation();
+        }
+        onChange?.({
+          start: formatValue(nextStart, format),
+          end: formatValue(nextEnd, format),
+        });
+      }
     },
-    [format, onChange]
+    [asString, format, onChange]
   );
 
   const confirm = useCallback(() => {
@@ -267,105 +284,96 @@ export function DateTimeRange(props: DateTimeRangeProps) {
         </span>
       </div>
       <div className="ctp-body ctp-body-calendar-date">
-        <div className="ctp-month-year">
-          <button
-            type="button"
-            className="ctp-prev-month"
-            aria-label={labels.previousMonth}
-            onClick={() => setViewMonth((m) => m.subtract(1, "month"))}
+        <CalendarHeader
+          viewMonth={viewMonth}
+          setViewMonth={setViewMonth}
+          panel={calPanel}
+          onPanelChange={setCalPanel}
+          locale={locale}
+          labels={labels}
+        />
+        {calPanel === "day" && (
+          <div
+            className="ctp-main-calendar"
+            role="grid"
+            aria-label={labels.chooseDateRange}
+            tabIndex={0}
+            onKeyDown={onGridKeyDown}
           >
-            ‹
-          </button>
-          <span className="ctp-current-month">
-            {formatLocalized(viewMonth, "MMMM YYYY", locale)}
-          </span>
-          <button
-            type="button"
-            className="ctp-next-month"
-            aria-label={labels.nextMonth}
-            onClick={() => setViewMonth((m) => m.add(1, "month"))}
-          >
-            ›
-          </button>
-        </div>
-        <div
-          className="ctp-main-calendar"
-          role="grid"
-          aria-label={labels.chooseDateRange}
-          tabIndex={0}
-          onKeyDown={onGridKeyDown}
-        >
-          {weekdayLabels.map((label) => (
-            <div
-              key={label}
-              className="ctp-box ctp-box-days"
-              role="columnheader"
-            >
-              {label}
-            </div>
-          ))}
-          {weeks.map((week) =>
-            week.map((dayData) => {
-              const disabled = !dayData.isCurrentMonth || dayData.isDisabled;
-              const focused = dayData.date.isSame(focusedDay, "day");
-              return (
-                <button
-                  key={dayData.date.format("YYYY-MM-DD")}
-                  type="button"
-                  role="gridcell"
-                  tabIndex={focused ? 0 : -1}
-                  aria-label={formatLocalized(
-                    dayData.date,
-                    "dddd, MMMM D, YYYY",
-                    locale
-                  )}
-                  aria-selected={Boolean(
-                    dayData.isRangeStart || dayData.isRangeEnd
-                  )}
-                  aria-disabled={disabled}
-                  disabled={disabled}
-                  className={cx(
-                    "ctp-box",
-                    "ctp-box-date",
-                    !dayData.isCurrentMonth && "not-current-month",
-                    dayData.isDisabled && "disabled-date",
-                    dayData.isWeekend && "weekend-day",
-                    dayData.isInRange && "ctp-in-range",
-                    dayData.isRangeStart && "ctp-range-start",
-                    dayData.isRangeEnd && "ctp-range-end",
-                    dayData.isCurrentDate && "ctp-today",
-                    (dayData.isRangeStart || dayData.isRangeEnd) && "selected"
-                  )}
-                  onMouseEnter={() => {
-                    if (start && !end && !disabled) {
-                      setHoverEnd(dayData.date);
-                    }
-                  }}
-                  onMouseLeave={() => {
-                    if (start && !end) {
-                      setHoverEnd(null);
-                    }
-                  }}
-                  onClick={() => {
-                    if (!disabled) {
-                      onDayClick(dayData.date);
-                    }
-                  }}
-                >
-                  {dayData.date.format("D")}
-                </button>
-              );
-            })
-          )}
-        </div>
+            {weekdayLabels.map((label) => (
+              <div
+                key={label}
+                className="ctp-box ctp-box-days"
+                role="columnheader"
+              >
+                {label}
+              </div>
+            ))}
+            {weeks.map((week) =>
+              week.map((dayData) => {
+                const disabled = !dayData.isCurrentMonth || dayData.isDisabled;
+                const focused = dayData.date.isSame(focusedDay, "day");
+                return (
+                  <button
+                    key={dayData.date.format("YYYY-MM-DD")}
+                    type="button"
+                    role="gridcell"
+                    tabIndex={focused ? 0 : -1}
+                    aria-label={formatLocalized(
+                      dayData.date,
+                      "dddd, MMMM D, YYYY",
+                      locale
+                    )}
+                    aria-selected={Boolean(
+                      dayData.isRangeStart || dayData.isRangeEnd
+                    )}
+                    aria-disabled={disabled}
+                    disabled={disabled}
+                    className={cx(
+                      "ctp-box",
+                      "ctp-box-date",
+                      !dayData.isCurrentMonth && "not-current-month",
+                      dayData.isDisabled && "disabled-date",
+                      dayData.isWeekend && "weekend-day",
+                      dayData.isInRange && "ctp-in-range",
+                      dayData.isRangeStart && "ctp-range-start",
+                      dayData.isRangeEnd && "ctp-range-end",
+                      dayData.isCurrentDate && "ctp-today",
+                      (dayData.isRangeStart || dayData.isRangeEnd) && "selected"
+                    )}
+                    onMouseEnter={() => {
+                      if (start && !end && !disabled) {
+                        setHoverEnd(dayData.date);
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      if (start && !end) {
+                        setHoverEnd(null);
+                      }
+                    }}
+                    onClick={() => {
+                      if (!disabled) {
+                        onDayClick(dayData.date);
+                      }
+                    }}
+                  >
+                    {dayData.date.format("D")}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        )}
       </div>
       <div className="ctp-footer">
         <button type="button" className="close-button" onClick={clear}>
           {labels.clear}
         </button>
-        <button type="button" className="ctp-cancel" onClick={close}>
-          {labels.close}
-        </button>
+        {!inline && (
+          <button type="button" className="ctp-cancel" onClick={close}>
+            {labels.close}
+          </button>
+        )}
         <button type="button" onClick={confirm} disabled={!start || !end}>
           {labels.ok}
         </button>

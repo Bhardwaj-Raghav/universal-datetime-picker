@@ -9,6 +9,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { createPortal } from "react-dom";
+import { CalendarHeader } from "./CalendarHeader";
 import { buildCalendarMonth } from "./calendar";
 import {
   useFocusTrap,
@@ -17,21 +18,27 @@ import {
   usePopoverPosition,
 } from "./hooks/useA11y";
 import { useControllableState } from "./hooks/useControllableState";
-import { DEFAULT_LABELS, type DateTimeProps } from "./types";
 import {
-  DEFAULT_FORMAT,
+  DEFAULT_LABELS,
+  type CalendarPanel,
+  type DateTimeProps,
+} from "./types";
+import {
   HOURS_12,
   HOURS_24,
   MINUTES,
+  buildTimeValue,
   dayjs,
   endOfWeek,
   formatLocalized,
   formatValue,
   getWeekdayLabels,
   parseValue,
+  resolveFormat,
   startOfWeek,
   to12Hour,
   to24Hour,
+  warnAsStringDeprecation,
   type Dayjs,
 } from "./utils/date";
 
@@ -69,7 +76,9 @@ export function DateTime(props: DateTimeProps) {
     value,
     defaultValue,
     onChange,
-    format = DEFAULT_FORMAT,
+    asString,
+    showSeconds = true,
+    format,
     mode = "datetime",
     layout = "combined",
     minDate,
@@ -96,19 +105,26 @@ export function DateTime(props: DateTimeProps) {
     [labelsProp]
   );
 
+  const resolvedFormat = useMemo(
+    () => resolveFormat({ mode, format, use12Hours, showSeconds }),
+    [mode, format, use12Hours, showSeconds]
+  );
+
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  const initial = parseValue(value ?? defaultValue ?? dayjs(), format) ?? dayjs();
+  const initial =
+    parseValue(value ?? defaultValue ?? dayjs(), resolvedFormat) ?? dayjs();
 
   const [draft, setDraft] = useState<Dayjs>(initial);
   const [viewMonth, setViewMonth] = useState<Dayjs>(initial.startOf("month"));
+  const [calPanel, setCalPanel] = useState<CalendarPanel>("day");
   const [tab, setTab] = useState<"date" | "time">(
     mode === "time" ? "time" : "date"
   );
   const [showHours, setShowHours] = useState(false);
   const [showMinutes, setShowMinutes] = useState(false);
-  const [showSeconds, setShowSeconds] = useState(false);
+  const [showSecondsOpen, setShowSecondsOpen] = useState(false);
   const [showAmPm, setShowAmPm] = useState(false);
   const [focusedDay, setFocusedDay] = useState<Dayjs>(initial);
 
@@ -126,13 +142,13 @@ export function DateTime(props: DateTimeProps) {
       setFocusedDay(fallback);
       return;
     }
-    const parsed = parseValue(value ?? null, format);
+    const parsed = parseValue(value ?? null, resolvedFormat);
     if (parsed) {
       setDraft(parsed);
       setViewMonth(parsed.startOf("month"));
       setFocusedDay(parsed);
     }
-  }, [value, format]);
+  }, [value, resolvedFormat]);
 
   useEffect(() => {
     setTab(mode === "time" ? "time" : "date");
@@ -145,9 +161,22 @@ export function DateTime(props: DateTimeProps) {
   }, [inline, setOpen]);
 
   const confirm = useCallback(() => {
-    onChange?.(formatValue(draft, format));
+    if (asString === false) {
+      if (mode === "time") {
+        onChange?.(buildTimeValue(draft, resolvedFormat));
+      } else if (mode === "date") {
+        onChange?.(draft.startOf("day").toDate());
+      } else {
+        onChange?.(draft.toDate());
+      }
+    } else {
+      if (asString === undefined) {
+        warnAsStringDeprecation();
+      }
+      onChange?.(formatValue(draft, resolvedFormat));
+    }
     close();
-  }, [close, draft, format, onChange]);
+  }, [asString, close, draft, mode, onChange, resolvedFormat]);
 
   const clearAndClose = useCallback(() => {
     onChange?.(null);
@@ -294,89 +323,76 @@ export function DateTime(props: DateTimeProps) {
 
   const datePanel = (
     <div className="ctp-body ctp-body-calendar-date">
-      <div className="ctp-month-year">
-        <button
-          type="button"
-          className="ctp-prev-month"
-          aria-label={labels.previousMonth}
-          onClick={() => setViewMonth((m) => m.subtract(1, "month"))}
+      <CalendarHeader
+        viewMonth={viewMonth}
+        setViewMonth={setViewMonth}
+        panel={calPanel}
+        onPanelChange={setCalPanel}
+        locale={locale}
+        labels={labels}
+        titleId={showDatePanel ? titleId : undefined}
+      />
+      {calPanel === "day" && (
+        <div
+          className="ctp-main-calendar"
+          role="grid"
+          aria-label={labels.chooseDate}
+          tabIndex={0}
+          onKeyDown={onGridKeyDown}
         >
-          ‹
-        </button>
-        <span
-          className="ctp-current-month"
-          id={showDatePanel ? titleId : undefined}
-        >
-          {formatLocalized(viewMonth, "MMMM YYYY", locale)}
-        </span>
-        <button
-          type="button"
-          className="ctp-next-month"
-          aria-label={labels.nextMonth}
-          onClick={() => setViewMonth((m) => m.add(1, "month"))}
-        >
-          ›
-        </button>
-      </div>
-      <div
-        className="ctp-main-calendar"
-        role="grid"
-        aria-label={labels.chooseDate}
-        tabIndex={0}
-        onKeyDown={onGridKeyDown}
-      >
-        {weekdayLabels.map((label) => (
-          <div
-            key={label}
-            className="ctp-box ctp-box-days"
-            role="columnheader"
-          >
-            {label}
-          </div>
-        ))}
-        {weeks.map((week) =>
-          week.map((dayData) => {
-            const selected = dayData.isSelected;
-            const focused = dayData.date.isSame(focusedDay, "day");
-            const disabled = !dayData.isCurrentMonth || dayData.isDisabled;
-            return (
-              <button
-                key={dayData.date.format("YYYY-MM-DD")}
-                type="button"
-                role="gridcell"
-                tabIndex={focused ? 0 : -1}
-                aria-selected={selected}
-                aria-disabled={disabled}
-                disabled={disabled}
-                aria-label={formatLocalized(
-                  dayData.date,
-                  "dddd, MMMM D, YYYY",
-                  locale
-                )}
-                className={cx(
-                  "ctp-box",
-                  "ctp-box-date",
-                  !dayData.isCurrentMonth && "not-current-month",
-                  selected && "selected",
-                  dayData.isDisabled && "disabled-date",
-                  dayData.isWeekend && "weekend-day",
-                  dayData.isCurrentDate && "ctp-today",
-                  dayData.isInRange && "ctp-in-range",
-                  dayData.isRangeStart && "ctp-range-start",
-                  dayData.isRangeEnd && "ctp-range-end"
-                )}
-                onClick={() => {
-                  if (!disabled) {
-                    selectDay(dayData.date);
-                  }
-                }}
-              >
-                {dayData.date.format("D")}
-              </button>
-            );
-          })
-        )}
-      </div>
+          {weekdayLabels.map((label) => (
+            <div
+              key={label}
+              className="ctp-box ctp-box-days"
+              role="columnheader"
+            >
+              {label}
+            </div>
+          ))}
+          {weeks.map((week) =>
+            week.map((dayData) => {
+              const selected = dayData.isSelected;
+              const focused = dayData.date.isSame(focusedDay, "day");
+              const disabled = !dayData.isCurrentMonth || dayData.isDisabled;
+              return (
+                <button
+                  key={dayData.date.format("YYYY-MM-DD")}
+                  type="button"
+                  role="gridcell"
+                  tabIndex={focused ? 0 : -1}
+                  aria-selected={selected}
+                  aria-disabled={disabled}
+                  disabled={disabled}
+                  aria-label={formatLocalized(
+                    dayData.date,
+                    "dddd, MMMM D, YYYY",
+                    locale
+                  )}
+                  className={cx(
+                    "ctp-box",
+                    "ctp-box-date",
+                    !dayData.isCurrentMonth && "not-current-month",
+                    selected && "selected",
+                    dayData.isDisabled && "disabled-date",
+                    dayData.isWeekend && "weekend-day",
+                    dayData.isCurrentDate && "ctp-today",
+                    dayData.isInRange && "ctp-in-range",
+                    dayData.isRangeStart && "ctp-range-start",
+                    dayData.isRangeEnd && "ctp-range-end"
+                  )}
+                  onClick={() => {
+                    if (!disabled) {
+                      selectDay(dayData.date);
+                    }
+                  }}
+                >
+                  {dayData.date.format("D")}
+                </button>
+              );
+            })
+          )}
+        </div>
+      )}
     </div>
   );
 
@@ -394,7 +410,7 @@ export function DateTime(props: DateTimeProps) {
         <div className="ctp-main-time-header">
           <div className="ctp-box">Hr</div>
           <div className="ctp-box">Min</div>
-          <div className="ctp-box">Sec</div>
+          {showSeconds && <div className="ctp-box">Sec</div>}
           {use12Hours && <div className="ctp-box">AM/PM</div>}
         </div>
         <div className="ctp-main-time-body">
@@ -424,17 +440,19 @@ export function DateTime(props: DateTimeProps) {
               setShowMinutes(false);
             }}
           />
-          <TimeColumn
-            label="seconds"
-            open={showSeconds}
-            onToggle={() => setShowSeconds((v) => !v)}
-            display={padDisplay(draft.second())}
-            options={MINUTES}
-            onSelect={(opt) => {
-              setSecond(Number(opt));
-              setShowSeconds(false);
-            }}
-          />
+          {showSeconds && (
+            <TimeColumn
+              label="seconds"
+              open={showSecondsOpen}
+              onToggle={() => setShowSecondsOpen((v) => !v)}
+              display={padDisplay(draft.second())}
+              options={MINUTES}
+              onSelect={(opt) => {
+                setSecond(Number(opt));
+                setShowSecondsOpen(false);
+              }}
+            />
+          )}
           {use12Hours && (
             <TimeColumn
               label="am-pm"
@@ -460,6 +478,8 @@ export function DateTime(props: DateTimeProps) {
         "ctp-calendar-time-picker",
         popover && !inline && "ctp-popover",
         use12Hours && "ctp-use-12h",
+        mode === "time" && "ctp-mode-time",
+        !showSeconds && "ctp-no-seconds",
         showDatePanel && showTimePanel && "ctp-layout-combined",
         className
       )}
@@ -505,9 +525,11 @@ export function DateTime(props: DateTimeProps) {
         <button type="button" className="close-button" onClick={clearAndClose}>
           {labels.clear}
         </button>
-        <button type="button" className="ctp-cancel" onClick={close}>
-          {labels.close}
-        </button>
+        {!inline && (
+          <button type="button" className="ctp-cancel" onClick={close}>
+            {labels.close}
+          </button>
+        )}
         <button type="button" onClick={confirm}>
           {labels.ok}
         </button>

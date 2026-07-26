@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildCalendarMonth } from "../src/calendar";
-import { dayjs, parseValue, formatValue, to12Hour, to24Hour } from "../src/utils/date";
+import { dayjs, parseValue, formatValue, to12Hour, to24Hour, resolveFormat, buildTimeValue } from "../src/utils/date";
 
 describe("buildCalendarMonth", () => {
   it("includes the last day of the month as current month", () => {
@@ -75,5 +75,29 @@ describe("12-hour conversion", () => {
     expect(to12Hour(13)).toEqual({ hour: 1, isAm: false });
     expect(to24Hour(12, true)).toBe(0);
     expect(to24Hour(1, false)).toBe(13);
+  });
+});
+
+describe("resolveFormat / buildTimeValue", () => {
+  it("derives format from mode and showSeconds", () => {
+    expect(resolveFormat({ mode: "date" })).toBe("YYYY-MM-DD");
+    expect(resolveFormat({ mode: "time" })).toBe("HH:mm:ss");
+    expect(resolveFormat({ mode: "time", showSeconds: false })).toBe("HH:mm");
+    expect(resolveFormat({ mode: "time", use12Hours: true })).toBe("hh:mm:ss A");
+    expect(
+      resolveFormat({ mode: "datetime", use12Hours: true, showSeconds: false })
+    ).toBe("YYYY-MM-DD hh:mm A");
+  });
+
+  it("builds TimeValue with hour 1–12 and hour24 0–23", () => {
+    const value = buildTimeValue(dayjs("2024-07-10 14:30:15"), "HH:mm:ss");
+    expect(value).toEqual({
+      hour: 2,
+      hour24: 14,
+      minute: 30,
+      second: 15,
+      ampm: "PM",
+      formatted: "14:30:15",
+    });
   });
 });

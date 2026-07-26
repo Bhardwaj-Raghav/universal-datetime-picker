@@ -1,19 +1,38 @@
 import { useState } from "react";
-import DateTime, { DateTimeInput, DateTimeRange } from "react-calendar-time";
+import DateTime, {
+  DateTimeInput,
+  DateTimeRange,
+  type DateTimeChangeValue,
+  type TimeValue,
+} from "react-calendar-time";
 import "dayjs/locale/fr";
 
+function previewValue(value: DateTimeChangeValue): string {
+  if (value === null) {
+    return "null";
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  if (value instanceof Date) {
+    return value.toString();
+  }
+  return JSON.stringify(value, null, 2);
+}
+
 export default function ExamplesDemo() {
-  const [dateOnly, setDateOnly] = useState<string | null>(null);
-  const [timeOnly, setTimeOnly] = useState<string | null>(null);
-  const [combined, setCombined] = useState<string | null>(null);
-  const [tabsValue, setTabsValue] = useState<string | null>(null);
+  const [dateOnly, setDateOnly] = useState<Date | null>(null);
+  const [timeOnly, setTimeOnly] = useState<TimeValue | null>(null);
+  const [timeNoSeconds, setTimeNoSeconds] = useState<TimeValue | null>(null);
+  const [combined, setCombined] = useState<Date | null>(null);
+  const [tabsValue, setTabsValue] = useState<Date | null>(null);
   const [dateTimeInput, setDateTimeInput] = useState<string | null>(null);
-  const [localeValue, setLocaleValue] = useState<string | null>(null);
-  const [darkDate, setDarkDate] = useState<string | null>(null);
+  const [localeValue, setLocaleValue] = useState<Date | null>(null);
+  const [darkDate, setDarkDate] = useState<Date | null>(null);
   const [darkInput, setDarkInput] = useState<string | null>(null);
   const [range, setRange] = useState<{
-    start: string | null;
-    end: string | null;
+    start: Date | null;
+    end: Date | null;
   }>({
     start: null,
     end: null,
@@ -22,72 +41,110 @@ export default function ExamplesDemo() {
   return (
     <div className="showcase-grid">
       <div className="showcase-block">
-        <h3>Date only</h3>
+        <h3>Date only · Date object</h3>
         <DateTime
           inline
           mode="date"
+          asString={false}
           value={dateOnly}
-          onChange={setDateOnly}
+          onChange={(next) => setDateOnly(next instanceof Date ? next : null)}
           disablePastDates
         />
-        <p className="stage-value">Selected: {dateOnly ?? "null"}</p>
+        <pre className="stage-value">{previewValue(dateOnly)}</pre>
       </div>
 
       <div className="showcase-block">
-        <h3>Time only</h3>
+        <h3>Time only · TimeValue</h3>
         <DateTime
           inline
           mode="time"
-          value={timeOnly}
-          onChange={setTimeOnly}
-          format="HH:mm:ss"
+          asString={false}
+          onChange={(next) =>
+            setTimeOnly(
+              next && typeof next === "object" && !(next instanceof Date)
+                ? next
+                : null
+            )
+          }
         />
-        <p className="stage-value">Selected: {timeOnly ?? "null"}</p>
+        <pre className="stage-value">{previewValue(timeOnly)}</pre>
       </div>
 
       <div className="showcase-block">
-        <h3>Combined date &amp; time</h3>
+        <h3>Time · no seconds</h3>
+        <DateTime
+          inline
+          mode="time"
+          asString={false}
+          showSeconds={false}
+          onChange={(next) =>
+            setTimeNoSeconds(
+              next && typeof next === "object" && !(next instanceof Date)
+                ? next
+                : null
+            )
+          }
+        />
+        <pre className="stage-value">{previewValue(timeNoSeconds)}</pre>
+      </div>
+
+      <div className="showcase-block">
+        <h3>Combined date &amp; time · Date</h3>
         <DateTime
           inline
           mode="datetime"
           layout="combined"
+          asString={false}
           value={combined}
-          onChange={setCombined}
+          onChange={(next) => setCombined(next instanceof Date ? next : null)}
         />
-        <p className="stage-value">Selected: {combined ?? "null"}</p>
+        <pre className="stage-value">{previewValue(combined)}</pre>
       </div>
 
       <div className="showcase-block">
-        <h3>Separate view (tabs)</h3>
+        <h3>Separate view (tabs) · Date</h3>
         <DateTime
           inline
           mode="datetime"
           layout="tabs"
+          asString={false}
           value={tabsValue}
-          onChange={setTabsValue}
+          onChange={(next) => setTabsValue(next instanceof Date ? next : null)}
         />
-        <p className="stage-value">Selected: {tabsValue ?? "null"}</p>
+        <pre className="stage-value">{previewValue(tabsValue)}</pre>
       </div>
 
       <div className="showcase-block">
-        <h3>Input · 12-hour</h3>
+        <h3>Input · string (asString)</h3>
         <DateTimeInput
+          asString
           mode="datetime"
           use12Hours
-          format="YYYY-MM-DD hh:mm:ss A"
           value={dateTimeInput}
-          onChange={setDateTimeInput}
+          onChange={(next) =>
+            setDateTimeInput(typeof next === "string" ? next : null)
+          }
           placeholder="Pick a date & time"
         />
         <p className="stage-value">Selected: {dateTimeInput ?? "null"}</p>
       </div>
 
       <div className="showcase-block">
-        <h3>Date range</h3>
-        <DateTimeRange inline value={range} onChange={setRange} />
-        <p className="stage-value range-value">
-          {range.start ?? "—"} → {range.end ?? "—"}
-        </p>
+        <h3>Date range · Date objects</h3>
+        <DateTimeRange
+          inline
+          asString={false}
+          value={range}
+          onChange={(next) =>
+            setRange({
+              start: next.start instanceof Date ? next.start : null,
+              end: next.end instanceof Date ? next.end : null,
+            })
+          }
+        />
+        <pre className="stage-value range-value">
+          {previewValue(range.start)} → {previewValue(range.end)}
+        </pre>
       </div>
 
       <div className="showcase-block">
@@ -95,12 +152,15 @@ export default function ExamplesDemo() {
         <DateTime
           inline
           mode="date"
+          asString={false}
           locale="fr"
           weekStartsOn={1}
           value={localeValue}
-          onChange={setLocaleValue}
+          onChange={(next) =>
+            setLocaleValue(next instanceof Date ? next : null)
+          }
         />
-        <p className="stage-value">Selected: {localeValue ?? "null"}</p>
+        <pre className="stage-value">{previewValue(localeValue)}</pre>
       </div>
 
       <div className="showcase-block showcase-block--dark" data-ctp-theme="dark">
@@ -108,21 +168,25 @@ export default function ExamplesDemo() {
         <DateTime
           inline
           mode="date"
+          asString={false}
           value={darkDate}
-          onChange={setDarkDate}
+          onChange={(next) => setDarkDate(next instanceof Date ? next : null)}
         />
         <DateTimeInput
+          asString
           mode="time"
           use12Hours
-          format="hh:mm:ss A"
           value={darkInput}
-          onChange={setDarkInput}
+          onChange={(next) =>
+            setDarkInput(typeof next === "string" ? next : null)
+          }
           defaultOpen={false}
           placeholder="Pick a time (opens on click)"
         />
-        <p className="stage-value">
-          Date: {darkDate ?? "null"} · Time: {darkInput ?? "null"}
-        </p>
+        <pre className="stage-value">
+          Date: {previewValue(darkDate)}
+          {"\n"}Time: {darkInput ?? "null"}
+        </pre>
       </div>
     </div>
   );

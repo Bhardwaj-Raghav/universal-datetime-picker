@@ -66,12 +66,13 @@ import DateTime, { DateTimeInput } from "react-calendar-time";
 import "react-calendar-time/style.css";
 
 function App() {
-  const [value, setValue] = useState<string | null>(null);
+  // Prefer asString={false} for Date / TimeValue (recommended going forward)
+  const [value, setValue] = useState<Date | null>(null);
 
   return (
     <>
-      <DateTimeInput value={value} onChange={setValue} />
-      <DateTime inline value={value} onChange={setValue} />
+      <DateTimeInput asString={false} value={value} onChange={setValue} />
+      <DateTime inline asString={false} value={value} onChange={setValue} />
     </>
   );
 }
@@ -85,6 +86,46 @@ function App() {
 | `DateTime.Input` / `DateTimeInput` | Date time input that opens a popover calendar |
 | `DateTime.Range` / `DateTimeRange` | React date range picker |
 
+## Return values
+
+`onChange` shape depends on `mode` and `asString`:
+
+| Mode / flags | `asString` | `onChange` receives |
+|--------------|------------|---------------------|
+| `mode="date"` | `false` | `Date` (start of day) |
+| `mode="datetime"` | `false` | `Date` |
+| `mode="time"` | `false` | `TimeValue` object |
+| any mode | `true` / omitted | formatted `string \| null` |
+| range | `false` | `{ start: Date \| null; end: Date \| null }` |
+| range | `true` / omitted | `{ start: string \| null; end: string \| null }` |
+
+**Deprecation:** omitting `asString` still returns a formatted string today, but logs a one-time console warning. Set `asString={true}` to keep strings explicitly, or `asString={false}` to opt into `Date` / `TimeValue` now. A future major release will default to objects.
+
+### `TimeValue` (`mode="time"`, `asString={false}`)
+
+```ts
+{
+  hour: 2,         // 1–12
+  hour24: 14,      // 0–23
+  minute: 30,
+  second: 0,
+  ampm: "PM",
+  formatted: "14:30:00" // or "02:30:00 PM" when use12Hours
+}
+```
+
+```tsx
+<DateTime
+  inline
+  mode="time"
+  asString={false}
+  onChange={(value) => {
+    // value is TimeValue | null
+    console.log(value?.hour24, value?.formatted);
+  }}
+/>
+```
+
 ## Props
 
 ### Shared (`DateTime` / `DateTimeInput`)
@@ -93,15 +134,17 @@ function App() {
 |------|------|---------|-------------|
 | `value` | `Date \| string \| Dayjs \| null` | — | Controlled value |
 | `defaultValue` | same | — | Uncontrolled initial value |
-| `onChange` | `(value: string \| null) => void` | — | Fired on OK / Clear |
-| `format` | `string` | `YYYY-MM-DD HH:mm:ss` | dayjs format |
+| `onChange` | `(value: Date \| TimeValue \| string \| null) => void` | — | Fired on OK / Clear |
+| `asString` | `boolean` | omitted → string (deprecated) | `true` = string; `false` = `Date` / `TimeValue` |
+| `showSeconds` | `boolean` | `true` | Show seconds column; included in default format |
+| `format` | `string` | derived from mode | dayjs format (auto from mode / `use12Hours` / `showSeconds` when omitted) |
 | `mode` | `"datetime" \| "date" \| "time"` | `"datetime"` | Picker mode |
 | `layout` | `"combined" \| "tabs"` | `"combined"` | When `mode="datetime"`: show both panels, or Date/Time tabs. Hidden for date-only / time-only |
 | `minDate` / `maxDate` | date-like | — | Inclusive bounds |
 | `disablePastDates` | `boolean` | `false` | Disable days before today |
 | `disableFutureDates` | `boolean` | `false` | Disable days after today |
 | `weekStartsOn` | `0–6` | `0` | First day of week (0 = Sunday) |
-| `use12Hours` | `boolean` | `false` | 12-hour clock with AM/PM |
+| `use12Hours` | `boolean` | `false` | 12-hour clock with AM/PM (`false` = 24-hour) |
 | `locale` | `string` | `"en"` | dayjs locale (import locale first) |
 | `labels` | `DateTimeLabels` | English defaults | Override chrome strings |
 | `theme` | `"light" \| "dark"` | — | Force theme (useful for portaled popovers) |
@@ -117,7 +160,62 @@ function App() {
 | `popover` | `boolean` | Position near `anchorEl` instead of fullscreen |
 | `anchorEl` | `HTMLElement \| null` | Anchor for popover |
 
-`DateTimeInput` always uses popover mode. The popover uses `position: fixed`, flips above the input when needed, repositions on scroll/resize, and closes on outside click or Escape.
+`DateTimeInput` always uses popover mode. The popover uses `position: fixed`, flips above the input when needed, repositions on scroll/resize, and closes on outside click or Escape. Time-only popovers use a compact width.
+
+### Use any button or input as the trigger
+
+Control `open` yourself to open the picker from any element. Add `popover` and pass the trigger element through `anchorEl` to position the picker beside it.
+
+```tsx
+import { useState } from "react";
+import { DateTime } from "react-calendar-time";
+
+function CustomDateTrigger() {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState<Date | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+  return (
+    <>
+      <button
+        ref={setAnchorEl}
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+      >
+        {value ? value.toLocaleDateString() : "Choose a date"}
+      </button>
+
+      <DateTime
+        mode="date"
+        open={open}
+        onOpenChange={setOpen}
+        popover
+        anchorEl={anchorEl}
+        asString={false}
+        value={value}
+        onChange={(next) => setValue(next instanceof Date ? next : null)}
+      />
+    </>
+  );
+}
+```
+
+Leave out `popover` and `anchorEl` to open the same picker as a centered modal:
+
+```tsx
+<button type="button" onClick={() => setOpen(true)}>
+  Choose a date
+</button>
+<DateTime
+  mode="date"
+  open={open}
+  onOpenChange={setOpen}
+  asString={false}
+  onChange={setValue}
+/>
+```
 
 ### `DateTimeInput` extras
 
@@ -125,7 +223,7 @@ function App() {
 
 ### `DateTimeRange`
 
-`onChange` receives `{ start: string | null; end: string | null }`. Supports keyboard grid navigation, hover range preview, and the same `locale` / `weekStartsOn` / `labels` props.
+Supports `asString` like the single picker. With `asString={false}`, `onChange` receives `{ start: Date | null; end: Date | null }`; with `asString={true}` (or omitted), ends are formatted strings. Also supports keyboard grid navigation, hover range preview, and the same `locale` / `weekStartsOn` / `labels` props.
 
 ### Labels
 
@@ -142,26 +240,25 @@ By default (`layout="combined"`), datetime mode shows the calendar and time cont
 
 ```tsx
 {/* Default: both panels */}
-<DateTime inline mode="datetime" onChange={setValue} />
+<DateTime inline mode="datetime" asString={false} onChange={setValue} />
 
 {/* Classic tabs */}
-<DateTime inline mode="datetime" layout="tabs" onChange={setValue} />
+<DateTime inline mode="datetime" layout="tabs" asString={false} onChange={setValue} />
 
 {/* Date only — no badges */}
-<DateTime inline mode="date" onChange={setValue} />
+<DateTime inline mode="date" asString={false} onChange={setValue} />
 ```
 
-## 12-hour clock
+## 12-hour clock & seconds
 
-`use12Hours` only changes the time UI. Pair it with a 12-hour `format` so the input/value match what users see:
+`use12Hours` switches the time UI to AM/PM (`false` keeps 24-hour). When `format` is omitted, it is derived from `mode`, `use12Hours`, and `showSeconds`:
 
 ```tsx
-<DateTimeInput
-  use12Hours
-  format="YYYY-MM-DD hh:mm:ss A"
-  value={value}
-  onChange={setValue}
-/>
+{/* 12-hour with seconds */}
+<DateTimeInput asString use12Hours value={value} onChange={setValue} />
+
+{/* 24-hour, no seconds */}
+<DateTime inline mode="time" showSeconds={false} asString={false} onChange={setTime} />
 ```
 
 ## Theming
@@ -177,6 +274,10 @@ Override CSS variables (light defaults shown):
   --ctp-border: #e5e7eb;
   --ctp-focus: #7cb342;
   --ctp-danger: #dc2626;
+  --ctp-selected-bg: #558b2f;
+  --ctp-selected-fg: #ffffff;
+  --ctp-hover-bg: color-mix(in srgb, var(--ctp-primary) 16%, white);
+  --ctp-range-bg: color-mix(in srgb, var(--ctp-primary) 28%, white);
   --ctp-z-index: 1000;
 }
 ```

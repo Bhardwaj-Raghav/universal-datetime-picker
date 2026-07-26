@@ -12,6 +12,22 @@ export type DateTimeLayout = "combined" | "tabs";
 
 export type DateTimeValue = Date | string | Dayjs | null;
 
+/**
+ * Time-only selection when `asString={false}` and `mode="time"`.
+ * `hour` is 1–12; `hour24` is 0–23.
+ */
+export interface TimeValue {
+  hour: number;
+  hour24: number;
+  minute: number;
+  second: number;
+  ampm: "AM" | "PM";
+  formatted: string;
+}
+
+/** Value passed to `onChange` for DateTime / DateTimeInput. */
+export type DateTimeChangeValue = Date | TimeValue | string | null;
+
 /** Optional chrome strings for UI labels (not a full i18n suite). */
 export interface DateTimeLabels {
   date?: string;
@@ -23,8 +39,12 @@ export interface DateTimeLabels {
   end?: string;
   chooseDate?: string;
   chooseDateRange?: string;
+  chooseMonth?: string;
+  chooseYear?: string;
   previousMonth?: string;
   nextMonth?: string;
+  previousYear?: string;
+  nextYear?: string;
   selectEnd?: string;
 }
 
@@ -38,10 +58,17 @@ export const DEFAULT_LABELS: Required<DateTimeLabels> = {
   end: "End",
   chooseDate: "Choose date",
   chooseDateRange: "Choose date range",
+  chooseMonth: "Choose month",
+  chooseYear: "Choose year",
   previousMonth: "Previous month",
   nextMonth: "Next month",
+  previousYear: "Previous year",
+  nextYear: "Next year",
   selectEnd: "Select end date",
 };
+
+/** Calendar drill-down panel for month / year selection. */
+export type CalendarPanel = "day" | "month" | "year";
 
 export interface DateTimeBaseProps {
   /** Controlled value. Accepts Date, dayjs, formatted string, or null. */
@@ -49,8 +76,19 @@ export interface DateTimeBaseProps {
   /** Uncontrolled initial value. */
   defaultValue?: DateTimeValue;
   /** Called when the user confirms a selection (OK) or clears. */
-  onChange?: (value: string | null) => void;
-  /** dayjs format string. Default: `YYYY-MM-DD HH:mm:ss` */
+  onChange?: (value: DateTimeChangeValue) => void;
+  /**
+   * When `true`, `onChange` receives a formatted string.
+   * When `false`, receives a native `Date` (date/datetime) or `TimeValue` (time).
+   * When omitted, still returns a string today (deprecated — set explicitly).
+   */
+  asString?: boolean;
+  /**
+   * Show seconds in the time UI and include them in the default format.
+   * Default: `true`.
+   */
+  showSeconds?: boolean;
+  /** dayjs format string. When omitted, derived from mode / use12Hours / showSeconds. */
   format?: string;
   /** Picker mode. Default: `datetime` */
   mode?: DateTimeMode;
@@ -110,14 +148,20 @@ export interface DateTimeInputProps extends DateTimeBaseProps {
 }
 
 export interface DateRangeValue {
-  start: string | null;
-  end: string | null;
+  start: Date | string | null;
+  end: Date | string | null;
 }
 
 export interface DateTimeRangeProps {
   value?: { start: DateTimeValue; end: DateTimeValue } | null;
   defaultValue?: { start: DateTimeValue; end: DateTimeValue } | null;
   onChange?: (value: DateRangeValue) => void;
+  /**
+   * When `true`, range ends are formatted strings.
+   * When `false`, ends are native `Date` objects.
+   * When omitted, still returns strings today (deprecated — set explicitly).
+   */
+  asString?: boolean;
   format?: string;
   minDate?: DateTimeValue;
   maxDate?: DateTimeValue;

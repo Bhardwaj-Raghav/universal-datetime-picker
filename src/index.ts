@@ -17,6 +17,7 @@ export type {
   CalendarDay,
   DateRangeValue,
   DateTimeBaseProps,
+  DateTimeChangeValue,
   DateTimeInputProps,
   DateTimeLabels,
   DateTimeLayout,
@@ -24,6 +25,7 @@ export type {
   DateTimeProps,
   DateTimeRangeProps,
   DateTimeValue,
+  TimeValue,
 } from "./types";
 export { DEFAULT_LABELS } from "./types";
 export { buildCalendarMonth } from "./calendar";
