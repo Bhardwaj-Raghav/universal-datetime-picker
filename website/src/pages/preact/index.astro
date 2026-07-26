@@ -1,0 +1,11 @@
+---
+import FrameworkLayout from "../../layouts/FrameworkLayout.astro";
+import { FRAMEWORK_BY_SLUG } from "../../frameworks";
+import PreactDemo from "../../demos/preact/PreactDemo";
+
+const framework = FRAMEWORK_BY_SLUG.preact;
+---
+
+<FrameworkLayout framework={framework}>
+  <PreactDemo slot="demo" client:only="preact" />
+</FrameworkLayout>

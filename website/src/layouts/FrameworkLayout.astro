@@ -1,0 +1,87 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import SiteNav from "../components/SiteNav.astro";
+import CopyInstall from "../components/CopyInstall";
+import type { FrameworkDef } from "../frameworks";
+import { GITHUB_URL, NPM_URL } from "../site.config";
+
+interface Props {
+  framework: FrameworkDef;
+}
+
+const { framework } = Astro.props;
+
+const breadcrumbs = [
+  { label: "Home", href: "/" },
+  { label: `${framework.label} date time picker`, href: `/${framework.slug}/` },
+];
+---
+
+<BaseLayout
+  title={framework.pageTitle}
+  description={framework.pageDescription}
+  breadcrumbs={breadcrumbs}
+>
+  <div class="site is-ready">
+    <div class="site-bg" aria-hidden="true"></div>
+
+    <SiteNav currentSlug={framework.slug} />
+
+    <main class="framework-page">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="/">Home</a></li>
+          <li aria-current="page">{framework.label} demo</li>
+        </ol>
+      </nav>
+
+      <header class="framework-header">
+        <p class="eyebrow">{framework.install}</p>
+        <h1>{framework.label} date time picker</h1>
+        <p class="framework-intro">{framework.intro}</p>
+        <p class="framework-tagline">{framework.tagline}</p>
+        <CopyInstall client:load demoHref="#framework-demo-heading" />
+      </header>
+
+      <section class="framework-demo" aria-labelledby="framework-demo-heading">
+        <h2 id="framework-demo-heading">Live demo</h2>
+        <slot name="demo" />
+      </section>
+
+      {
+        framework.snippets.map((snippet) => (
+          <section class="snippet framework-snippet">
+            <h2>{snippet.title}</h2>
+            <pre><code>{snippet.code}</code></pre>
+          </section>
+        ))
+      }
+
+      {
+        framework.notes.length > 0 ? (
+          <section class="framework-notes">
+            <h2>Notes</h2>
+            <ul>
+              {framework.notes.map((note) => (
+                <li>{note}</li>
+              ))}
+            </ul>
+          </section>
+        ) : null
+      }
+    </main>
+
+    <footer class="footer">
+      <p>
+        MIT-licensed ·{" "}
+        <a href={NPM_URL} target="_blank" rel="noreferrer">
+          npm
+        </a>{" "}
+        ·{" "}
+        <a href={GITHUB_URL} target="_blank" rel="noreferrer">
+          GitHub
+        </a>
+      </p>
+    </footer>
+  </div>
+</BaseLayout>

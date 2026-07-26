@@ -6,9 +6,10 @@ import {
   SITE_FAQS,
   SITE_NAME,
 } from "../site.config";
+import { FRAMEWORKS, FRAMEWORK_CARD_SUMMARY } from "../frameworks";
 
 export const GET: APIRoute = ({ site }) => {
-  const siteUrl = (site?.origin || "https://react-calendar-time.vercel.app").replace(
+  const siteUrl = (site?.origin || "https://universal-datetime-picker.vercel.app").replace(
     /\/$/,
     ""
   );
@@ -25,30 +26,49 @@ This file expands [${siteUrl}/llms.txt](${siteUrl}/llms.txt) with API and usage 
 
 ## Summary
 
-- Package name: \`react-calendar-time\`
+- Package name: \`universal-datetime-picker\`
 - Homepage: ${siteUrl}/
 - npm: ${NPM_URL}
 - Source: ${GITHUB_URL}
 - License: MIT
-- Stack: React 17+, TypeScript, dayjs, CSS variables
+- Stack: vanilla JS (home), React 18+ (optional peer), Web Components, TypeScript, dayjs, CSS variables
 - Modes: date, time, datetime, date range
 - Presentation: overlay, popover (input), or inline
+- Also: Vue / Svelte / Angular via custom elements; CDN IIFE
+
+## Framework live demos (${siteUrl})
+
+- \`/\` — vanilla \`createDateTimePicker\` showcase (home; no React runtime on this route)
+${FRAMEWORKS.map((fw) => `- \`/${fw.slug}/\` — ${fw.label}: ${FRAMEWORK_CARD_SUMMARY[fw.slug]}`).join("\n")}
 
 ## Install
 
 \`\`\`bash
-npm install react-calendar-time
-# or: yarn add react-calendar-time / pnpm add react-calendar-time
+npm install universal-datetime-picker
+# or: yarn add universal-datetime-picker / pnpm add universal-datetime-picker
 \`\`\`
 
-Peer dependencies: \`react\`, \`react-dom\` (>= 17).
+React peer dependencies (\`react\`, \`react-dom\` >= 18) are optional for vanilla / WC / CDN.
 
-## Quick start
+## Package entry points
+
+| Import | Use |
+|--------|-----|
+| \`universal-datetime-picker\` | React: \`DateTime\`, \`DateTimeInput\`, \`DateTimeRange\` |
+| \`universal-datetime-picker/vanilla\` | \`createDateTimePicker\`, \`createDateTimeRangePicker\` |
+| \`universal-datetime-picker/wc\` | \`defineCustomElements()\` |
+| \`universal-datetime-picker/vue\` | Register elements for Vue |
+| \`universal-datetime-picker/svelte\` | Register elements for Svelte |
+| \`universal-datetime-picker/angular\` | \`registerDateTimePickerElements()\` |
+| \`universal-datetime-picker/core\` | Headless controllers + date logic |
+| \`universal-datetime-picker/style.css\` | Shared CSS |
+
+## Quick start (React)
 
 \`\`\`tsx
 import { useState } from "react";
-import DateTime, { DateTimeInput } from "react-calendar-time";
-import "react-calendar-time/style.css";
+import DateTime, { DateTimeInput } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";
 
 function App() {
   const [value, setValue] = useState<Date | null>(null);
@@ -61,7 +81,36 @@ function App() {
 }
 \`\`\`
 
-## Components
+## Web Components / CDN
+
+Elements: \`<datetime-picker>\`, \`<datetime-picker-input>\`, \`<datetime-picker-range>\`.
+
+Attributes (common): \`mode\`, \`inline\`, \`open\`, \`use12hours\`, \`show-seconds\`, \`as-string\`, \`locale\`, \`format\`, \`theme\`, \`value\`.
+
+Event: \`change\` CustomEvent — \`event.detail\` is the selected value (same shapes as React \`onChange\`).
+
+\`\`\`html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/universal-datetime-picker/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/universal-datetime-picker"></script>
+<datetime-picker inline mode="date" as-string="false"></datetime-picker>
+\`\`\`
+
+## Vanilla
+
+\`\`\`ts
+import { createDateTimePicker } from "universal-datetime-picker/vanilla";
+import "universal-datetime-picker/style.css";
+
+const handle = createDateTimePicker(document.getElementById("picker")!, {
+  inline: true,
+  mode: "date",
+  asString: false,
+  onChange: console.log,
+});
+// handle.update({ ... }); handle.destroy();
+\`\`\`
+
+## Components (React)
 
 | Export | Role |
 |--------|------|
@@ -177,7 +226,7 @@ Locales are per-instance (no global dayjs mutation). Import the dayjs locale bef
 
 \`\`\`tsx
 import "dayjs/locale/fr";
-import { DateTime } from "react-calendar-time";
+import { DateTime } from "universal-datetime-picker";
 
 <DateTime locale="fr" weekStartsOn={1} inline onChange={console.log} />
 \`\`\`

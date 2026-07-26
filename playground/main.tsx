@@ -17,8 +17,8 @@ function App() {
 
   return (
     <main className="playground">
-      <h1>react-calendar-time</h1>
-      <p className="subtitle">Local playground for the v1 API</p>
+      <h1>universal-datetime-picker</h1>
+      <p className="subtitle">Local playground for the v2 API</p>
 
       <section>
         <h2>Input (popover)</h2>

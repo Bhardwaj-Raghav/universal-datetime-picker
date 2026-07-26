@@ -16,7 +16,7 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "paths": {
-      "react-calendar-time": ["../src/index.ts"]
+      "universal-datetime-picker": ["../src/index.ts"]
     }
   },
   "include": [".astro/types.d.ts", "**/*"],

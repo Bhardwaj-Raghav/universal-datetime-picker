@@ -1,0 +1,11 @@
+---
+import FrameworkLayout from "../../layouts/FrameworkLayout.astro";
+import { FRAMEWORK_BY_SLUG } from "../../frameworks";
+import VueDemo from "../../demos/vue/VueDemo.vue";
+
+const framework = FRAMEWORK_BY_SLUG.vue;
+---
+
+<FrameworkLayout framework={framework}>
+  <VueDemo slot="demo" client:only="vue" />
+</FrameworkLayout>

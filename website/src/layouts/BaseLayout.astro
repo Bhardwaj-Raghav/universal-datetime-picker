@@ -2,27 +2,94 @@
 import {
   GITHUB_URL,
   NPM_URL,
+  PACKAGE_VERSION,
+  SCHEMA_KEYWORDS,
   SITE_DESCRIPTION,
   SITE_FAQS,
-  SITE_KEYWORDS,
   SITE_NAME,
   SITE_TITLE,
 } from "../site.config";
 import "../styles/global.css";
 import "../../../src/styles/datepicker.scss";
 
+export type BreadcrumbItem = {
+  label: string;
+  href: string;
+};
+
 interface Props {
   title?: string;
   description?: string;
+  includeFaq?: boolean;
+  includeSoftwareApplication?: boolean;
+  breadcrumbs?: BreadcrumbItem[];
 }
 
-const { title = SITE_TITLE, description = SITE_DESCRIPTION } = Astro.props;
-const siteUrl = (Astro.site?.origin || "https://react-calendar-time.vercel.app").replace(
+const {
+  title = SITE_TITLE,
+  description = SITE_DESCRIPTION,
+  includeFaq = false,
+  includeSoftwareApplication = false,
+  breadcrumbs = [],
+} = Astro.props;
+const siteUrl = (Astro.site?.origin || "https://universal-datetime-picker.vercel.app").replace(
   /\/$/,
   ""
 );
 const canonical = new URL(Astro.url.pathname, `${siteUrl}/`).href;
 const ogImage = `${siteUrl}/og.png`;
+
+const softwareApplication = {
+  "@type": "SoftwareApplication",
+  "@id": `${siteUrl}/#software`,
+  name: SITE_NAME,
+  alternateName: [
+    "Universal Datetime Picker",
+    "Universal Date Time Picker",
+    "universal-datetime-picker",
+  ],
+  applicationCategory: "DeveloperApplication",
+  applicationSubCategory: "JavaScript UI component library",
+  operatingSystem: "Web",
+  description: SITE_DESCRIPTION,
+  url: `${siteUrl}/`,
+  downloadUrl: NPM_URL,
+  installUrl: NPM_URL,
+  softwareVersion: PACKAGE_VERSION,
+  ...(includeSoftwareApplication
+    ? {
+        keywords: SCHEMA_KEYWORDS,
+        featureList: [
+          "Date picker",
+          "Time picker",
+          "Datetime picker",
+          "Date range picker",
+          "React, Vue, Svelte, Angular, vanilla JS, and CDN",
+          "Web Components",
+          "Inline and popover calendar",
+          "TypeScript types",
+          "Accessible keyboard navigation",
+          "CSS variable theming",
+          "Dark theme support",
+          "12-hour and 24-hour clocks",
+          "dayjs locales",
+        ],
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "USD",
+          availability: "https://schema.org/InStock",
+        },
+        license: "https://opensource.org/licenses/MIT",
+        codeRepository: GITHUB_URL,
+        programmingLanguage: ["TypeScript", "JavaScript"],
+        runtimePlatform: "Web browser",
+        softwareRequirements:
+          "Optional: React >= 18 and react-dom >= 18 for React components",
+        screenshot: ogImage,
+      }
+    : {}),
+};
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -33,10 +100,10 @@ const jsonLd = {
       url: `${siteUrl}/`,
       name: SITE_NAME,
       alternateName: [
-        "React Date Time Picker",
-        "React Calendar Time",
-        "React DateTime Picker",
-        "React Date Picker",
+        "Universal Date Time Picker",
+        "Universal Datetime Picker",
+        "Framework Agnostic Date Picker",
+        "Date Time Picker",
       ],
       description: SITE_DESCRIPTION,
       inLanguage: "en-US",
@@ -44,7 +111,7 @@ const jsonLd = {
     },
     {
       "@type": "WebPage",
-      "@id": `${siteUrl}/#webpage`,
+      "@id": `${canonical}#webpage`,
       url: canonical,
       name: title,
       description,
@@ -57,85 +124,68 @@ const jsonLd = {
         height: 630,
       },
       inLanguage: "en-US",
+      ...(breadcrumbs.length > 0
+        ? {
+            breadcrumb: { "@id": `${canonical}#breadcrumb` },
+          }
+        : {}),
     },
-    {
-      "@type": "SoftwareApplication",
-      "@id": `${siteUrl}/#software`,
-      name: SITE_NAME,
-      alternateName: [
-        "React Calendar Time Picker",
-        "React Date Time Picker",
-        "react-calendar-time",
-      ],
-      applicationCategory: "DeveloperApplication",
-      applicationSubCategory: "React UI component library",
-      operatingSystem: "Web",
-      description: SITE_DESCRIPTION,
-      url: `${siteUrl}/`,
-      downloadUrl: NPM_URL,
-      installUrl: NPM_URL,
-      softwareVersion: "1.1.1",
-      keywords: SITE_KEYWORDS,
-      featureList: [
-        "React date picker",
-        "React time picker",
-        "React datetime picker",
-        "React date range picker",
-        "Inline and popover calendar",
-        "TypeScript types",
-        "Accessible keyboard navigation",
-        "CSS variable theming",
-        "Dark theme support",
-        "12-hour and 24-hour clocks",
-        "dayjs locales",
-      ],
-      author: { "@id": `${siteUrl}/#author` },
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "USD",
-        availability: "https://schema.org/InStock",
-      },
-      license: "https://opensource.org/licenses/MIT",
-      codeRepository: GITHUB_URL,
-      programmingLanguage: ["TypeScript", "JavaScript"],
-      runtimePlatform: "React",
-      softwareRequirements: "React >= 17, react-dom >= 17",
-      screenshot: ogImage,
-    },
-    {
-      "@type": "SoftwareSourceCode",
-      "@id": `${siteUrl}/#source`,
-      name: SITE_NAME,
-      description: SITE_DESCRIPTION,
-      codeRepository: GITHUB_URL,
-      url: GITHUB_URL,
-      programmingLanguage: {
-        "@type": "ComputerLanguage",
-        name: "TypeScript",
-      },
-      runtimePlatform: "React",
-      license: "https://opensource.org/licenses/MIT",
-      author: { "@id": `${siteUrl}/#author` },
-    },
+    ...(breadcrumbs.length > 0
+      ? [
+          {
+            "@type": "BreadcrumbList",
+            "@id": `${canonical}#breadcrumb`,
+            itemListElement: breadcrumbs.map((crumb, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              name: crumb.label,
+              item: new URL(crumb.href, `${siteUrl}/`).href,
+            })),
+          },
+        ]
+      : []),
+    softwareApplication,
+    ...(includeSoftwareApplication
+      ? [
+          {
+            "@type": "SoftwareSourceCode",
+            "@id": `${siteUrl}/#source`,
+            name: SITE_NAME,
+            description: SITE_DESCRIPTION,
+            codeRepository: GITHUB_URL,
+            url: GITHUB_URL,
+            programmingLanguage: {
+              "@type": "ComputerLanguage",
+              name: "TypeScript",
+            },
+            runtimePlatform: "Web browser",
+            license: "https://opensource.org/licenses/MIT",
+            author: { "@id": `${siteUrl}/#author` },
+          },
+        ]
+      : []),
     {
       "@type": "Person",
       "@id": `${siteUrl}/#author`,
       name: "Raghav Bhardwaj",
       url: "https://github.com/Bhardwaj-Raghav",
     },
-    {
-      "@type": "FAQPage",
-      "@id": `${siteUrl}/#faq`,
-      mainEntity: SITE_FAQS.map((faq) => ({
-        "@type": "Question",
-        name: faq.question,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: faq.answer,
-        },
-      })),
-    },
+    ...(includeFaq
+      ? [
+          {
+            "@type": "FAQPage",
+            "@id": `${siteUrl}/#faq`,
+            mainEntity: SITE_FAQS.map((faq) => ({
+              "@type": "Question",
+              name: faq.question,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: faq.answer,
+              },
+            })),
+          },
+        ]
+      : []),
   ],
 };
 ---
@@ -147,7 +197,6 @@ const jsonLd = {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="keywords" content={SITE_KEYWORDS} />
     <meta name="author" content="Raghav Bhardwaj" />
     <meta
       name="robots"
@@ -156,8 +205,8 @@ const jsonLd = {
     <meta name="googlebot" content="index, follow" />
     <meta name="bingbot" content="index, follow" />
     <meta name="application-name" content={SITE_NAME} />
-    <meta name="apple-mobile-web-app-title" content="React Date Time Picker" />
-    <meta name="category" content="developer tools, react components, date picker" />
+    <meta name="apple-mobile-web-app-title" content="Universal Date Time Picker" />
+    <meta name="category" content="developer tools, date picker, web components" />
     <link rel="canonical" href={canonical} />
     <link rel="llms-txt" type="text/plain" href={`${siteUrl}/llms.txt`} />
     <link
@@ -178,7 +227,7 @@ const jsonLd = {
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="react-calendar-time — accessible React date time picker with calendar and range modes"
+      content="universal-datetime-picker — accessible date time picker for any framework"
     />
     <meta property="og:locale" content="en_US" />
 
@@ -188,14 +237,44 @@ const jsonLd = {
     <meta name="twitter:image" content={ogImage} />
     <meta
       name="twitter:image:alt"
-      content="React date time picker component preview — react-calendar-time"
+      content="Universal date time picker — universal-datetime-picker"
     />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#3f6a28" />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content="light dark" />
+
+    <script is:inline>
+      (function () {
+        var key = "udp-site-theme";
+        var root = document.documentElement;
+        var theme = "light";
+        try {
+          var stored = localStorage.getItem(key);
+          if (stored === "light" || stored === "dark") {
+            theme = stored;
+          } else if (
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+          ) {
+            theme = "dark";
+          }
+        } catch (e) {
+          theme = "light";
+        }
+        root.setAttribute("data-site-theme", theme);
+        root.style.colorScheme = theme;
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) {
+          meta.setAttribute(
+            "content",
+            theme === "dark" ? "#1a241c" : "#3f6a28"
+          );
+        }
+      })();
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

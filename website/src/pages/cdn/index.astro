@@ -1,0 +1,26 @@
+---
+import FrameworkLayout from "../../layouts/FrameworkLayout.astro";
+import WcTrioMarkup from "../../components/WcTrioMarkup.astro";
+import { FRAMEWORK_BY_SLUG } from "../../frameworks";
+
+const framework = FRAMEWORK_BY_SLUG.cdn;
+---
+
+<FrameworkLayout framework={framework}>
+  <WcTrioMarkup slot="demo" />
+</FrameworkLayout>
+
+<script>
+  import { mountFrameworkDemo } from "../../demos/wcDemo.ts";
+
+  const root = document.querySelector("[data-wc-demo]");
+  let cleanup: () => void = () => {};
+
+  if (root instanceof HTMLElement) {
+    mountFrameworkDemo(root, "cdn").then((fn) => {
+      cleanup = fn;
+    });
+  }
+
+  document.addEventListener("astro:before-preparation", () => cleanup());
+</script>

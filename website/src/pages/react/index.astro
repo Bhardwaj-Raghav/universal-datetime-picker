@@ -1,0 +1,11 @@
+---
+import FrameworkLayout from "../../layouts/FrameworkLayout.astro";
+import { FRAMEWORK_BY_SLUG } from "../../frameworks";
+import ReactPageDemo from "../../demos/react/ReactPageDemo";
+
+const framework = FRAMEWORK_BY_SLUG.react;
+---
+
+<FrameworkLayout framework={framework}>
+  <ReactPageDemo slot="demo" client:load />
+</FrameworkLayout>

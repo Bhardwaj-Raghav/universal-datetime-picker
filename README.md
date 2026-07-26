@@ -1,25 +1,26 @@
-[![npm](https://img.shields.io/npm/v/react-calendar-time.svg)](https://www.npmjs.com/package/react-calendar-time)
-[![npm downloads](https://img.shields.io/npm/dm/react-calendar-time.svg)](https://www.npmjs.com/package/react-calendar-time)
-[![types](https://img.shields.io/npm/types/react-calendar-time.svg)](https://www.npmjs.com/package/react-calendar-time)
-[![CI](https://github.com/Bhardwaj-Raghav/react-calendar-time/actions/workflows/ci.yml/badge.svg)](https://github.com/Bhardwaj-Raghav/react-calendar-time/actions/workflows/ci.yml)
-[![license](https://img.shields.io/npm/l/react-calendar-time.svg)](https://github.com/Bhardwaj-Raghav/react-calendar-time/blob/main/LICENSE)
+[![npm](https://img.shields.io/npm/v/universal-datetime-picker.svg)](https://www.npmjs.com/package/universal-datetime-picker)
+[![npm downloads](https://img.shields.io/npm/dm/universal-datetime-picker.svg)](https://www.npmjs.com/package/universal-datetime-picker)
+[![types](https://img.shields.io/npm/types/universal-datetime-picker.svg)](https://www.npmjs.com/package/universal-datetime-picker)
+[![CI](https://github.com/Bhardwaj-Raghav/universal-datetime-picker/actions/workflows/ci.yml/badge.svg)](https://github.com/Bhardwaj-Raghav/universal-datetime-picker/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/universal-datetime-picker.svg)](https://github.com/Bhardwaj-Raghav/universal-datetime-picker/blob/main/LICENSE)
 
-# react-calendar-time
+# universal-datetime-picker
 
-**React date picker, time picker, datetime picker, and date range calendar** in one accessible TypeScript package.
+**Date picker, time picker, datetime picker, and date range calendar** — one accessible TypeScript package. The [docs site](https://universal-datetime-picker.vercel.app) home uses **vanilla JS**; **React, Vue, Svelte, Angular, and CDN** each have dedicated demo pages.
 
-Use it as a React calendar component, date-time input, or range selector — dayjs-powered values, CSS-variable themes (including dark mode), 12/24-hour clocks, and locales.
+Native React components share a headless core with a vanilla DOM renderer and Web Components (`<datetime-picker>`, `<datetime-picker-input>`, `<datetime-picker-range>`).
 
-- **Live demo:** [react-calendar-time.vercel.app](https://react-calendar-time.vercel.app)
-- **npm:** [react-calendar-time](https://www.npmjs.com/package/react-calendar-time)
-- **GitHub:** [Bhardwaj-Raghav/react-calendar-time](https://github.com/Bhardwaj-Raghav/react-calendar-time)
+- **Live demos:** [universal-datetime-picker.vercel.app](https://universal-datetime-picker.vercel.app) — home page uses the **vanilla** `createDateTimePicker` API; per-framework pages: [`/react/`](https://universal-datetime-picker.vercel.app/react/), [`/vue/`](https://universal-datetime-picker.vercel.app/vue/), [`/svelte/`](https://universal-datetime-picker.vercel.app/svelte/), [`/angular/`](https://universal-datetime-picker.vercel.app/angular/), [`/vanilla/`](https://universal-datetime-picker.vercel.app/vanilla/), [`/web-components/`](https://universal-datetime-picker.vercel.app/web-components/), [`/cdn/`](https://universal-datetime-picker.vercel.app/cdn/), [`/solid/`](https://universal-datetime-picker.vercel.app/solid/), [`/preact/`](https://universal-datetime-picker.vercel.app/preact/), [`/nextjs/`](https://universal-datetime-picker.vercel.app/nextjs/), [`/nuxt/`](https://universal-datetime-picker.vercel.app/nuxt/)
+- **npm:** [universal-datetime-picker](https://www.npmjs.com/package/universal-datetime-picker)
+- **GitHub:** [Bhardwaj-Raghav/universal-datetime-picker](https://github.com/Bhardwaj-Raghav/universal-datetime-picker)
 
 ## Features
 
-- React date picker, time picker, and combined datetime picker
+- React (native), Vue / Svelte / Angular (via Web Components), vanilla JS, and CDN
+- Date picker, time picker, and combined datetime picker
 - Date range picker with keyboard-friendly calendar grid
 - Input + popover or fully inline calendar modes
-- TypeScript types, ESM/CJS builds, React 17+
+- TypeScript types, ESM/CJS builds, React 18+ (optional peer)
 - Accessible UI (dialog, focus trap, arrow-key navigation)
 - Themable via CSS variables; dark theme support
 - Locales via dayjs; custom labels; 12-hour AM/PM mode
@@ -27,43 +28,56 @@ Use it as a React calendar component, date-time input, or range selector — day
 ## Install
 
 ```bash
-npm install react-calendar-time
+npm install universal-datetime-picker
 ```
 
 ```bash
-yarn add react-calendar-time
+yarn add universal-datetime-picker
 ```
 
 ```bash
-pnpm add react-calendar-time
+pnpm add universal-datetime-picker
 ```
 
-Peer dependencies: `react` and `react-dom` (≥ 17).
+For React apps, peer dependencies are `react` and `react-dom` (≥ 18). They are **optional** if you only use vanilla, Web Components, or CDN.
+
+## Package entry points
+
+| Import | Use for |
+|--------|---------|
+| `universal-datetime-picker` | React components (`DateTime`, `DateTimeInput`, `DateTimeRange`) |
+| `universal-datetime-picker/vanilla` | `createDateTimePicker` / `createDateTimeRangePicker` |
+| `universal-datetime-picker/wc` | `defineCustomElements()` + custom element classes |
+| `universal-datetime-picker/vue` | Registers elements for Vue |
+| `universal-datetime-picker/svelte` | Registers elements / Svelte action |
+| `universal-datetime-picker/angular` | `registerDateTimePickerElements()` |
+| `universal-datetime-picker/core` | Headless controllers + date logic |
+| `universal-datetime-picker/style.css` | Shared stylesheet |
 
 ## Screenshots
 
 | Date only | Time only |
 |-----------|-----------|
-| ![React date picker calendar](examples/date-only.png) | ![React time picker with hours, minutes, seconds](examples/time-only.png) |
+| ![Date picker calendar](examples/date-only.png) | ![Time picker with hours, minutes, seconds](examples/time-only.png) |
 
 | Combined date & time | Separate view (tabs) |
 |----------------------|----------------------|
-| ![React datetime picker with calendar and time panel](examples/date-time-combined.png) | ![React datetime picker with Date and Time tabs](examples/date-time-split.png) |
+| ![Datetime picker with calendar and time panel](examples/date-time-combined.png) | ![Datetime picker with Date and Time tabs](examples/date-time-split.png) |
 
 | Date range | French locale · week starts Monday |
 |------------|------------------------------------|
-| ![React date range picker with start and end selection](examples/date-range.png) | ![Localized React calendar in French starting on Monday](examples/locale-date.png) |
+| ![Date range picker with start and end selection](examples/date-range.png) | ![Localized calendar in French starting on Monday](examples/locale-date.png) |
 
 | Dark theme | Popover input |
 |------------|---------------|
-| ![React date time picker in dark theme](examples/dark-mode.png) | ![React datetime input that opens a popover picker](examples/input.png) |
+| ![Date time picker in dark theme](examples/dark-mode.png) | ![Datetime input that opens a popover picker](examples/input.png) |
 
-## Quick start
+## Quick start (React)
 
 ```tsx
 import { useState } from "react";
-import DateTime, { DateTimeInput } from "react-calendar-time";
-import "react-calendar-time/style.css";
+import DateTime, { DateTimeInput } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";
 
 function App() {
   // Prefer asString={false} for Date / TimeValue (recommended going forward)
@@ -77,6 +91,116 @@ function App() {
   );
 }
 ```
+
+## Vanilla JS
+
+```ts
+import { createDateTimePicker } from "universal-datetime-picker/vanilla";
+import "universal-datetime-picker/style.css";
+
+const root = document.getElementById("picker")!;
+const handle = createDateTimePicker(root, {
+  inline: true,
+  mode: "date",
+  asString: false,
+  onChange: (value) => console.log(value),
+});
+
+// later: handle.update({ open: false }); handle.destroy();
+```
+
+## CDN / Web Components
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/universal-datetime-picker/style.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/universal-datetime-picker"></script>
+
+<datetime-picker inline mode="date" as-string="false"></datetime-picker>
+<script>
+  document
+    .querySelector("datetime-picker")
+    .addEventListener("change", (e) => console.log(e.detail));
+</script>
+```
+
+Or register from npm:
+
+```ts
+import { defineCustomElements } from "universal-datetime-picker/wc";
+import "universal-datetime-picker/style.css";
+defineCustomElements();
+```
+
+Custom elements: `<datetime-picker>`, `<datetime-picker-input>`, `<datetime-picker-range>`. They dispatch a bubbling `change` `CustomEvent` whose `detail` is the picker value.
+
+## Vue
+
+Register once in `main.ts`, then use tags in SFCs. Configure Vue so `datetime-picker*` tags are treated as custom elements.
+
+```ts
+// main.ts
+import { createApp } from "vue";
+import App from "./App.vue";
+import { defineCustomElements } from "universal-datetime-picker/vue";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();
+
+createApp(App)
+  .config.compilerOptions.isCustomElement = (tag) =>
+    tag.startsWith("datetime-picker")
+  .mount("#app");
+```
+
+```vue
+<template>
+  <datetime-picker
+    inline
+    mode="date"
+    as-string="false"
+    @change="onChange"
+  />
+</template>
+```
+
+More examples: [Vue demo](https://universal-datetime-picker.vercel.app/vue/) on the docs site.
+
+## Svelte
+
+Register once in root `+layout.ts` (or app entry), not in every component.
+
+```ts
+// src/routes/+layout.ts
+import { defineCustomElements } from "universal-datetime-picker/svelte";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();
+```
+
+```svelte
+<datetime-picker
+  inline
+  mode="date"
+  as-string="false"
+  on:change={(e) => console.log(e.detail)}
+/>
+```
+
+More examples: [Svelte demo](https://universal-datetime-picker.vercel.app/svelte/) on the docs site.
+
+## Angular
+
+```ts
+import { registerDateTimePickerElements } from "universal-datetime-picker/angular";
+import "universal-datetime-picker/style.css";
+
+registerDateTimePickerElements();
+```
+
+Add `CUSTOM_ELEMENTS_SCHEMA` to your NgModule or standalone component, then use `<datetime-picker>`, `<datetime-picker-input>`, or `<datetime-picker-range>` in templates. Listen with `(change)="onChange($event.detail)"`.
 
 ## Components
 
@@ -168,7 +292,7 @@ Control `open` yourself to open the picker from any element. Add `popover` and p
 
 ```tsx
 import { useState } from "react";
-import { DateTime } from "react-calendar-time";
+import { DateTime } from "universal-datetime-picker";
 
 function CustomDateTrigger() {
   const [open, setOpen] = useState(false);
@@ -303,10 +427,21 @@ Locales are applied per instance (no global dayjs locale mutation). Import the d
 
 ```tsx
 import "dayjs/locale/fr";
-import { DateTime } from "react-calendar-time";
+import { DateTime } from "universal-datetime-picker";
 
 <DateTime locale="fr" weekStartsOn={1} inline onChange={console.log} />
 ```
+
+## Migrating from react-calendar-time
+
+The package was renamed to **universal-datetime-picker** in v2.0.0.
+
+1. Update your dependency: `npm install universal-datetime-picker` (remove `react-calendar-time`).
+2. Change import specifiers from `react-calendar-time` to `universal-datetime-picker` (including subpaths like `/vanilla`, `/wc`, `/style.css`).
+3. Web Components are now `<datetime-picker>`, `<datetime-picker-input>`, and `<datetime-picker-range>` (previously `<calendar-time>` etc.).
+4. React **17** is no longer supported; use React **18+** or use vanilla / Web Components / CDN without React peers.
+
+Props, CSS class names (`ctp-*`), and React component exports are unchanged.
 
 ## Contributing
 
