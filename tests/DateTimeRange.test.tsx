@@ -51,7 +51,8 @@ describe("DateTimeRange", () => {
       screen.getByRole("gridcell", { name: /July 20, 2024/i })
     );
 
-    const payload = onChange.mock.calls.at(-1)![0] as {
+    const calls = onChange.mock.calls;
+    const payload = calls[calls.length - 1]![0] as {
       start: Date;
       end: Date;
     };
