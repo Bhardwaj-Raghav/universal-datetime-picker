@@ -98,6 +98,13 @@ export function DateTimeInput(props: DateTimeInputProps) {
 
   const display = internalValue ?? "";
 
+  const pickerValue =
+    asString === false
+      ? value !== undefined
+        ? value
+        : defaultValue
+      : internalValue;
+
   const setInputRef = useCallback((node: HTMLInputElement | null) => {
     setAnchorEl(node);
   }, []);
@@ -139,7 +146,7 @@ export function DateTimeInput(props: DateTimeInputProps) {
         use12Hours={use12Hours}
         asString={asString}
         showSeconds={showSeconds}
-        value={internalValue}
+        value={pickerValue}
         open={open}
         onOpenChange={setOpen}
         popover

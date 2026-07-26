@@ -6,7 +6,7 @@ import { DateTimeInput } from "../src/DateTimeInput";
 import { dayjs } from "../src/utils/date";
 
 describe("DateTime", () => {
-  it("calls onChange with formatted value on OK", async () => {
+  it("calls onChange with formatted value when inline date is selected", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(
@@ -19,7 +19,9 @@ describe("DateTime", () => {
       />
     );
 
-    await user.click(screen.getByRole("button", { name: /OK/i }));
+    await user.click(
+      screen.getByRole("gridcell", { name: /July 15, 2024/i })
+    );
     expect(onChange).toHaveBeenCalled();
     expect(onChange.mock.calls[0]![0]).toMatch(/^2024-07-15/);
   });
@@ -37,7 +39,9 @@ describe("DateTime", () => {
       />
     );
 
-    await user.click(screen.getByRole("button", { name: /OK/i }));
+    await user.click(
+      screen.getByRole("gridcell", { name: /July 15, 2024/i })
+    );
     const result = onChange.mock.calls[0]![0];
     expect(result).toBeInstanceOf(Date);
     expect(dayjs(result as Date).format("YYYY-MM-DD")).toBe("2024-07-15");
@@ -56,7 +60,9 @@ describe("DateTime", () => {
       />
     );
 
-    await user.click(screen.getByRole("button", { name: /OK/i }));
+    await user.click(
+      screen.getByRole("gridcell", { name: /July 15, 2024/i })
+    );
     const result = onChange.mock.calls[0]![0];
     expect(result).toBeInstanceOf(Date);
     expect(dayjs(result as Date).format("YYYY-MM-DD HH:mm:ss")).toBe(
@@ -77,14 +83,16 @@ describe("DateTime", () => {
       />
     );
 
-    await user.click(screen.getByRole("button", { name: /OK/i }));
+    await user.click(screen.getByRole("button", { name: /Select minutes/i }));
+    const minutesList = screen.getByRole("listbox", { name: /minutes/i });
+    await user.click(within(minutesList).getByRole("option", { name: "31" }));
     expect(onChange.mock.calls[0]![0]).toEqual({
       hour: 2,
       hour24: 14,
-      minute: 30,
+      minute: 31,
       second: 15,
       ampm: "PM",
-      formatted: "14:30:15",
+      formatted: "14:31:15",
     });
   });
 
@@ -106,12 +114,14 @@ describe("DateTime", () => {
     expect(container.querySelector(".ctp-no-seconds")).toBeTruthy();
     expect(container.querySelector(".ctp-mode-time")).toBeTruthy();
 
-    await user.click(screen.getByRole("button", { name: /OK/i }));
+    await user.click(screen.getByRole("button", { name: /Select minutes/i }));
+    const minutesList = screen.getByRole("listbox", { name: /minutes/i });
+    await user.click(within(minutesList).getByRole("option", { name: "31" }));
     expect(onChange.mock.calls[0]![0]).toMatchObject({
       hour: 2,
       hour24: 14,
-      minute: 30,
-      formatted: "14:30",
+      minute: 31,
+      formatted: "14:31",
     });
   });
 
@@ -133,7 +143,6 @@ describe("DateTime", () => {
     });
     await user.click(day15);
     expect(day15).toHaveAttribute("aria-selected", "true");
-    await user.click(screen.getByRole("button", { name: /OK/i }));
     expect(onChange.mock.calls[0]![0]).toContain("2024-07-15");
   });
 
@@ -284,7 +293,6 @@ describe("DateTime", () => {
 
     await user.click(screen.getByRole("button", { name: /Select am-pm/i }));
     await user.click(screen.getByRole("option", { name: "PM" }));
-    await user.click(screen.getByRole("button", { name: /OK/i }));
 
     expect(onChange.mock.calls[0]![0]).toMatch(/PM$/i);
     expect(onChange.mock.calls[0]![0]).toContain("09:30:00");
@@ -299,9 +307,9 @@ describe("DateTime", () => {
         labels={{ ok: "Confirm", clear: "Wipe", close: "Dismiss" }}
       />
     );
-    expect(screen.getByRole("button", { name: "Confirm" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Confirm" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Wipe" })).toBeInTheDocument();
-    // Close is omitted for inline pickers
+    // Close and OK are omitted for inline pickers
     expect(
       screen.queryByRole("button", { name: "Dismiss" })
     ).not.toBeInTheDocument();
@@ -375,6 +383,25 @@ describe("DateTimeInput", () => {
     expect(input).toHaveValue("2024-07-10");
     await user.click(input);
     expect(input).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("opens popover when asString is false and value is a Date", async () => {
+    const user = userEvent.setup();
+    render(
+      <DateTimeInput
+        asString={false}
+        mode="datetime"
+        use12Hours
+        value={new Date("2024-07-10T12:00:00")}
+        onChange={() => {}}
+        placeholder="Pick date & time"
+      />
+    );
+
+    const input = screen.getByRole("textbox");
+    await user.click(input);
+    expect(input).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
   it("closes popover on outside click", async () => {

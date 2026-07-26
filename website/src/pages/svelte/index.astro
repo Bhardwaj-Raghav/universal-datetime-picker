@@ -7,5 +7,7 @@ const framework = FRAMEWORK_BY_SLUG.svelte;
 ---
 
 <FrameworkLayout framework={framework}>
-  <SvelteDemo slot="demo" client:only="svelte" />
+  <div slot="demo">
+    <SvelteDemo client:only="svelte" />
+  </div>
 </FrameworkLayout>

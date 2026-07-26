@@ -23,6 +23,7 @@ import {
   resolveThemeAttr,
 } from "./vanilla/a11y";
 import { useControllableState } from "./hooks/useControllableState";
+import { useLatest } from "./hooks/useLatest";
 import type { DateTimeProps } from "./types";
 import { formatLocalized } from "./utils/date";
 import type { PickerSnapshot } from "./core/controller";
@@ -152,10 +153,13 @@ export function DateTime(props: DateTimeProps) {
   }
   const controller = controllerRef.current;
 
+  const onChangeRef = useLatest(onChange);
+  const setOpenRef = useLatest(setOpen);
+
   useEffect(() => {
     controller.setOptions({
       value,
-      onChange,
+      onChange: (next) => onChangeRef.current?.(next),
       asString,
       showSeconds,
       format,
@@ -175,12 +179,11 @@ export function DateTime(props: DateTimeProps) {
       open,
       popover,
       anchorEl,
-      onOpenChange: setOpen,
+      onOpenChange: (next) => setOpenRef.current(next),
     });
   }, [
     controller,
     value,
-    onChange,
     asString,
     showSeconds,
     format,
@@ -200,7 +203,6 @@ export function DateTime(props: DateTimeProps) {
     open,
     popover,
     anchorEl,
-    setOpen,
   ]);
 
   const snap = useSyncExternalStore(
@@ -478,15 +480,17 @@ export function DateTime(props: DateTimeProps) {
             {snap.labels.close}
           </button>
         )}
-        <button
-          type="button"
-          onClick={() => {
-            controller.confirm();
-            close();
-          }}
-        >
-          {snap.labels.ok}
-        </button>
+        {!inline && (
+          <button
+            type="button"
+            onClick={() => {
+              controller.confirm();
+              close();
+            }}
+          >
+            {snap.labels.ok}
+          </button>
+        )}
       </div>
     </div>
   );

@@ -20,6 +20,10 @@ function clickDay(root: ParentNode, labelIncludes: string): void {
   (cell as HTMLButtonElement).click();
 }
 
+function clickToday(root: ParentNode): void {
+  clickDay(root, dayjs().format("MMMM D, YYYY"));
+}
+
 function removePickerPortals(): void {
   document
     .querySelectorAll(".ctp-calendar-time-picker-absolute-container")
@@ -50,8 +54,11 @@ describe("createDateTimePicker", () => {
 
     expect(root.querySelector(".ctp-calendar-time-picker")).toBeTruthy();
     expect(root.querySelector(".ctp-cancel")).toBeNull();
+    expect(
+      Array.from(root.querySelectorAll("button")).some((b) => b.textContent === "OK")
+    ).toBe(false);
 
-    clickOk(root);
+    clickToday(root);
     expect(onChange).toHaveBeenCalled();
     expect(typeof onChange.mock.calls[0]?.[0]).toBe("string");
 
@@ -71,7 +78,7 @@ describe("createDateTimePicker", () => {
       onChange,
     });
 
-    clickOk(root);
+    clickToday(root);
     expect(onChange.mock.calls[0]?.[0]).toBeInstanceOf(Date);
 
     handle.destroy();
@@ -114,11 +121,36 @@ describe("createDateTimeRangePicker", () => {
 
     expect(root.querySelector(".ctp-calendar-time-picker")).toBeTruthy();
     clickDay(root, "July 20, 2024");
-    clickOk(root);
     expect(onChange).toHaveBeenCalledWith({
       start: "2024-07-10",
       end: "2024-07-20",
     });
+
+    handle.destroy();
+    root.remove();
+  });
+
+  it("supports hover preview while selecting the end date", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const start = dayjs().startOf("month").date(10);
+    const end = dayjs().startOf("month").date(20);
+
+    const handle = createDateTimeRangePicker(root, {
+      inline: true,
+      asString: true,
+    });
+
+    clickDay(root, start.format("MMMM D, YYYY"));
+    const endCell = Array.from(root.querySelectorAll('[role="gridcell"]')).find(
+      (node) =>
+        node.getAttribute("aria-label")?.includes(end.format("MMMM D, YYYY"))
+    ) as HTMLButtonElement | undefined;
+    expect(endCell).toBeTruthy();
+    endCell?.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+    expect(root.querySelector(".ctp-in-range")).toBeTruthy();
+
+    clickDay(root, end.format("MMMM D, YYYY"));
 
     handle.destroy();
     root.remove();
@@ -146,7 +178,7 @@ describe("web components", () => {
       onChange((event as CustomEvent).detail);
     });
 
-    clickOk(el);
+    clickToday(el);
     expect(onChange).toHaveBeenCalled();
 
     el.remove();
@@ -182,7 +214,7 @@ describe("web components", () => {
     el.remove();
   });
 
-  it("datetime-picker-range inline emits change on confirm", async () => {
+  it("datetime-picker-range inline emits change when range is completed", async () => {
     defineCustomElements();
 
     const el = document.createElement("datetime-picker-range");
@@ -200,7 +232,6 @@ describe("web components", () => {
     });
 
     clickDay(el, "July 20, 2024");
-    clickOk(el);
     expect(onChange).toHaveBeenCalledWith({
       start: "2024-07-10",
       end: "2024-07-20",
@@ -263,7 +294,7 @@ describe("web components", () => {
       onChange((event as CustomEvent).detail);
     });
 
-    clickOk(el);
+    clickToday(el);
     expect(onChange).toHaveBeenCalled();
 
     el.remove();

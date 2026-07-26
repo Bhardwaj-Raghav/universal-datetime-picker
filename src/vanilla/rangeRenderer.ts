@@ -1,9 +1,10 @@
 import {
   RangeController,
+  type RangeSnapshot,
 } from "../core/rangeController";
-import type { DateTimeRangeOptions } from "../core/types";
+import type { CalendarDay, DateTimeRangeOptions } from "../core/types";
 import { formatLocalized } from "../core/logic/date";
-import { dayjs } from "../core/logic/date";
+import { dayjs, type Dayjs } from "../core/logic/date";
 import {
   attachEscape,
   attachFocusTrap,
@@ -81,6 +82,60 @@ function applyStyle(
   Object.assign(node.style, style);
 }
 
+function sameDay(a: Dayjs | null, b: Dayjs | null): boolean {
+  if (a === null && b === null) {
+    return true;
+  }
+  if (a === null || b === null) {
+    return false;
+  }
+  return a.isSame(b, "day");
+}
+
+function dayDateClassName(dayData: CalendarDay): string {
+  return cx(
+    "ctp-box",
+    "ctp-box-date",
+    !dayData.isCurrentMonth && "not-current-month",
+    dayData.isDisabled && "disabled-date",
+    dayData.isWeekend && "weekend-day",
+    dayData.isCurrentDate && "ctp-today",
+    dayData.isInRange && "ctp-in-range",
+    dayData.isRangeStart && "ctp-range-start",
+    dayData.isRangeEnd && "ctp-range-end"
+  );
+}
+
+function syncDayButton(
+  btn: HTMLButtonElement,
+  dayData: CalendarDay,
+  snap: RangeSnapshot
+): void {
+  const focused = dayData.date.isSame(snap.focusedDay, "day");
+  const disabled = !dayData.isCurrentMonth || dayData.isDisabled;
+  btn.className = dayDateClassName(dayData);
+  btn.tabIndex = focused ? 0 : -1;
+  btn.disabled = disabled;
+  btn.setAttribute(
+    "aria-selected",
+    String(Boolean(dayData.isRangeStart || dayData.isRangeEnd))
+  );
+  btn.setAttribute("aria-disabled", String(disabled));
+}
+
+function canPatchHoverOnly(prev: RangeSnapshot, next: RangeSnapshot): boolean {
+  return (
+    prev.calPanel === "day" &&
+    next.calPanel === "day" &&
+    prev.viewMonth.isSame(next.viewMonth, "month") &&
+    sameDay(prev.start, next.start) &&
+    sameDay(prev.end, next.end) &&
+    prev.focusedDay.isSame(next.focusedDay, "day") &&
+    prev.open === next.open &&
+    prev.inline === next.inline
+  );
+}
+
 export function createDateTimeRangePicker(
   target: HTMLElement,
   options: DateTimeRangeOptions = {}
@@ -90,6 +145,8 @@ export function createDateTimeRangePicker(
   let cleanups: Cleanup[] = [];
   let host: HTMLElement | null = null;
   let portalRoot: HTMLElement | null = null;
+  let lastSnap: RangeSnapshot | null = null;
+  let dayButtons: Map<string, HTMLButtonElement> | null = null;
 
   const teardown = () => {
     cleanups.forEach((c) => c());
@@ -98,14 +155,37 @@ export function createDateTimeRangePicker(
     portalRoot = null;
     host?.remove();
     host = null;
+    lastSnap = null;
+    dayButtons = null;
   };
 
   const paint = () => {
-    teardown();
     const snap = controller.getSnapshot();
     if (!snap.open && !snap.inline) {
+      teardown();
       return;
     }
+
+    if (
+      lastSnap &&
+      dayButtons &&
+      host &&
+      canPatchHoverOnly(lastSnap, snap)
+    ) {
+      for (const week of snap.weeks) {
+        for (const dayData of week) {
+          const key = dayData.date.format("YYYY-MM-DD");
+          const btn = dayButtons.get(key);
+          if (btn) {
+            syncDayButton(btn, dayData, snap);
+          }
+        }
+      }
+      lastSnap = snap;
+      return;
+    }
+
+    teardown();
 
     const now = dayjs();
     const year = snap.viewMonth.year();
@@ -172,6 +252,7 @@ export function createDateTimeRangePicker(
     ]);
 
     if (snap.calPanel === "day") {
+      const buttons = new Map<string, HTMLButtonElement>();
       const grid = el("div", {
         className: "ctp-main-calendar",
         role: "grid",
@@ -183,6 +264,7 @@ export function createDateTimeRangePicker(
             ke.preventDefault();
           }
         },
+        onMouseleave: () => controller.setHoverEnd(null),
       });
       for (const label of snap.weekdayLabels) {
         grid.append(
@@ -197,47 +279,38 @@ export function createDateTimeRangePicker(
         for (const dayData of week) {
           const focused = dayData.date.isSame(snap.focusedDay, "day");
           const disabled = !dayData.isCurrentMonth || dayData.isDisabled;
-          grid.append(
-            el("button", {
-              type: "button",
-              role: "gridcell",
-              tabIndex: focused ? 0 : -1,
-              ariaSelected: Boolean(
-                dayData.isRangeStart || dayData.isRangeEnd
-              ),
-              ariaDisabled: disabled,
-              disabled,
-              ariaLabel: formatLocalized(
-                dayData.date,
-                "dddd, MMMM D, YYYY",
-                snap.locale
-              ),
-              className: cx(
-                "ctp-box",
-                "ctp-box-date",
-                !dayData.isCurrentMonth && "not-current-month",
-                dayData.isDisabled && "disabled-date",
-                dayData.isWeekend && "weekend-day",
-                dayData.isCurrentDate && "ctp-today",
-                dayData.isInRange && "ctp-in-range",
-                dayData.isRangeStart && "ctp-range-start",
-                dayData.isRangeEnd && "ctp-range-end"
-              ),
-              onClick: () => {
-                if (!disabled) {
-                  controller.pickDay(dayData.date);
-                }
-              },
-              onMouseenter: () => {
-                if (!disabled && snap.start && !snap.end) {
-                  controller.setHoverEnd(dayData.date);
-                }
-              },
-              textContent: dayData.date.format("D"),
-            })
-          );
+          const btn = el("button", {
+            type: "button",
+            role: "gridcell",
+            tabIndex: focused ? 0 : -1,
+            ariaSelected: Boolean(
+              dayData.isRangeStart || dayData.isRangeEnd
+            ),
+            ariaDisabled: disabled,
+            disabled,
+            ariaLabel: formatLocalized(
+              dayData.date,
+              "dddd, MMMM D, YYYY",
+              snap.locale
+            ),
+            className: dayDateClassName(dayData),
+            onClick: () => {
+              if (!disabled) {
+                controller.pickDay(dayData.date);
+              }
+            },
+            onMouseenter: () => {
+              if (!disabled && snap.start && !snap.end) {
+                controller.setHoverEnd(dayData.date);
+              }
+            },
+            textContent: dayData.date.format("D"),
+          }) as HTMLButtonElement;
+          buttons.set(dayData.date.format("YYYY-MM-DD"), btn);
+          grid.append(btn);
         }
       }
+      dayButtons = buttons;
       body.append(grid);
     } else if (snap.calPanel === "month") {
       const grid = el("div", {
@@ -309,14 +382,16 @@ export function createDateTimeRangePicker(
         })
       );
     }
-    footerChildren.push(
-      el("button", {
-        type: "button",
-        disabled: !snap.start || !snap.end,
-        onClick: () => controller.confirm(),
-        textContent: snap.labels.ok,
-      })
-    );
+    if (!snap.inline) {
+      footerChildren.push(
+        el("button", {
+          type: "button",
+          disabled: !snap.start || !snap.end,
+          onClick: () => controller.confirm(),
+          textContent: snap.labels.ok,
+        })
+      );
+    }
 
     const picker = el(
       "div",
@@ -343,6 +418,7 @@ export function createDateTimeRangePicker(
     if (snap.inline) {
       host = picker;
       target.append(picker);
+      lastSnap = snap;
       return;
     }
 
@@ -361,6 +437,7 @@ export function createDateTimeRangePicker(
       attachFocusTrap(picker, true),
       attachEscape(() => controller.close(), true)
     );
+    lastSnap = snap;
   };
 
   const unsub = controller.subscribe(paint);

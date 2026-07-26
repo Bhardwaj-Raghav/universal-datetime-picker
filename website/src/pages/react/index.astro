@@ -7,5 +7,7 @@ const framework = FRAMEWORK_BY_SLUG.react;
 ---
 
 <FrameworkLayout framework={framework}>
-  <ReactPageDemo slot="demo" client:load />
+  <div slot="demo">
+    <ReactPageDemo client:load />
+  </div>
 </FrameworkLayout>

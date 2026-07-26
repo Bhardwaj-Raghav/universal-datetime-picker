@@ -54,7 +54,6 @@ export default function FrameworkTrioDemo() {
         <DateTimeRange
           inline
           asString={false}
-          value={range}
           onChange={(next) =>
             setRange({
               start: next.start instanceof Date ? next.start : null,

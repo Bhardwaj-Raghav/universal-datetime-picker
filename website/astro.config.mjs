@@ -56,7 +56,13 @@ export default defineConfig({
   publicDir: path.join(root, "public"),
   outDir: path.resolve(root, "../site-dist"),
   integrations: [
-    react({ include: ["**/components/**", "**/demos/react/**"] }),
+    react({
+      include: [
+        "**/components/**",
+        "**/demos/react/**",
+        path.join(repoRoot, "src/**/*.tsx").replace(/\\/g, "/"),
+      ],
+    }),
     preact({ include: ["**/demos/preact/**"] }),
     solid({ include: ["**/demos/solid/**"] }),
     vue({
@@ -72,6 +78,10 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: pkgAliases,
+      dedupe: ["react", "react-dom"],
+    },
+    optimizeDeps: {
+      include: ["dayjs/locale/fr"],
     },
   },
 });

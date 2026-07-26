@@ -493,13 +493,15 @@ function renderPicker(
       })
     );
   }
-  footerChildren.push(
-    el("button", {
-      type: "button",
-      onClick: () => controller.confirm(),
-      textContent: snap.labels.ok,
-    })
-  );
+  if (!snap.inline) {
+    footerChildren.push(
+      el("button", {
+        type: "button",
+        onClick: () => controller.confirm(),
+        textContent: snap.labels.ok,
+      })
+    );
+  }
   picker.append(el("div", { className: "ctp-footer" }, footerChildren));
   return picker;
 }

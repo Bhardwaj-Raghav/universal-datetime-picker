@@ -7,5 +7,7 @@ const framework = FRAMEWORK_BY_SLUG.nextjs;
 ---
 
 <FrameworkLayout framework={framework}>
-  <FrameworkTrioDemo slot="demo" client:load />
+  <div slot="demo">
+    <FrameworkTrioDemo client:load />
+  </div>
 </FrameworkLayout>

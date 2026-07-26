@@ -11,6 +11,7 @@ import { CalendarHeader } from "./CalendarHeader";
 import { RangeController } from "./core/rangeController";
 import { attachEscape, attachFocusTrap } from "./vanilla/a11y";
 import { useControllableState } from "./hooks/useControllableState";
+import { useLatest } from "./hooks/useLatest";
 import type { DateTimeRangeProps } from "./types";
 import { formatLocalized } from "./utils/date";
 import type { RangeSnapshot } from "./core/rangeController";
@@ -73,10 +74,13 @@ export function DateTimeRange(props: DateTimeRangeProps) {
   }
   const controller = controllerRef.current;
 
+  const onChangeRef = useLatest(onChange);
+  const setOpenRef = useLatest(setOpen);
+
   useEffect(() => {
     controller.setOptions({
       value,
-      onChange,
+      onChange: (next) => onChangeRef.current?.(next),
       asString,
       format,
       minDate,
@@ -89,12 +93,11 @@ export function DateTimeRange(props: DateTimeRangeProps) {
       inline,
       className,
       open,
-      onOpenChange: setOpen,
+      onOpenChange: (next) => setOpenRef.current(next),
     });
   }, [
     controller,
     value,
-    onChange,
     asString,
     format,
     minDate,
@@ -107,7 +110,6 @@ export function DateTimeRange(props: DateTimeRangeProps) {
     inline,
     className,
     open,
-    setOpen,
   ]);
 
   const snap = useSyncExternalStore(
@@ -185,6 +187,7 @@ export function DateTimeRange(props: DateTimeRangeProps) {
             aria-label={snap.labels.chooseDateRange}
             tabIndex={0}
             onKeyDown={onGridKeyDown}
+            onMouseLeave={() => controller.setHoverEnd(null)}
           >
             {snap.weekdayLabels.map((label) => (
               <div
@@ -261,16 +264,18 @@ export function DateTimeRange(props: DateTimeRangeProps) {
             {snap.labels.close}
           </button>
         )}
-        <button
-          type="button"
-          onClick={() => {
-            controller.confirm();
-            close();
-          }}
-          disabled={!snap.start || !snap.end}
-        >
-          {snap.labels.ok}
-        </button>
+        {!inline && (
+          <button
+            type="button"
+            onClick={() => {
+              controller.confirm();
+              close();
+            }}
+            disabled={!snap.start || !snap.end}
+          >
+            {snap.labels.ok}
+          </button>
+        )}
       </div>
     </div>
   );

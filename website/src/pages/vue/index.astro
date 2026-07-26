@@ -7,5 +7,7 @@ const framework = FRAMEWORK_BY_SLUG.vue;
 ---
 
 <FrameworkLayout framework={framework}>
-  <VueDemo slot="demo" client:only="vue" />
+  <div slot="demo">
+    <VueDemo client:only="vue" />
+  </div>
 </FrameworkLayout>

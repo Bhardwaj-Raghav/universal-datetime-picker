@@ -1,6 +1,6 @@
 {
   "name": "universal-datetime-picker",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Universal date, time, datetime, and range picker for React, Vue, Svelte, Angular, vanilla JS, and CDN — accessible, TypeScript, dayjs, CSS themes",
   "license": "MIT",
   "author": "Raghav Bhardwaj",

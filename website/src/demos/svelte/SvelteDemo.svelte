@@ -37,7 +37,7 @@
       inline
       mode="date"
       as-string="false"
-      on:change={onDateChange}
+      onchange={onDateChange}
     />
     <pre class="demo-value">{preview(date)}</pre>
   </div>
@@ -49,7 +49,7 @@
       as-string="false"
       use12hours
       placeholder="Pick date & time"
-      on:change={onInputChange}
+      onchange={onInputChange}
     />
     <pre class="demo-value">{preview(input)}</pre>
   </div>
@@ -59,7 +59,7 @@
     <datetime-picker-range
       inline
       as-string="false"
-      on:change={onRangeChange}
+      onchange={onRangeChange}
     />
     <pre class="demo-value">
       {preview(rangeStart)} → {preview(rangeEnd)}

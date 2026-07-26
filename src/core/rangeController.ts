@@ -84,6 +84,16 @@ export class RangeController {
   getSnapshot = (): RangeSnapshot => this.snapshot;
   getServerSnapshot = (): RangeSnapshot => this.snapshot;
 
+  private sameDay(a: Dayjs | null, b: Dayjs | null): boolean {
+    if (a === null && b === null) {
+      return true;
+    }
+    if (a === null || b === null) {
+      return false;
+    }
+    return a.isSame(b, "day");
+  }
+
   setOptions(partial: Partial<DateTimeRangeOptions>): void {
     this.options = { ...this.options, ...partial };
     if (partial.open !== undefined) {
@@ -97,11 +107,16 @@ export class RangeController {
       } else if (partial.value !== undefined) {
         const format = this.options.format ?? DATE_FORMAT;
         const parsed = this.parseRange(partial.value, format);
-        this.start = parsed.start;
-        this.end = parsed.end;
-        if (parsed.start) {
-          this.viewMonth = parsed.start.startOf("month");
-          this.focusedDay = parsed.start;
+        const unchanged =
+          this.sameDay(parsed.start, this.start) &&
+          this.sameDay(parsed.end, this.end);
+        if (!unchanged) {
+          this.start = parsed.start;
+          this.end = parsed.end;
+          if (parsed.start) {
+            this.viewMonth = parsed.start.startOf("month");
+            this.focusedDay = parsed.start;
+          }
         }
       }
     }
@@ -254,6 +269,11 @@ export class RangeController {
       this.focusedDay = day;
     }
     this.emit();
+    if (this.options.asString === false) {
+      this.emitRange(this.start, this.end);
+    } else if (this.options.inline && this.start && this.end) {
+      this.emitRange(this.start, this.end);
+    }
   }
 
   setHoverEnd(day: Dayjs | null): void {

@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
 import SiteNav from "../components/SiteNav.astro";
-import CopyInstall from "../components/CopyInstall";
+import CopyInstall from "../components/CopyInstall.astro";
 import type { FrameworkDef } from "../frameworks";
 import { GITHUB_URL, NPM_URL } from "../site.config";
 
@@ -40,7 +40,7 @@ const breadcrumbs = [
         <h1>{framework.label} date time picker</h1>
         <p class="framework-intro">{framework.intro}</p>
         <p class="framework-tagline">{framework.tagline}</p>
-        <CopyInstall client:load demoHref="#framework-demo-heading" />
+        <CopyInstall demoHref="#framework-demo-heading" />
       </header>
 
       <section class="framework-demo" aria-labelledby="framework-demo-heading">

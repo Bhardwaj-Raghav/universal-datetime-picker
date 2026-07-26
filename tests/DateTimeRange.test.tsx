@@ -1,5 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { DateTimeRange } from "../src/DateTimeRange";
 import { dayjs } from "../src/utils/date";
@@ -25,10 +26,6 @@ describe("DateTimeRange", () => {
     });
     await user.click(day20);
 
-    const ok = screen.getByRole("button", { name: /OK/i });
-    expect(ok).not.toBeDisabled();
-    await user.click(ok);
-
     expect(onChange).toHaveBeenCalledWith({
       start: "2024-07-10",
       end: "2024-07-20",
@@ -53,9 +50,8 @@ describe("DateTimeRange", () => {
     await user.click(
       screen.getByRole("gridcell", { name: /July 20, 2024/i })
     );
-    await user.click(screen.getByRole("button", { name: /OK/i }));
 
-    const payload = onChange.mock.calls[0]![0] as {
+    const payload = onChange.mock.calls.at(-1)![0] as {
       start: Date;
       end: Date;
     };
@@ -96,6 +92,38 @@ describe("DateTimeRange", () => {
     ).toHaveAttribute("tabindex", "0");
   });
 
+  it("keeps partial selection with inline onChange handlers", async () => {
+    const user = userEvent.setup();
+    const start = dayjs().startOf("month").date(10);
+    const startLabel = start.format("dddd, MMMM D, YYYY");
+    function Demo() {
+      const [range, setRange] = useState<{
+        start: Date | null;
+        end: Date | null;
+      }>({ start: null, end: null });
+      return (
+        <DateTimeRange
+          inline
+          asString={false}
+          value={range}
+          onChange={(next) =>
+            setRange({
+              start: next.start instanceof Date ? next.start : null,
+              end: next.end instanceof Date ? next.end : null,
+            })
+          }
+        />
+      );
+    }
+    render(<Demo />);
+    await user.click(
+      screen.getByRole("gridcell", { name: new RegExp(startLabel, "i") })
+    );
+    expect(
+      screen.getByRole("gridcell", { name: new RegExp(startLabel, "i") })
+    ).toHaveClass("ctp-range-start");
+  });
+
   it("selects end date with keyboard Enter", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -110,7 +138,6 @@ describe("DateTimeRange", () => {
     const grid = screen.getByRole("grid");
     grid.focus();
     await user.keyboard("{ArrowRight}{ArrowRight}{Enter}");
-    await user.click(screen.getByRole("button", { name: /OK/i }));
     expect(onChange).toHaveBeenCalledWith({
       start: "2024-07-10",
       end: "2024-07-12",

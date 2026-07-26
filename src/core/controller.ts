@@ -294,27 +294,32 @@ export class PickerController {
       .date(day.date());
     this.focusedDay = day;
     this.emit();
+    this.maybeCommitInline();
   }
 
   setHour(hourValue: number): void {
     this.draft = this.draft.hour(hourValue);
     this.emit();
+    this.maybeCommitInline();
   }
 
   setMinute(minute: number): void {
     this.draft = this.draft.minute(minute);
     this.emit();
+    this.maybeCommitInline();
   }
 
   setSecond(second: number): void {
     this.draft = this.draft.second(second);
     this.emit();
+    this.maybeCommitInline();
   }
 
   setAmPm(isAm: boolean): void {
     const { hour } = to12Hour(this.draft.hour());
     this.draft = this.draft.hour(to24Hour(hour, isAm));
     this.emit();
+    this.maybeCommitInline();
   }
 
   toggleHours(): void {
@@ -366,18 +371,21 @@ export class PickerController {
     }
     this.showHours = false;
     this.emit();
+    this.maybeCommitInline();
   }
 
   selectMinuteOption(opt: string): void {
     this.draft = this.draft.minute(Number(opt));
     this.showMinutes = false;
     this.emit();
+    this.maybeCommitInline();
   }
 
   selectSecondOption(opt: string): void {
     this.draft = this.draft.second(Number(opt));
     this.showSecondsOpen = false;
     this.emit();
+    this.maybeCommitInline();
   }
 
   selectAmPmOption(opt: string): void {
@@ -385,6 +393,7 @@ export class PickerController {
     this.draft = this.draft.hour(to24Hour(hour, opt === "AM"));
     this.showAmPm = false;
     this.emit();
+    this.maybeCommitInline();
   }
 
   handleGridKeyDown(key: string): boolean {
@@ -438,23 +447,32 @@ export class PickerController {
     return true;
   }
 
-  confirm(): DateTimeChangeValue {
+  private buildPayload(): DateTimeChangeValue {
     const snap = this.snapshot;
-    let payload: DateTimeChangeValue;
     if (snap.asString === false) {
       if (snap.mode === "time") {
-        payload = buildTimeValue(this.draft, snap.resolvedFormat);
-      } else if (snap.mode === "date") {
-        payload = this.draft.startOf("day").toDate();
-      } else {
-        payload = this.draft.toDate();
+        return buildTimeValue(this.draft, snap.resolvedFormat);
       }
-    } else {
-      if (snap.asString === undefined) {
-        warnAsStringDeprecation();
+      if (snap.mode === "date") {
+        return this.draft.startOf("day").toDate();
       }
-      payload = formatValue(this.draft, snap.resolvedFormat);
+      return this.draft.toDate();
     }
+    if (snap.asString === undefined) {
+      warnAsStringDeprecation();
+    }
+    return formatValue(this.draft, snap.resolvedFormat);
+  }
+
+  private maybeCommitInline(): void {
+    if (!this.options.inline) {
+      return;
+    }
+    this.options.onChange?.(this.buildPayload());
+  }
+
+  confirm(): DateTimeChangeValue {
+    const payload = this.buildPayload();
     this.options.onChange?.(payload);
     this.close();
     return payload;

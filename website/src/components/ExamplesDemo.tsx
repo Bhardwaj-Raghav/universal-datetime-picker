@@ -5,7 +5,10 @@ import DateTime, {
   type DateTimeChangeValue,
   type TimeValue,
 } from "universal-datetime-picker";
-import "dayjs/locale/fr";
+import dayjs from "dayjs";
+import fr from "dayjs/locale/fr";
+
+dayjs.locale(fr);
 
 function previewValue(value: DateTimeChangeValue): string {
   if (value === null) {
@@ -61,9 +64,7 @@ export default function ExamplesDemo() {
           asString={false}
           onChange={(next) =>
             setTimeOnly(
-              next && typeof next === "object" && !(next instanceof Date)
-                ? next
-                : null
+              next && typeof next === "object" && !(next instanceof Date) ? next : null
             )
           }
         />
@@ -79,9 +80,7 @@ export default function ExamplesDemo() {
           showSeconds={false}
           onChange={(next) =>
             setTimeNoSeconds(
-              next && typeof next === "object" && !(next instanceof Date)
-                ? next
-                : null
+              next && typeof next === "object" && !(next instanceof Date) ? next : null
             )
           }
         />
@@ -121,9 +120,7 @@ export default function ExamplesDemo() {
           mode="datetime"
           use12Hours
           value={dateTimeInput}
-          onChange={(next) =>
-            setDateTimeInput(typeof next === "string" ? next : null)
-          }
+          onChange={(next) => setDateTimeInput(typeof next === "string" ? next : null)}
           placeholder="Pick a date & time"
         />
         <p className="stage-value">Selected: {dateTimeInput ?? "null"}</p>
@@ -134,7 +131,6 @@ export default function ExamplesDemo() {
         <DateTimeRange
           inline
           asString={false}
-          value={range}
           onChange={(next) =>
             setRange({
               start: next.start instanceof Date ? next.start : null,
@@ -142,7 +138,7 @@ export default function ExamplesDemo() {
             })
           }
         />
-        <pre className="stage-value range-value">
+        <pre className="stage-value range-value" style={{ whiteSpace: "pre-wrap" }}>
           {previewValue(range.start)} → {previewValue(range.end)}
         </pre>
       </div>
@@ -156,9 +152,7 @@ export default function ExamplesDemo() {
           locale="fr"
           weekStartsOn={1}
           value={localeValue}
-          onChange={(next) =>
-            setLocaleValue(next instanceof Date ? next : null)
-          }
+          onChange={(next) => setLocaleValue(next instanceof Date ? next : null)}
         />
         <pre className="stage-value">{previewValue(localeValue)}</pre>
       </div>
@@ -177,9 +171,7 @@ export default function ExamplesDemo() {
           mode="time"
           use12Hours
           value={darkInput}
-          onChange={(next) =>
-            setDarkInput(typeof next === "string" ? next : null)
-          }
+          onChange={(next) => setDarkInput(typeof next === "string" ? next : null)}
           defaultOpen={false}
           placeholder="Pick a time (opens on click)"
         />
