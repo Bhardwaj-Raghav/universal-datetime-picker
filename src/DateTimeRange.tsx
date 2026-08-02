@@ -179,6 +179,17 @@ export function DateTimeRange(props: DateTimeRangeProps) {
           onPanelChange={(p) => controller.setCalPanel(p)}
           locale={snap.locale}
           labels={snap.labels}
+          disableOptions={{
+            minDate,
+            maxDate,
+            disablePastDates,
+            disableFutureDates,
+            weekStartsOn,
+          }}
+          onNavigatePrev={() => controller.navigatePrev()}
+          onNavigateNext={() => controller.navigateNext()}
+          onSelectMonth={(monthIndex) => controller.selectMonth(monthIndex)}
+          onSelectYear={(year) => controller.selectYear(year)}
         />
         {snap.calPanel === "day" && (
           <div
@@ -262,18 +273,6 @@ export function DateTimeRange(props: DateTimeRangeProps) {
         {!inline && (
           <button type="button" className="ctp-cancel" onClick={close}>
             {snap.labels.close}
-          </button>
-        )}
-        {!inline && (
-          <button
-            type="button"
-            onClick={() => {
-              controller.confirm();
-              close();
-            }}
-            disabled={!snap.start || !snap.end}
-          >
-            {snap.labels.ok}
           </button>
         )}
       </div>

@@ -203,6 +203,7 @@ export class DateTimePickerElement extends BaseCalendarElement {
 export class DateTimePickerInputElement extends HTMLElement {
   private handle: DateTimePickerHandle | null = null;
   private input: HTMLInputElement | null = null;
+  private iconBtn: HTMLButtonElement | null = null;
   private root: HTMLDivElement | null = null;
 
   static get observedAttributes(): string[] {
@@ -224,10 +225,18 @@ export class DateTimePickerInputElement extends HTMLElement {
     if (!this.root) {
       this.root = document.createElement("div");
       this.root.className = "ctp-input-root";
+      const field = document.createElement("div");
+      field.className = "ctp-input-field";
       this.input = document.createElement("input");
-      this.input.className = "ctp-input";
-      this.input.readOnly = true;
-      this.root.append(this.input);
+      this.input.className = "ctp-input ctp-input-with-icon";
+      this.iconBtn = document.createElement("button");
+      this.iconBtn.type = "button";
+      this.iconBtn.className = "ctp-input-icon-btn";
+      this.iconBtn.tabIndex = -1;
+      this.iconBtn.innerHTML =
+        '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
+      field.append(this.input, this.iconBtn);
+      this.root.append(field);
       this.append(this.root);
     }
     this.sync();
@@ -272,8 +281,13 @@ export class DateTimePickerInputElement extends HTMLElement {
 
     this.input.placeholder = placeholder;
     this.input.disabled = disabled;
+    this.input.readOnly = true;
     this.input.setAttribute("aria-haspopup", "dialog");
     this.input.setAttribute("aria-label", placeholder);
+    if (this.iconBtn) {
+      this.iconBtn.disabled = disabled;
+      this.iconBtn.setAttribute("aria-label", placeholder);
+    }
 
     const display = attrValue
       ? formatValue(parseValue(attrValue, resolvedFormat), resolvedFormat) ??
@@ -336,6 +350,9 @@ export class DateTimePickerInputElement extends HTMLElement {
     };
 
     this.input.onclick = openPicker;
+    if (this.iconBtn) {
+      this.iconBtn.onclick = openPicker;
+    }
     this.input.onkeydown = (event) => {
       if (disabled) {
         return;

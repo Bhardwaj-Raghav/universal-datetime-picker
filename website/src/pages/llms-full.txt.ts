@@ -5,14 +5,16 @@ import {
   SITE_DESCRIPTION,
   SITE_FAQS,
   SITE_NAME,
+  SITE_ORIGIN,
 } from "../site.config";
 import { FRAMEWORKS, FRAMEWORK_CARD_SUMMARY } from "../frameworks";
 
 export const GET: APIRoute = ({ site }) => {
-  const siteUrl = (site?.origin || "https://universal-datetime-picker.vercel.app").replace(
-    /\/$/,
-    ""
-  );
+  const siteUrl = (
+    site?.origin && !site.origin.includes("react-calendar-time.vercel.app")
+      ? site.origin
+      : SITE_ORIGIN
+  ).replace(/\/$/, "");
 
   const faqs = SITE_FAQS.map(
     (faq) => `### ${faq.question}\n\n${faq.answer}`
@@ -122,12 +124,12 @@ const handle = createDateTimePicker(document.getElementById("picker")!, {
 
 | Mode / flags | \`asString\` | \`onChange\` receives |
 |--------------|------------|---------------------|
-| \`mode="date"\` | \`false\` | \`Date\` (start of day) |
-| \`mode="datetime"\` | \`false\` | \`Date\` |
-| \`mode="time"\` | \`false\` | \`TimeValue\` |
-| any mode | \`true\` / omitted | formatted \`string | null\` |
-| range | \`false\` | \`{ start: Date | null; end: Date | null }\` |
-| range | \`true\` / omitted | \`{ start: string | null; end: string | null }\` |
+| \`mode="date"\` | omitted / \`false\` | \`Date\` (start of day) |
+| \`mode="datetime"\` | omitted / \`false\` | \`Date\` |
+| \`mode="time"\` | omitted / \`false\` | \`TimeValue\` |
+| any mode | \`true\` | formatted \`string | null\` |
+| range | omitted / \`false\` | \`{ start: Date | null; end: Date | null }\` |
+| range | \`true\` | \`{ start: string | null; end: string | null }\` |
 
 \`TimeValue\` shape:
 
@@ -142,20 +144,20 @@ const handle = createDateTimePicker(document.getElementById("picker")!, {
 }
 \`\`\`
 
-Omitting \`asString\` still returns a string today (deprecated warning). Prefer \`asString={false}\` for Date / TimeValue; a future major will default to objects.
+Omitting \`asString\` returns \`Date\` / \`TimeValue\` objects. Set \`asString={true}\` for formatted strings.
 
 ## Important props
 
 Shared by \`DateTime\` / \`DateTimeInput\`:
 
 - \`value\` / \`defaultValue\`: \`Date | string | Dayjs | null\`
-- \`onChange\`: \`(value: Date | TimeValue | string | null) => void\` (fires on OK / Clear)
-- \`asString\`: \`true\` = string; \`false\` = Date / TimeValue; omit = string + deprecation warning
+- \`onChange\`: \`(value: Date | TimeValue | string | null) => void\` — date-only overlays fire on day click; datetime/time overlays fire on OK / Clear
+- \`asString\`: \`true\` = string; omit or \`false\` = Date / TimeValue
 - \`showSeconds\`: show seconds column (default \`true\`); affects default format
 - \`format\`: dayjs format string (derived from mode / use12Hours / showSeconds when omitted)
 - \`mode\`: \`"datetime" | "date" | "time"\` (default \`"datetime"\`)
 - \`layout\`: \`"combined" | "tabs"\` for datetime mode
-- \`minDate\` / \`maxDate\`, \`disablePastDates\`, \`disableFutureDates\`
+- \`minDate\` / \`maxDate\`, \`disablePastDates\`, \`disableFutureDates\` (also clamp month/year navigation)
 - \`weekStartsOn\`: \`0–6\` (0 = Sunday)
 - \`use12Hours\`: 12-hour clock with AM/PM (\`false\` = 24-hour)
 - \`locale\`: dayjs locale string (import the locale module first)
@@ -163,11 +165,15 @@ Shared by \`DateTime\` / \`DateTimeInput\`:
 - \`theme\`: \`"light" | "dark"\` (useful for portaled popovers)
 - \`inline\`, \`className\`
 
+\`DateTimeInput\` extras: \`icon\` (default calendar icon; \`null\` hides), \`customInput\`, \`noStyle\`, plus \`placeholder\` / \`id\` / \`name\` / \`disabled\` / \`readOnly\` / aria props.
+
 Overlay control: \`open\` / \`defaultOpen\`, \`onOpenChange\`, \`popover\`, \`anchorEl\`.
 
 \`DateTimeInput\` always uses popover mode (fixed positioning, flip, scroll/resize, outside click / Escape). Time-only popovers are compact.
 
-\`DateTimeRange\` supports the same \`asString\` behavior for start/end values.
+Calendar notes: day grid is always 6 weeks; month/year navigation cannot leave min/max / past/future bounds; reopen resets drill-down to the committed month.
+
+\`DateTimeRange\` supports the same \`asString\` behavior for start/end values and commits immediately (no OK button).
 
 ## Custom trigger
 

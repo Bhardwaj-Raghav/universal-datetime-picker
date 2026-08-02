@@ -12,8 +12,18 @@ export type {
   TimeValue,
 } from "./types";
 export { DEFAULT_LABELS } from "./types";
-export { buildCalendarMonth } from "./logic/calendar";
-export type { BuildCalendarOptions } from "./logic/calendar";
+export {
+  buildCalendarMonth,
+  canNavigateNext,
+  canNavigatePrev,
+  clampToSelectableDate,
+  clampViewMonth,
+  isDayDisabled,
+  isMonthSelectable,
+  isYearSelectable,
+  resolveSelectableRange,
+} from "./logic/calendar";
+export type { BuildCalendarOptions, DayDisableOptions } from "./logic/calendar";
 export {
   DATE_FORMAT,
   DEFAULT_FORMAT,
@@ -33,7 +43,6 @@ export {
   startOfWeek,
   to12Hour,
   to24Hour,
-  warnAsStringDeprecation,
 } from "./logic/date";
 export type { Dayjs } from "./logic/date";
 export { PickerController } from "./controller";

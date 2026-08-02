@@ -290,6 +290,17 @@ export function DateTime(props: DateTimeProps) {
         locale={snap.locale}
         labels={snap.labels}
         titleId={snap.showDatePanel ? titleId : undefined}
+        disableOptions={{
+          minDate,
+          maxDate,
+          disablePastDates,
+          disableFutureDates,
+          weekStartsOn,
+        }}
+        onNavigatePrev={() => controller.navigatePrev()}
+        onNavigateNext={() => controller.navigateNext()}
+        onSelectMonth={(monthIndex) => controller.selectMonth(monthIndex)}
+        onSelectYear={(year) => controller.selectYear(year)}
       />
       {snap.calPanel === "day" && (
         <div
@@ -469,8 +480,7 @@ export function DateTime(props: DateTimeProps) {
           type="button"
           className="close-button"
           onClick={() => {
-            onChange?.(null);
-            close();
+            controller.clear();
           }}
         >
           {snap.labels.clear}
@@ -480,12 +490,11 @@ export function DateTime(props: DateTimeProps) {
             {snap.labels.close}
           </button>
         )}
-        {!inline && (
+        {!inline && snap.mode !== "date" && (
           <button
             type="button"
             onClick={() => {
               controller.confirm();
-              close();
             }}
           >
             {snap.labels.ok}

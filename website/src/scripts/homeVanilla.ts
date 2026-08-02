@@ -20,6 +20,18 @@ function previewValue(value: unknown): string {
   return JSON.stringify(value, null, 2);
 }
 
+function startOfDay(base = new Date()): Date {
+  const d = new Date(base);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function addDays(base: Date, days: number): Date {
+  const d = startOfDay(base);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
 function mountInline(
   root: HTMLElement,
   out: HTMLElement,
@@ -84,6 +96,11 @@ export function initHomeVanillaDemos(): () => void {
     handles.push(mountHeroInput(heroAnchor, heroOut));
   }
 
+  const today = startOfDay();
+  const minDate = addDays(today, -7);
+  const maxDate = addDays(today, 14);
+  const bookingMax = addDays(today, 30);
+
   const mounts: Array<{
     sel: string;
     out: string;
@@ -95,29 +112,25 @@ export function initHomeVanillaDemos(): () => void {
       opts: { inline: true, mode: "date", asString: false, disablePastDates: true },
     },
     {
-      sel: "#ex-time",
-      out: "#ex-time-out",
-      opts: { inline: true, mode: "time", asString: false },
-    },
-    {
-      sel: "#ex-time-ns",
-      out: "#ex-time-ns-out",
-      opts: { inline: true, mode: "time", asString: false, showSeconds: false },
-    },
-    {
-      sel: "#ex-combined",
-      out: "#ex-combined-out",
+      sel: "#ex-date-nofuture",
+      out: "#ex-date-nofuture-out",
       opts: {
         inline: true,
-        mode: "datetime",
-        layout: "combined",
+        mode: "date",
         asString: false,
+        disableFutureDates: true,
       },
     },
     {
-      sel: "#ex-tabs",
-      out: "#ex-tabs-out",
-      opts: { inline: true, mode: "datetime", layout: "tabs", asString: false },
+      sel: "#ex-date-bounds",
+      out: "#ex-date-bounds-out",
+      opts: {
+        inline: true,
+        mode: "date",
+        asString: false,
+        minDate,
+        maxDate,
+      },
     },
     {
       sel: "#ex-locale",
@@ -140,26 +153,29 @@ export function initHomeVanillaDemos(): () => void {
     }
   }
 
-  const inputAnchor = document.querySelector<HTMLInputElement>("#ex-input-anchor");
-  const inputOut = document.querySelector<HTMLElement>("#ex-input-out");
-  if (inputAnchor && inputOut) {
-    inputAnchor.classList.add("ctp-input");
-    inputAnchor.readOnly = true;
-    inputAnchor.placeholder = "Pick a date & time";
+  function mountPopoverInput(
+    anchor: HTMLInputElement,
+    out: HTMLElement,
+    options: Parameters<typeof createDateTimePicker>[1]
+  ): Handle {
+    anchor.classList.add("ctp-input");
+    anchor.readOnly = true;
     let popHandle: DateTimePickerHandle | null = null;
     const openInput = () => {
       popHandle?.destroy();
-      popHandle = createDateTimePicker(inputAnchor.parentElement!, {
-        mode: "datetime",
-        asString: true,
-        use12Hours: true,
+      popHandle = createDateTimePicker(anchor.parentElement!, {
+        ...options,
         popover: true,
-        anchorEl: inputAnchor,
+        anchorEl: anchor,
         open: true,
         onChange: (value) => {
-          inputOut.textContent = previewValue(value);
+          out.textContent = previewValue(value);
           if (typeof value === "string") {
-            inputAnchor.value = value;
+            anchor.value = value;
+          } else if (value instanceof Date) {
+            anchor.value = value.toLocaleString();
+          } else if (value && typeof value === "object" && "formatted" in value) {
+            anchor.value = String((value as { formatted: string }).formatted);
           }
         },
         onOpenChange: (open) => {
@@ -170,12 +186,89 @@ export function initHomeVanillaDemos(): () => void {
         },
       });
     };
-    inputAnchor.addEventListener("click", openInput);
-    handles.push({
+    anchor.addEventListener("click", openInput);
+    return {
       destroy: () => popHandle?.destroy(),
       update: () => {},
       getController: () => popHandle!.getController(),
-    } as DateTimePickerHandle);
+    } as DateTimePickerHandle;
+  }
+
+  const inputAnchor = document.querySelector<HTMLInputElement>("#ex-input-anchor");
+  const inputOut = document.querySelector<HTMLElement>("#ex-input-out");
+  if (inputAnchor && inputOut) {
+    inputAnchor.placeholder = "Pick a date & time — confirm with OK";
+    handles.push(
+      mountPopoverInput(inputAnchor, inputOut, {
+        mode: "datetime",
+        asString: true,
+        use12Hours: true,
+      })
+    );
+  }
+
+  const timeAnchor = document.querySelector<HTMLInputElement>("#ex-time-anchor");
+  const timeOut = document.querySelector<HTMLElement>("#ex-time-out");
+  if (timeAnchor && timeOut) {
+    handles.push(
+      mountPopoverInput(timeAnchor, timeOut, {
+        mode: "time",
+        asString: false,
+      })
+    );
+  }
+
+  const timeNsAnchor = document.querySelector<HTMLInputElement>("#ex-time-ns-anchor");
+  const timeNsOut = document.querySelector<HTMLElement>("#ex-time-ns-out");
+  if (timeNsAnchor && timeNsOut) {
+    handles.push(
+      mountPopoverInput(timeNsAnchor, timeNsOut, {
+        mode: "time",
+        asString: false,
+        showSeconds: false,
+      })
+    );
+  }
+
+  const combinedAnchor = document.querySelector<HTMLInputElement>(
+    "#ex-combined-anchor"
+  );
+  const combinedOut = document.querySelector<HTMLElement>("#ex-combined-out");
+  if (combinedAnchor && combinedOut) {
+    handles.push(
+      mountPopoverInput(combinedAnchor, combinedOut, {
+        mode: "datetime",
+        layout: "combined",
+        asString: false,
+      })
+    );
+  }
+
+  const tabsAnchor = document.querySelector<HTMLInputElement>("#ex-tabs-anchor");
+  const tabsOut = document.querySelector<HTMLElement>("#ex-tabs-out");
+  if (tabsAnchor && tabsOut) {
+    handles.push(
+      mountPopoverInput(tabsAnchor, tabsOut, {
+        mode: "datetime",
+        layout: "tabs",
+        asString: false,
+      })
+    );
+  }
+
+  const boundsAnchor = document.querySelector<HTMLInputElement>(
+    "#ex-input-bounds-anchor"
+  );
+  const boundsOut = document.querySelector<HTMLElement>("#ex-input-bounds-out");
+  if (boundsAnchor && boundsOut) {
+    handles.push(
+      mountPopoverInput(boundsAnchor, boundsOut, {
+        mode: "date",
+        asString: true,
+        disablePastDates: true,
+        maxDate: bookingMax,
+      })
+    );
   }
 
   const rangeRoot = document.querySelector<HTMLElement>("#ex-range");
@@ -185,6 +278,7 @@ export function initHomeVanillaDemos(): () => void {
       createDateTimeRangePicker(rangeRoot, {
         inline: true,
         asString: false,
+        disablePastDates: true,
         onChange: (value) => {
           rangeOut.textContent = `${previewValue(value.start)} → ${previewValue(value.end)}`;
         },

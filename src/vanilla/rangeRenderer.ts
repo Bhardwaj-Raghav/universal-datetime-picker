@@ -3,6 +3,10 @@ import {
   type RangeSnapshot,
 } from "../core/rangeController";
 import type { CalendarDay, DateTimeRangeOptions } from "../core/types";
+import {
+  isMonthSelectable,
+  isYearSelectable,
+} from "../core/logic/calendar";
 import { formatLocalized } from "../core/logic/date";
 import { dayjs, type Dayjs } from "../core/logic/date";
 import {
@@ -234,6 +238,7 @@ export function createDateTimeRangePicker(
             snap.calPanel === "day"
               ? snap.labels.previousMonth
               : snap.labels.previousYear,
+          disabled: !snap.canNavigatePrev,
           onClick: () => controller.navigatePrev(),
           textContent: "‹",
         }),
@@ -245,6 +250,7 @@ export function createDateTimeRangePicker(
             snap.calPanel === "day"
               ? snap.labels.nextMonth
               : snap.labels.nextYear,
+          disabled: !snap.canNavigateNext,
           onClick: () => controller.navigateNext(),
           textContent: "›",
         }),
@@ -318,19 +324,24 @@ export function createDateTimeRangePicker(
         role: "grid",
         ariaLabel: snap.labels.chooseMonth,
       });
+      const disableOptions = controller.getDisableOptions();
       for (let monthIndex = 0; monthIndex < 12; monthIndex += 1) {
         const monthDate = snap.viewMonth.month(monthIndex);
         const isCurrent =
           snap.viewMonth.year() === now.year() && monthIndex === now.month();
+        const disabled = !isMonthSelectable(monthDate, disableOptions);
         grid.append(
           el("button", {
             type: "button",
             role: "gridcell",
+            disabled,
+            ariaDisabled: disabled,
             ariaCurrent: isCurrent ? "date" : undefined,
             className: cx(
               "ctp-box",
               "ctp-box-month",
-              isCurrent && "ctp-current"
+              isCurrent && "ctp-current",
+              disabled && "disabled-date"
             ),
             onClick: () => controller.selectMonth(monthIndex),
             textContent: formatLocalized(monthDate, "MMM", snap.locale),
@@ -344,17 +355,22 @@ export function createDateTimeRangePicker(
         role: "grid",
         ariaLabel: snap.labels.chooseYear,
       });
+      const disableOptions = controller.getDisableOptions();
       for (let offset = 0; offset < 12; offset += 1) {
         const y = windowStart + offset;
+        const disabled = !isYearSelectable(y, disableOptions);
         grid.append(
           el("button", {
             type: "button",
             role: "gridcell",
+            disabled,
+            ariaDisabled: disabled,
             ariaCurrent: now.year() === y ? "date" : undefined,
             className: cx(
               "ctp-box",
               "ctp-box-year",
-              now.year() === y && "ctp-current"
+              now.year() === y && "ctp-current",
+              disabled && "disabled-date"
             ),
             onClick: () => controller.selectYear(y),
             textContent: String(y),
@@ -379,16 +395,6 @@ export function createDateTimeRangePicker(
           className: "ctp-cancel",
           onClick: () => controller.close(),
           textContent: snap.labels.close,
-        })
-      );
-    }
-    if (!snap.inline) {
-      footerChildren.push(
-        el("button", {
-          type: "button",
-          disabled: !snap.start || !snap.end,
-          onClick: () => controller.confirm(),
-          textContent: snap.labels.ok,
         })
       );
     }

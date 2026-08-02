@@ -1,13 +1,17 @@
 import type { Dispatch, ReactNode, SetStateAction } from "react";
+import type { DayDisableOptions } from "./core/logic/calendar";
+import {
+  canNavigateNext,
+  canNavigatePrev,
+  isMonthSelectable,
+  isYearSelectable,
+  yearWindowStart,
+} from "./core/logic/calendar";
 import type { CalendarPanel, DateTimeLabels } from "./types";
 import { dayjs, formatLocalized, type Dayjs } from "./utils/date";
 
 function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(" ");
-}
-
-function yearWindowStart(year: number): number {
-  return Math.floor(year / 12) * 12;
 }
 
 export interface CalendarHeaderProps {
@@ -18,6 +22,12 @@ export interface CalendarHeaderProps {
   locale: string;
   labels: Required<DateTimeLabels>;
   titleId?: string;
+  /** When set, month/year navigation stays within these bounds. */
+  disableOptions?: DayDisableOptions;
+  onNavigatePrev?: () => void;
+  onNavigateNext?: () => void;
+  onSelectMonth?: (monthIndex: number) => void;
+  onSelectYear?: (year: number) => void;
 }
 
 export function CalendarHeader(props: CalendarHeaderProps) {
@@ -29,14 +39,28 @@ export function CalendarHeader(props: CalendarHeaderProps) {
     locale,
     labels,
     titleId,
+    disableOptions = {},
+    onNavigatePrev,
+    onNavigateNext,
+    onSelectMonth,
+    onSelectYear,
   } = props;
 
   const year = viewMonth.year();
   const windowStart = yearWindowStart(year);
   const windowEnd = windowStart + 11;
   const now = dayjs();
+  const canPrev = canNavigatePrev(viewMonth, panel, disableOptions);
+  const canNext = canNavigateNext(viewMonth, panel, disableOptions);
 
   const onPrev = () => {
+    if (!canPrev) {
+      return;
+    }
+    if (onNavigatePrev) {
+      onNavigatePrev();
+      return;
+    }
     if (panel === "day") {
       setViewMonth((m) => m.subtract(1, "month"));
       return;
@@ -49,6 +73,13 @@ export function CalendarHeader(props: CalendarHeaderProps) {
   };
 
   const onNext = () => {
+    if (!canNext) {
+      return;
+    }
+    if (onNavigateNext) {
+      onNavigateNext();
+      return;
+    }
     if (panel === "day") {
       setViewMonth((m) => m.add(1, "month"));
       return;
@@ -104,6 +135,7 @@ export function CalendarHeader(props: CalendarHeaderProps) {
           type="button"
           className="ctp-prev-month"
           aria-label={prevLabel}
+          disabled={!canPrev}
           onClick={onPrev}
         >
           ‹
@@ -113,6 +145,7 @@ export function CalendarHeader(props: CalendarHeaderProps) {
           type="button"
           className="ctp-next-month"
           aria-label={nextLabel}
+          disabled={!canNext}
           onClick={onNext}
         >
           ›
@@ -129,19 +162,30 @@ export function CalendarHeader(props: CalendarHeaderProps) {
             const monthDate = viewMonth.month(monthIndex);
             const isCurrent =
               viewMonth.year() === now.year() && monthIndex === now.month();
+            const disabled = !isMonthSelectable(monthDate, disableOptions);
             return (
               <button
                 key={monthIndex}
                 type="button"
                 role="gridcell"
+                disabled={disabled}
+                aria-disabled={disabled}
                 aria-current={isCurrent ? "date" : undefined}
                 aria-label={formatLocalized(monthDate, "MMMM YYYY", locale)}
                 className={cx(
                   "ctp-box",
                   "ctp-box-month",
-                  isCurrent && "ctp-current"
+                  isCurrent && "ctp-current",
+                  disabled && "disabled-date"
                 )}
                 onClick={() => {
+                  if (disabled) {
+                    return;
+                  }
+                  if (onSelectMonth) {
+                    onSelectMonth(monthIndex);
+                    return;
+                  }
                   setViewMonth((m) => m.month(monthIndex));
                   onPanelChange("day");
                 }}
@@ -162,19 +206,30 @@ export function CalendarHeader(props: CalendarHeaderProps) {
           {Array.from({ length: 12 }, (_, offset) => {
             const y = windowStart + offset;
             const isCurrent = now.year() === y;
+            const disabled = !isYearSelectable(y, disableOptions);
             return (
               <button
                 key={y}
                 type="button"
                 role="gridcell"
+                disabled={disabled}
+                aria-disabled={disabled}
                 aria-current={isCurrent ? "date" : undefined}
                 aria-label={String(y)}
                 className={cx(
                   "ctp-box",
                   "ctp-box-year",
-                  isCurrent && "ctp-current"
+                  isCurrent && "ctp-current",
+                  disabled && "disabled-date"
                 )}
                 onClick={() => {
+                  if (disabled) {
+                    return;
+                  }
+                  if (onSelectYear) {
+                    onSelectYear(y);
+                    return;
+                  }
                   setViewMonth((m) => m.year(y));
                   onPanelChange("month");
                 }}

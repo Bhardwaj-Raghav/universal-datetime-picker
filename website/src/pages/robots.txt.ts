@@ -1,20 +1,29 @@
 import type { APIRoute } from "astro";
+import { SITE_ORIGIN } from "../site.config";
 
-const getRobotsTxt = (sitemapURL: URL, siteOrigin: string) => `User-agent: *
+const getRobotsTxt = (sitemapURL: string, siteOrigin: string) => `User-agent: *
 Allow: /
 
 # LLM-friendly site summary (https://llmstxt.org/)
 # ${siteOrigin}/llms.txt
 # ${siteOrigin}/llms-full.txt
 
-Sitemap: ${sitemapURL.href}
+Sitemap: ${sitemapURL}
 `;
 
 export const GET: APIRoute = ({ site }) => {
-  const origin = (site?.origin || "https://universal-datetime-picker.vercel.app").replace(
-    /\/$/,
-    ""
-  );
-  const sitemapURL = new URL("sitemap-index.xml", site);
-  return new Response(getRobotsTxt(sitemapURL, origin));
+  // Prefer Astro.site when it matches the canonical host; never emit the
+  // redirected legacy host (breaks Google Search Console sitemap reads).
+  const fromAstro = site?.origin?.replace(/\/$/, "");
+  const origin =
+    fromAstro && !fromAstro.includes("react-calendar-time.vercel.app")
+      ? fromAstro
+      : SITE_ORIGIN;
+  const sitemapURL = `${origin}/sitemap-index.xml`;
+  return new Response(getRobotsTxt(sitemapURL, origin), {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "public, max-age=0, must-revalidate",
+    },
+  });
 };

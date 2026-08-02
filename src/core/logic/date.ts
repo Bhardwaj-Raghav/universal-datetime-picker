@@ -63,27 +63,6 @@ export function buildTimeValue(value: Dayjs, format: string): TimeValue {
   };
 }
 
-let asStringDeprecationWarned = false;
-
-/** One-time warning when `asString` is omitted (string return is deprecated). */
-export function warnAsStringDeprecation(): void {
-  if (asStringDeprecationWarned) {
-    return;
-  }
-  if (
-    typeof process !== "undefined" &&
-    process.env.NODE_ENV === "production"
-  ) {
-    return;
-  }
-  asStringDeprecationWarned = true;
-  console.warn(
-    "[universal-datetime-picker] Omitting `asString` currently returns a formatted string. " +
-      "Set `asString={true}` to keep strings, or `asString={false}` to receive a Date / TimeValue. " +
-      "A future major release will default to Date / TimeValue."
-  );
-}
-
 export function parseValue(
   value: ConfigType | undefined | null,
   format: string = DEFAULT_FORMAT

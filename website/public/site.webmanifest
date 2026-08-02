@@ -1,7 +1,7 @@
 {
-  "name": "universal-datetime-picker",
-  "short_name": "Datetime Picker",
-  "description": "Universal accessible date time picker with calendar, time, and date range modes",
+  "name": "Universal Date Time Picker — React date picker for every framework",
+  "short_name": "Date Picker",
+  "description": "React date picker and date time picker: vanilla JS, Vue, Svelte, Angular, Web Components, CDN. TypeScript, accessible calendar, date ranges.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f3f6ef",

@@ -1,5 +1,31 @@
 # Changelog
 
+## 2.1.0
+
+UX and API improvements for single and range pickers.
+
+### Changed
+- **`asString` default is now objects** — omitting `asString` returns `Date` / `TimeValue` / `{ start, end: Date | null }`. Set `asString={true}` for formatted strings. The one-time deprecation warning is removed.
+- **Commit on selection** — date-only overlays commit and close when a day is picked (no OK). Datetime and time overlays keep an OK button and commit on confirm. Clear and Close remain.
+- **Initial month respects bounds** — when today is outside `minDate` / `maxDate` (or past/future disables), the picker opens on the first or last selectable day.
+- **Month/year drill-down resets on close** — reopening always returns to the day grid at the committed value's month.
+- Website landing page and SEO metadata updated for react date picker / date time picker discoverability.
+- npm `description` and `keywords` tuned for searches like “react date picker”, “datetime picker”, and “react date time picker”.
+
+### Added
+- **`DateTimeInput` calendar icon** at the end of the field (override with `icon`, hide with `icon={null}`).
+- **`DateTimeInput` `customInput`** — pass your own trigger element; ref/value/onClick are injected.
+- **`DateTimeInput` `noStyle`** — skip default input classes so you style via `className` / `inputClassName` / `style`.
+
+### Fixed
+- No day is pre-selected when the initial value is null, empty, or invalid on first open.
+- Default calendar icon uses higher-contrast foreground color for better visibility.
+- Month/year navigation (arrows and month/year grids) cannot move outside `minDate` / `maxDate` / past/future disable bounds.
+- Calendar month grid always renders **6 weeks** so height stays stable when changing months.
+
+### Removed
+- OK button from **date-only** and **range** overlay footers (selection commits immediately). Datetime and time overlays still show OK.
+
 ## 2.0.0
 
 Framework-agnostic release: headless core, vanilla renderer, Web Components, CDN IIFE, and multi-framework entry points.

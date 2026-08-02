@@ -7,24 +7,24 @@ import {
   HOME_SNIPPETS,
   HOME_SNIPPET_TABS,
 } from "../frameworks";
-import { GITHUB_URL, NPM_URL, SITE_FAQS } from "../site.config";
+import { GITHUB_URL, NPM_URL, PACKAGE_VERSION, SITE_FAQS } from "../site.config";
 
 const features = [
   {
     title: "Works everywhere",
-    body: "Native React components plus Web Components and a vanilla API — Vue, Svelte, Angular, plain HTML, and CDN from one package.",
+    body: "Native React date picker plus Web Components and vanilla createDateTimePicker — Vue, Svelte, Angular, plain HTML, and CDN from one npm package.",
+  },
+  {
+    title: "Pick and go",
+    body: "Date-only overlays commit and close on day click. Datetime and time overlays keep an OK button so you can adjust the clock first. DateTimeInput includes a calendar icon, customInput, and noStyle.",
   },
   {
     title: "Accessible calendar & time UI",
-    body: "Dialog semantics, focus trap, Escape to dismiss, and arrow-key navigation so your datetime picker works with keyboards and assistive tech.",
+    body: "Dialog semantics, focus trap, Escape to dismiss, and arrow-key navigation. Opens on the first or last selectable day when min/max bounds apply.",
   },
   {
-    title: "Themeable date time picker",
-    body: "One stylesheet, CSS variables for light/dark themes, 12-hour clocks, locales, and custom labels without forking.",
-  },
-  {
-    title: "Typed & dayjs-powered",
-    body: "First-class TypeScript exports, Date / TimeValue return types, ESM/CJS builds, and React 18+ as an optional peer.",
+    title: "Typed Date / TimeValue by default",
+    body: "Omit asString for native Date and TimeValue objects. CSS-variable themes, 12-hour clocks, locales, and TypeScript exports across ESM/CJS.",
   },
 ];
 
@@ -67,15 +67,17 @@ const installCmd = "npm install universal-datetime-picker";
     <main id="top">
       <section class="hero" aria-labelledby="hero-heading">
         <div class="hero-copy">
-          <p class="eyebrow">v2.0 · Vanilla JS first · React · Vue · Svelte · Angular · CDN</p>
+          <p class="eyebrow">v{PACKAGE_VERSION} · React date picker · Vanilla · Vue · Svelte · Angular · CDN</p>
           <p class="brand-kicker">universal-datetime-picker</p>
           <h1 id="hero-heading" class="hero-brand">
-            Date time picker for every major framework
+            Universal React date picker &amp; date time picker for every framework
           </h1>
           <p class="hero-lead">
-            This page runs entirely on the vanilla
-            <code>createDateTimePicker</code> API — no React on the home route.
-            Pick a framework below for a dedicated live demo and copy-paste setup.
+            This page runs on the vanilla <code>createDateTimePicker</code> API — no
+            React on the home route. Date-only picks commit immediately; datetime uses OK
+            after you set the time. <code>DateTimeInput</code> adds a calendar icon and
+            returns native <code>Date</code> objects by default. Choose a framework below
+            for a live demo and copy-paste setup.
           </p>
           <div class="hero-actions">
             <a class="btn btn-ghost" href="#live-demo">Try the live demo</a>
@@ -126,7 +128,7 @@ const installCmd = "npm install universal-datetime-picker";
           <div class="stage-glow" aria-hidden="true"></div>
           <div class="stage-panel">
             <h2 class="stage-label">Live vanilla date-time input</h2>
-            <input id="hero-input" type="text" aria-label="Pick a date and time" />
+            <input id="hero-input" type="text" aria-label="Pick a date and time" placeholder="Click to open — confirm with OK" />
             <p class="stage-value">
               Selected: <span id="hero-value">null</span>
             </p>
@@ -163,45 +165,68 @@ const installCmd = "npm install universal-datetime-picker";
             Date picker, time picker, and date range examples
           </h2>
           <p>
-            All blocks below mount with
-            <code>createDateTimePicker</code> and
-            <code>createDateTimeRangePicker</code>. Framework-specific pages show
+            All blocks below mount with <code>createDateTimePicker</code> and <code>createDateTimeRangePicker</code>, including past/future disables and min/max windows. Framework-specific pages show
             the same UI through React, Vue, Web Components, or CDN.
           </p>
         </div>
         <div class="showcase-grid home-vanilla-grid">
           <div class="showcase-block">
-            <h3>Date only · Date object</h3>
+            <h3>Date · disable past</h3>
+            <p class="showcase-note"><code>disablePastDates</code> — past days greyed out.</p>
             <div id="ex-date"></div>
             <pre class="stage-value" id="ex-date-out">null</pre>
           </div>
           <div class="showcase-block">
+            <h3>Date · disable future</h3>
+            <p class="showcase-note"><code>disableFutureDates</code> — future days blocked.</p>
+            <div id="ex-date-nofuture"></div>
+            <pre class="stage-value" id="ex-date-nofuture-out">null</pre>
+          </div>
+          <div class="showcase-block">
+            <h3>Date · min &amp; max</h3>
+            <p class="showcase-note"><code>minDate</code> / <code>maxDate</code> — window from 7 days ago to 14 days ahead.</p>
+            <div id="ex-date-bounds"></div>
+            <pre class="stage-value" id="ex-date-bounds-out">null</pre>
+          </div>
+          <div class="showcase-block">
             <h3>Time only · TimeValue</h3>
-            <div id="ex-time"></div>
+            <p class="showcase-note">Popover — adjust time, then press <strong>OK</strong> to commit.</p>
+            <input id="ex-time-anchor" type="text" aria-label="Pick a time" placeholder="Open time picker" />
             <pre class="stage-value" id="ex-time-out">null</pre>
           </div>
           <div class="showcase-block">
             <h3>Time · no seconds</h3>
-            <div id="ex-time-ns"></div>
+            <p class="showcase-note">Popover without seconds — confirm with <strong>OK</strong>.</p>
+            <input id="ex-time-ns-anchor" type="text" aria-label="Pick a time without seconds" placeholder="Open time picker" />
             <pre class="stage-value" id="ex-time-ns-out">null</pre>
           </div>
           <div class="showcase-block">
             <h3>Combined date &amp; time · Date</h3>
-            <div id="ex-combined"></div>
+            <p class="showcase-note">Datetime popover — day + time draft until <strong>OK</strong>.</p>
+            <input id="ex-combined-anchor" type="text" aria-label="Pick date and time" placeholder="Open datetime picker" />
             <pre class="stage-value" id="ex-combined-out">null</pre>
           </div>
           <div class="showcase-block">
             <h3>Separate view (tabs) · Date</h3>
-            <div id="ex-tabs"></div>
+            <p class="showcase-note">Tabs layout popover — confirm with <strong>OK</strong>.</p>
+            <input id="ex-tabs-anchor" type="text" aria-label="Pick date and time with tabs" placeholder="Open tabs datetime" />
             <pre class="stage-value" id="ex-tabs-out">null</pre>
           </div>
           <div class="showcase-block">
             <h3>Input · string (asString)</h3>
-            <input id="ex-input-anchor" type="text" aria-label="Pick a date and time" />
+            <p class="showcase-note">Datetime input — commit with <strong>OK</strong> (not on day click alone).</p>
+            <input id="ex-input-anchor" type="text" aria-label="Pick a date and time" placeholder="Opens empty — confirm with OK" />
             <pre class="stage-value" id="ex-input-out">null</pre>
           </div>
           <div class="showcase-block">
-            <h3>Date range · Date objects</h3>
+            <h3>Input · booking window</h3>
+            <p class="showcase-note">Popover with past disabled and a 30-day <code>maxDate</code>.</p>
+            <input id="ex-input-bounds-anchor" type="text" aria-label="Book a date" placeholder="Today → +30 days" />
+            <pre class="stage-value" id="ex-input-bounds-out">null</pre>
+          </div>
+          <div class="showcase-block">
+            <h3>Date range · past disabled</h3>
+            <p class="showcase-note">Range picker with <code>disablePastDates</code>.</p>
             <div id="ex-range"></div>
             <pre class="stage-value" id="ex-range-out">null → null</pre>
           </div>
