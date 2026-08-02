@@ -10,9 +10,30 @@ import sitemap from "@astrojs/sitemap";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(root, "..");
-const site =
-  process.env.SITE_URL?.replace(/\/$/, "") ||
-  "https://universal-datetime-picker.vercel.app";
+
+/** Canonical production origin — must match the Search Console property. */
+const DEFAULT_SITE = "https://universal-datetime-picker.vercel.app";
+const LEGACY_SITE_HOSTS = ["react-calendar-time.vercel.app"];
+
+function resolveSiteUrl() {
+  const fromEnv = process.env.SITE_URL?.trim().replace(/\/$/, "");
+  if (!fromEnv) {
+    return DEFAULT_SITE;
+  }
+  // Ignore stale cutover env that still points at the redirected legacy host
+  // (Google Search Console rejects sitemaps that 301 or use the wrong host).
+  try {
+    const host = new URL(fromEnv).host;
+    if (LEGACY_SITE_HOSTS.includes(host)) {
+      return DEFAULT_SITE;
+    }
+  } catch {
+    return DEFAULT_SITE;
+  }
+  return fromEnv;
+}
+
+const site = resolveSiteUrl();
 
 const pkgAliases = [
   {

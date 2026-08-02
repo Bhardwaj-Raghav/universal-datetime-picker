@@ -1,4 +1,14 @@
-import { buildCalendarMonth } from "./logic/calendar";
+import {
+  buildCalendarMonth,
+  canNavigateNext,
+  canNavigatePrev,
+  clampToSelectableDate,
+  clampViewMonth,
+  isDayDisabled,
+  isMonthSelectable,
+  isYearSelectable,
+  resolveSelectableRange,
+} from "./logic/calendar";
 import type {
   CalendarDay,
   CalendarPanel,
@@ -23,7 +33,6 @@ import {
   startOfWeek,
   to12Hour,
   to24Hour,
-  warnAsStringDeprecation,
   type Dayjs,
 } from "./logic/date";
 
@@ -69,6 +78,8 @@ export interface PickerSnapshot {
   displayMinute: string;
   displaySecond: string;
   minuteOptions: string[];
+  canNavigatePrev: boolean;
+  canNavigateNext: boolean;
 }
 
 function padDisplay(n: number): string {
@@ -80,15 +91,17 @@ export type PickerControllerOptions = DateTimeBaseOptions;
 export class PickerController {
   private listeners = new Set<Listener>();
   private options: PickerControllerOptions;
-  private draft: Dayjs;
-  private viewMonth: Dayjs;
+  private draft!: Dayjs;
+  private viewMonth!: Dayjs;
   private calPanel: CalendarPanel = "day";
   private tab: "date" | "time";
   private showHours = false;
   private showMinutes = false;
   private showSecondsOpen = false;
   private showAmPm = false;
-  private focusedDay: Dayjs;
+  private focusedDay!: Dayjs;
+  /** Set only when a value exists or the user picks a day (date/datetime modes). */
+  private selectedDay: Dayjs | null = null;
   private open: boolean;
   private snapshot: PickerSnapshot;
 
@@ -103,13 +116,24 @@ export class PickerController {
       use12Hours,
       showSeconds,
     });
-    const initial =
-      parseValue(options.value ?? options.defaultValue ?? dayjs(), format) ??
-      dayjs();
-
-    this.draft = initial;
-    this.viewMonth = initial.startOf("month");
-    this.focusedDay = initial;
+    const committed = this.parseCommittedValue(options, format);
+    if (committed) {
+      this.selectedDay = committed;
+      this.syncDraftAndView(committed);
+    } else {
+      this.selectedDay = null;
+      const anchor =
+        mode === "time"
+          ? dayjs()
+          : clampToSelectableDate(dayjs(), {
+              minDate: options.minDate,
+              maxDate: options.maxDate,
+              disablePastDates: options.disablePastDates,
+              disableFutureDates: options.disableFutureDates,
+              weekStartsOn: options.weekStartsOn ?? 0,
+            });
+      this.syncDraftAndView(anchor);
+    }
     this.tab = mode === "time" ? "time" : "date";
     this.open = options.open ?? (options.inline ? true : (options.defaultOpen ?? true));
     this.snapshot = this.buildSnapshot();
@@ -135,23 +159,33 @@ export class PickerController {
       this.tab = partial.mode === "time" ? "time" : "date";
     }
 
-    if (partial.open !== undefined) {
+    if (partial.open !== undefined && partial.open !== prev.open) {
+      if (!this.options.inline) {
+        if (!partial.open) {
+          this.calPanel = "day";
+        }
+        this.resetViewToCommitted();
+      }
+      this.open = partial.open;
+    } else if (partial.open !== undefined) {
       this.open = partial.open;
     }
 
     if ("value" in partial) {
       if (partial.value === null) {
-        const fallback = dayjs();
-        this.draft = fallback;
-        this.viewMonth = fallback.startOf("month");
-        this.focusedDay = fallback;
+        this.selectedDay = null;
+        const mode = this.options.mode ?? "datetime";
+        const fallback =
+          mode === "time"
+            ? dayjs()
+            : clampToSelectableDate(dayjs(), this.getDayDisableOptions());
+        this.syncDraftAndView(fallback);
       } else if (partial.value !== undefined) {
         const format = this.getResolvedFormat();
         const parsed = parseValue(partial.value, format);
         if (parsed) {
-          this.draft = parsed;
-          this.viewMonth = parsed.startOf("month");
-          this.focusedDay = parsed;
+          this.selectedDay = parsed;
+          this.syncDraftAndView(parsed);
         }
       }
     }
@@ -198,7 +232,7 @@ export class PickerController {
 
     const weeks = buildCalendarMonth({
       viewMonth: this.viewMonth,
-      selected: this.draft,
+      selected: this.selectedDay,
       minDate: this.options.minDate,
       maxDate: this.options.maxDate,
       disablePastDates: this.options.disablePastDates,
@@ -254,12 +288,102 @@ export class PickerController {
       displayMinute: padDisplay(this.draft.minute()),
       displaySecond: padDisplay(this.draft.second()),
       minuteOptions: MINUTES,
+      canNavigatePrev: canNavigatePrev(
+        this.viewMonth,
+        this.calPanel,
+        this.getDayDisableOptions()
+      ),
+      canNavigateNext: canNavigateNext(
+        this.viewMonth,
+        this.calPanel,
+        this.getDayDisableOptions()
+      ),
     };
+  }
+
+  private parseCommittedValue(
+    options: PickerControllerOptions,
+    format: string
+  ): Dayjs | null {
+    if (options.value === null) {
+      return null;
+    }
+    const raw = options.value ?? options.defaultValue;
+    if (raw === undefined || raw === null || raw === "") {
+      return null;
+    }
+    return parseValue(raw, format);
+  }
+
+  private parseCommittedFromCurrentOptions(): Dayjs | null {
+    return this.parseCommittedValue(this.options, this.getResolvedFormat());
+  }
+
+  private getDayDisableOptions() {
+    return {
+      minDate: this.options.minDate,
+      maxDate: this.options.maxDate,
+      disablePastDates: this.options.disablePastDates,
+      disableFutureDates: this.options.disableFutureDates,
+      weekStartsOn: this.options.weekStartsOn ?? 0,
+    };
+  }
+
+  /** Exposed for renderers that need month/year disable checks. */
+  getDisableOptions() {
+    return this.getDayDisableOptions();
+  }
+
+  private syncDraftAndView(raw: Dayjs): void {
+    const mode = this.options.mode ?? "datetime";
+    this.draft = raw;
+    if (mode === "time") {
+      this.viewMonth = raw.startOf("month");
+      this.focusedDay = raw.startOf("day");
+      return;
+    }
+    const viewAnchor = clampToSelectableDate(raw, this.getDayDisableOptions());
+    this.viewMonth = viewAnchor.startOf("month");
+    this.focusedDay = viewAnchor;
+  }
+
+  private resetViewToCommitted(): void {
+    const committed = this.parseCommittedFromCurrentOptions();
+    if (committed) {
+      this.selectedDay = committed;
+      this.syncDraftAndView(committed);
+      return;
+    }
+
+    this.selectedDay = null;
+    const mode = this.options.mode ?? "datetime";
+    const anchor =
+      mode === "time"
+        ? dayjs()
+        : clampToSelectableDate(dayjs(), this.getDayDisableOptions());
+    this.syncDraftAndView(anchor);
+  }
+
+  private isDraftDisabled(): boolean {
+    const mode = this.options.mode ?? "datetime";
+    if (mode === "time") {
+      return false;
+    }
+    if (!this.selectedDay) {
+      return true;
+    }
+    return isDayDisabled(this.selectedDay, this.getDayDisableOptions());
   }
 
   setOpen(open: boolean): void {
     if (this.options.inline) {
       return;
+    }
+    if (open) {
+      this.resetViewToCommitted();
+    } else {
+      this.calPanel = "day";
+      this.resetViewToCommitted();
     }
     this.open = open;
     this.options.onOpenChange?.(open);
@@ -283,43 +407,66 @@ export class PickerController {
   }
 
   setViewMonth(next: Dayjs | ((prev: Dayjs) => Dayjs)): void {
-    this.viewMonth = typeof next === "function" ? next(this.viewMonth) : next;
+    const raw = typeof next === "function" ? next(this.viewMonth) : next;
+    this.viewMonth = clampViewMonth(raw, this.getDayDisableOptions());
     this.emit();
   }
 
+  /** Overlay date-only (and all inline) commit immediately; datetime/time overlays wait for OK. */
+  private shouldCommitImmediately(): boolean {
+    if (this.options.inline) {
+      return true;
+    }
+    return (this.options.mode ?? "datetime") === "date";
+  }
+
   selectDay(day: Dayjs): void {
+    this.selectedDay = day.startOf("day");
     this.draft = this.draft
       .year(day.year())
       .month(day.month())
       .date(day.date());
     this.focusedDay = day;
     this.emit();
-    this.maybeCommitInline();
+    if (this.shouldCommitImmediately()) {
+      this.maybeCommit();
+      if (!this.options.inline) {
+        this.close();
+      }
+    }
   }
 
   setHour(hourValue: number): void {
     this.draft = this.draft.hour(hourValue);
     this.emit();
-    this.maybeCommitInline();
+    if (this.shouldCommitImmediately()) {
+      this.maybeCommit();
+    }
   }
 
   setMinute(minute: number): void {
     this.draft = this.draft.minute(minute);
     this.emit();
-    this.maybeCommitInline();
+    if (this.shouldCommitImmediately()) {
+      this.maybeCommit();
+    }
   }
 
   setSecond(second: number): void {
     this.draft = this.draft.second(second);
     this.emit();
-    this.maybeCommitInline();
+    if (this.shouldCommitImmediately()) {
+      this.maybeCommit();
+    }
   }
 
   setAmPm(isAm: boolean): void {
     const { hour } = to12Hour(this.draft.hour());
     this.draft = this.draft.hour(to24Hour(hour, isAm));
     this.emit();
-    this.maybeCommitInline();
+    if (this.shouldCommitImmediately()) {
+      this.maybeCommit();
+    }
   }
 
   toggleHours(): void {
@@ -371,21 +518,27 @@ export class PickerController {
     }
     this.showHours = false;
     this.emit();
-    this.maybeCommitInline();
+    if (this.shouldCommitImmediately()) {
+      this.maybeCommit();
+    }
   }
 
   selectMinuteOption(opt: string): void {
     this.draft = this.draft.minute(Number(opt));
     this.showMinutes = false;
     this.emit();
-    this.maybeCommitInline();
+    if (this.shouldCommitImmediately()) {
+      this.maybeCommit();
+    }
   }
 
   selectSecondOption(opt: string): void {
     this.draft = this.draft.second(Number(opt));
     this.showSecondsOpen = false;
     this.emit();
-    this.maybeCommitInline();
+    if (this.shouldCommitImmediately()) {
+      this.maybeCommit();
+    }
   }
 
   selectAmPmOption(opt: string): void {
@@ -393,7 +546,9 @@ export class PickerController {
     this.draft = this.draft.hour(to24Hour(hour, opt === "AM"));
     this.showAmPm = false;
     this.emit();
-    this.maybeCommitInline();
+    if (this.shouldCommitImmediately()) {
+      this.maybeCommit();
+    }
   }
 
   handleGridKeyDown(key: string): boolean {
@@ -420,11 +575,9 @@ export class PickerController {
         break;
       case "PageUp":
         next = this.focusedDay.subtract(1, "month");
-        this.viewMonth = next.startOf("month");
         break;
       case "PageDown":
         next = this.focusedDay.add(1, "month");
-        this.viewMonth = next.startOf("month");
         break;
       case "Enter":
       case " ": {
@@ -439,46 +592,62 @@ export class PickerController {
       default:
         return false;
     }
-    this.focusedDay = next;
-    if (!next.isSame(this.viewMonth, "month")) {
-      this.viewMonth = next.startOf("month");
+    const bounds = this.getDayDisableOptions();
+    const range = resolveSelectableRange(bounds);
+    if (range.min && next.isBefore(range.min, "day")) {
+      next = range.min;
     }
+    if (range.max && next.isAfter(range.max, "day")) {
+      next = range.max;
+    }
+    this.focusedDay = next;
+    this.viewMonth = clampViewMonth(next, bounds);
     this.emit();
     return true;
   }
 
   private buildPayload(): DateTimeChangeValue {
     const snap = this.snapshot;
-    if (snap.asString === false) {
-      if (snap.mode === "time") {
-        return buildTimeValue(this.draft, snap.resolvedFormat);
-      }
-      if (snap.mode === "date") {
-        return this.draft.startOf("day").toDate();
-      }
-      return this.draft.toDate();
+    if (snap.asString === true) {
+      return formatValue(this.draft, snap.resolvedFormat);
     }
-    if (snap.asString === undefined) {
-      warnAsStringDeprecation();
+    if (snap.mode === "time") {
+      return buildTimeValue(this.draft, snap.resolvedFormat);
     }
-    return formatValue(this.draft, snap.resolvedFormat);
+    if (snap.mode === "date") {
+      return this.draft.startOf("day").toDate();
+    }
+    return this.draft.toDate();
   }
 
-  private maybeCommitInline(): void {
-    if (!this.options.inline) {
+  private maybeCommit(): void {
+    if (!this.options.onChange || this.isDraftDisabled()) {
       return;
     }
-    this.options.onChange?.(this.buildPayload());
+    const mode = this.options.mode ?? "datetime";
+    if (mode !== "time" && !this.selectedDay) {
+      return;
+    }
+    this.options.onChange(this.buildPayload());
   }
 
   confirm(): DateTimeChangeValue {
     const payload = this.buildPayload();
-    this.options.onChange?.(payload);
+    if (!this.isDraftDisabled()) {
+      this.options.onChange?.(payload);
+    }
     this.close();
     return payload;
   }
 
   clear(): void {
+    this.selectedDay = null;
+    const mode = this.options.mode ?? "datetime";
+    const anchor =
+      mode === "time"
+        ? dayjs()
+        : clampToSelectableDate(dayjs(), this.getDayDisableOptions());
+    this.syncDraftAndView(anchor);
     this.options.onChange?.(null);
     this.close();
   }
@@ -489,6 +658,11 @@ export class PickerController {
   }
 
   navigatePrev(): void {
+    if (
+      !canNavigatePrev(this.viewMonth, this.calPanel, this.getDayDisableOptions())
+    ) {
+      return;
+    }
     if (this.calPanel === "day") {
       this.viewMonth = this.viewMonth.subtract(1, "month");
     } else if (this.calPanel === "month") {
@@ -496,10 +670,16 @@ export class PickerController {
     } else {
       this.viewMonth = this.viewMonth.subtract(12, "year");
     }
+    this.viewMonth = clampViewMonth(this.viewMonth, this.getDayDisableOptions());
     this.emit();
   }
 
   navigateNext(): void {
+    if (
+      !canNavigateNext(this.viewMonth, this.calPanel, this.getDayDisableOptions())
+    ) {
+      return;
+    }
     if (this.calPanel === "day") {
       this.viewMonth = this.viewMonth.add(1, "month");
     } else if (this.calPanel === "month") {
@@ -507,17 +687,26 @@ export class PickerController {
     } else {
       this.viewMonth = this.viewMonth.add(12, "year");
     }
+    this.viewMonth = clampViewMonth(this.viewMonth, this.getDayDisableOptions());
     this.emit();
   }
 
   selectMonth(monthIndex: number): void {
-    this.viewMonth = this.viewMonth.month(monthIndex);
+    const candidate = this.viewMonth.month(monthIndex);
+    if (!isMonthSelectable(candidate, this.getDayDisableOptions())) {
+      return;
+    }
+    this.viewMonth = clampViewMonth(candidate, this.getDayDisableOptions());
     this.calPanel = "day";
     this.emit();
   }
 
   selectYear(year: number): void {
-    this.viewMonth = this.viewMonth.year(year);
+    if (!isYearSelectable(year, this.getDayDisableOptions())) {
+      return;
+    }
+    const candidate = this.viewMonth.year(year);
+    this.viewMonth = clampViewMonth(candidate, this.getDayDisableOptions());
     this.calPanel = "month";
     this.emit();
   }

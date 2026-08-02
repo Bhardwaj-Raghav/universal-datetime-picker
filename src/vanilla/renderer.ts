@@ -3,6 +3,10 @@ import {
   type PickerControllerOptions,
   type PickerSnapshot,
 } from "../core/controller";
+import {
+  isMonthSelectable,
+  isYearSelectable,
+} from "../core/logic/calendar";
 import { dayjs, formatLocalized } from "../core/logic/date";
 import {
   attachClickOutside,
@@ -144,6 +148,7 @@ function renderHeader(
         type: "button",
         className: "ctp-prev-month",
         ariaLabel: prevLabel,
+        disabled: !snap.canNavigatePrev,
         onClick: () => controller.navigatePrev(),
         textContent: "‹",
       }),
@@ -152,6 +157,7 @@ function renderHeader(
         type: "button",
         className: "ctp-next-month",
         ariaLabel: nextLabel,
+        disabled: !snap.canNavigateNext,
         onClick: () => controller.navigateNext(),
         textContent: "›",
       }),
@@ -164,20 +170,25 @@ function renderHeader(
       role: "grid",
       ariaLabel: snap.labels.chooseMonth,
     });
+    const disableOptions = controller.getDisableOptions();
     for (let monthIndex = 0; monthIndex < 12; monthIndex += 1) {
       const monthDate = snap.viewMonth.month(monthIndex);
       const isCurrent =
         snap.viewMonth.year() === now.year() && monthIndex === now.month();
+      const disabled = !isMonthSelectable(monthDate, disableOptions);
       grid.append(
         el("button", {
           type: "button",
           role: "gridcell",
+          disabled,
+          ariaDisabled: disabled,
           ariaCurrent: isCurrent ? "date" : undefined,
           ariaLabel: formatLocalized(monthDate, "MMMM YYYY", snap.locale),
           className: cx(
             "ctp-box",
             "ctp-box-month",
-            isCurrent && "ctp-current"
+            isCurrent && "ctp-current",
+            disabled && "disabled-date"
           ),
           onClick: () => controller.selectMonth(monthIndex),
           textContent: formatLocalized(monthDate, "MMM", snap.locale),
@@ -191,16 +202,25 @@ function renderHeader(
       role: "grid",
       ariaLabel: snap.labels.chooseYear,
     });
+    const disableOptions = controller.getDisableOptions();
     for (let offset = 0; offset < 12; offset += 1) {
       const y = windowStart + offset;
       const isCurrent = now.year() === y;
+      const disabled = !isYearSelectable(y, disableOptions);
       grid.append(
         el("button", {
           type: "button",
           role: "gridcell",
+          disabled,
+          ariaDisabled: disabled,
           ariaCurrent: isCurrent ? "date" : undefined,
           ariaLabel: String(y),
-          className: cx("ctp-box", "ctp-box-year", isCurrent && "ctp-current"),
+          className: cx(
+            "ctp-box",
+            "ctp-box-year",
+            isCurrent && "ctp-current",
+            disabled && "disabled-date"
+          ),
           onClick: () => controller.selectYear(y),
           textContent: String(y),
         })
@@ -493,7 +513,7 @@ function renderPicker(
       })
     );
   }
-  if (!snap.inline) {
+  if (!snap.inline && snap.mode !== "date") {
     footerChildren.push(
       el("button", {
         type: "button",

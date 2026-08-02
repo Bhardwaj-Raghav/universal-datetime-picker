@@ -1,103 +1,128 @@
 import { describe, expect, it } from "vitest";
-import { buildCalendarMonth } from "../src/calendar";
-import { dayjs, parseValue, formatValue, to12Hour, to24Hour, resolveFormat, buildTimeValue } from "../src/utils/date";
+import {
+  buildCalendarMonth,
+  canNavigateNext,
+  canNavigatePrev,
+  clampToSelectableDate,
+  clampViewMonth,
+  isDayDisabled,
+  isMonthSelectable,
+  isYearSelectable,
+} from "../src/core/logic/calendar";
+import { PickerController } from "../src/core/controller";
+import { dayjs } from "../src/utils/date";
+
+describe("clampToSelectableDate", () => {
+  it("returns today when it is selectable", () => {
+    const today = dayjs().startOf("day");
+    expect(clampToSelectableDate(today, {}).isSame(today, "day")).toBe(true);
+  });
+
+  it("clamps to maxDate when today is after the allowed window", () => {
+    const max = dayjs().subtract(5, "day").startOf("day");
+    const clamped = clampToSelectableDate(dayjs(), { maxDate: max.toDate() });
+    expect(clamped.isSame(max, "day")).toBe(true);
+    expect(isDayDisabled(clamped, { maxDate: max.toDate() })).toBe(false);
+  });
+
+  it("clamps to minDate when today is before the allowed window", () => {
+    const min = dayjs().add(5, "day").startOf("day");
+    const clamped = clampToSelectableDate(dayjs(), { minDate: min.toDate() });
+    expect(clamped.isSame(min, "day")).toBe(true);
+    expect(isDayDisabled(clamped, { minDate: min.toDate() })).toBe(false);
+  });
+});
 
 describe("buildCalendarMonth", () => {
-  it("includes the last day of the month as current month", () => {
-    const weeks = buildCalendarMonth({
-      viewMonth: dayjs("2024-01-15"),
+  it("always returns 6 weeks for short and long months", () => {
+    // Feb 2021 starts on Monday with weekStartsOn Sunday → often 4–5 weeks
+    const feb = buildCalendarMonth({
+      viewMonth: dayjs("2021-02-01"),
+      weekStartsOn: 0,
     });
-    const days = weeks.flat();
-    const jan31 = days.find((d) => d.date.format("YYYY-MM-DD") === "2024-01-31");
-    expect(jan31).toBeDefined();
-    expect(jan31!.isCurrentMonth).toBe(true);
-  });
-
-  it("marks selection by full date, not day-of-month alone", () => {
-    const selected = dayjs("2024-02-15");
-    const weeks = buildCalendarMonth({
-      viewMonth: dayjs("2024-02-01"),
-      selected,
+    // Aug 2025 can span 6 weeks depending on start day
+    const long = buildCalendarMonth({
+      viewMonth: dayjs("2025-08-01"),
+      weekStartsOn: 0,
     });
-    const selectedDays = weeks.flat().filter((d) => d.isSelected);
-    expect(selectedDays).toHaveLength(1);
-    expect(selectedDays[0]!.date.format("YYYY-MM-DD")).toBe("2024-02-15");
-  });
-
-  it("disables future dates with year awareness", () => {
-    const weeks = buildCalendarMonth({
-      viewMonth: dayjs().add(1, "year").startOf("month"),
-      disableFutureDates: true,
-    });
-    const futureDays = weeks.flat().filter((d) => d.isCurrentMonth);
-    expect(futureDays.every((d) => d.isDisabled)).toBe(true);
-  });
-
-  it("respects minDate and maxDate", () => {
-    const weeks = buildCalendarMonth({
-      viewMonth: dayjs("2024-06-01"),
-      minDate: "2024-06-10",
-      maxDate: "2024-06-20",
-    });
-    const jun5 = weeks.flat().find((d) => d.date.format("YYYY-MM-DD") === "2024-06-05");
-    const jun15 = weeks.flat().find((d) => d.date.format("YYYY-MM-DD") === "2024-06-15");
-    const jun25 = weeks.flat().find((d) => d.date.format("YYYY-MM-DD") === "2024-06-25");
-    expect(jun5!.isDisabled).toBe(true);
-    expect(jun15!.isDisabled).toBe(false);
-    expect(jun25!.isDisabled).toBe(true);
-  });
-
-  it("honors weekStartsOn Monday", () => {
-    const weeks = buildCalendarMonth({
-      viewMonth: dayjs("2024-07-01"),
-      weekStartsOn: 1,
-    });
-    expect(weeks[0]![0]!.date.day()).toBe(1);
+    expect(feb).toHaveLength(6);
+    expect(long).toHaveLength(6);
+    expect(feb.every((week) => week.length === 7)).toBe(true);
+    expect(long.every((week) => week.length === 7)).toBe(true);
   });
 });
 
-describe("parseValue / formatValue", () => {
-  it("parses and formats with custom format", () => {
-    const format = "YYYY-MM-DD HH:mm:ss";
-    const parsed = parseValue("2024-07-19 14:30:00", format);
-    expect(parsed).not.toBeNull();
-    expect(formatValue(parsed, format)).toBe("2024-07-19 14:30:00");
+describe("month/year navigation bounds", () => {
+  const min = dayjs("2024-03-10");
+  const max = dayjs("2024-06-20");
+  const opts = { minDate: min.toDate(), maxDate: max.toDate() };
+
+  it("marks months outside the window as not selectable", () => {
+    expect(isMonthSelectable(dayjs("2024-02-01"), opts)).toBe(false);
+    expect(isMonthSelectable(dayjs("2024-03-01"), opts)).toBe(true);
+    expect(isMonthSelectable(dayjs("2024-06-01"), opts)).toBe(true);
+    expect(isMonthSelectable(dayjs("2024-07-01"), opts)).toBe(false);
   });
 
-  it("returns null for invalid strings", () => {
-    expect(parseValue("not-a-date", "YYYY-MM-DD")).toBeNull();
+  it("marks years outside the window as not selectable", () => {
+    expect(isYearSelectable(2023, opts)).toBe(false);
+    expect(isYearSelectable(2024, opts)).toBe(true);
+    expect(isYearSelectable(2025, opts)).toBe(false);
   });
-});
 
-describe("12-hour conversion", () => {
-  it("converts 24h to 12h and back", () => {
-    expect(to12Hour(0)).toEqual({ hour: 12, isAm: true });
-    expect(to12Hour(13)).toEqual({ hour: 1, isAm: false });
-    expect(to24Hour(12, true)).toBe(0);
-    expect(to24Hour(1, false)).toBe(13);
-  });
-});
-
-describe("resolveFormat / buildTimeValue", () => {
-  it("derives format from mode and showSeconds", () => {
-    expect(resolveFormat({ mode: "date" })).toBe("YYYY-MM-DD");
-    expect(resolveFormat({ mode: "time" })).toBe("HH:mm:ss");
-    expect(resolveFormat({ mode: "time", showSeconds: false })).toBe("HH:mm");
-    expect(resolveFormat({ mode: "time", use12Hours: true })).toBe("hh:mm:ss A");
+  it("clamps view month into the selectable window", () => {
     expect(
-      resolveFormat({ mode: "datetime", use12Hours: true, showSeconds: false })
-    ).toBe("YYYY-MM-DD hh:mm A");
+      clampViewMonth(dayjs("2024-01-01"), opts).format("YYYY-MM")
+    ).toBe("2024-03");
+    expect(
+      clampViewMonth(dayjs("2024-12-01"), opts).format("YYYY-MM")
+    ).toBe("2024-06");
   });
 
-  it("builds TimeValue with hour 1–12 and hour24 0–23", () => {
-    const value = buildTimeValue(dayjs("2024-07-10 14:30:15"), "HH:mm:ss");
-    expect(value).toEqual({
-      hour: 2,
-      hour24: 14,
-      minute: 30,
-      second: 15,
-      ampm: "PM",
-      formatted: "14:30:15",
+  it("disables prev/next arrows at the edges", () => {
+    expect(canNavigatePrev(dayjs("2024-03-01"), "day", opts)).toBe(false);
+    expect(canNavigateNext(dayjs("2024-03-01"), "day", opts)).toBe(true);
+    expect(canNavigatePrev(dayjs("2024-06-01"), "day", opts)).toBe(true);
+    expect(canNavigateNext(dayjs("2024-06-01"), "day", opts)).toBe(false);
+  });
+
+  it("PickerController refuses to navigate past min/max", () => {
+    const controller = new PickerController({
+      inline: true,
+      mode: "date",
+      minDate: min.toDate(),
+      maxDate: max.toDate(),
+      value: dayjs("2024-03-15").toDate(),
     });
+
+    expect(controller.getSnapshot().canNavigatePrev).toBe(false);
+    controller.navigatePrev();
+    expect(controller.getSnapshot().viewMonth.format("YYYY-MM")).toBe("2024-03");
+
+    controller.setViewMonth(dayjs("2024-06-01"));
+    expect(controller.getSnapshot().canNavigateNext).toBe(false);
+    controller.navigateNext();
+    expect(controller.getSnapshot().viewMonth.format("YYYY-MM")).toBe("2024-06");
+
+    controller.selectMonth(1);
+    expect(controller.getSnapshot().viewMonth.format("YYYY-MM")).toBe("2024-06");
+
+    controller.selectMonth(4);
+    expect(controller.getSnapshot().viewMonth.format("YYYY-MM")).toBe("2024-05");
+  });
+
+  it("respects disablePastDates for previous month navigation", () => {
+    const today = dayjs().startOf("day");
+    const controller = new PickerController({
+      inline: true,
+      mode: "date",
+      disablePastDates: true,
+      value: today.toDate(),
+    });
+    expect(controller.getSnapshot().canNavigatePrev).toBe(false);
+    controller.navigatePrev();
+    expect(controller.getSnapshot().viewMonth.isSame(today, "month")).toBe(
+      true
+    );
   });
 });

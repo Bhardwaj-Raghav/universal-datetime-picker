@@ -216,14 +216,14 @@ Add `CUSTOM_ELEMENTS_SCHEMA` to your NgModule or standalone component, then use 
 
 | Mode / flags | `asString` | `onChange` receives |
 |--------------|------------|---------------------|
-| `mode="date"` | `false` | `Date` (start of day) |
-| `mode="datetime"` | `false` | `Date` |
-| `mode="time"` | `false` | `TimeValue` object |
-| any mode | `true` / omitted | formatted `string \| null` |
-| range | `false` | `{ start: Date \| null; end: Date \| null }` |
-| range | `true` / omitted | `{ start: string \| null; end: string \| null }` |
+| `mode="date"` | omitted / `false` | `Date` (start of day) |
+| `mode="datetime"` | omitted / `false` | `Date` |
+| `mode="time"` | omitted / `false` | `TimeValue` object |
+| any mode | `true` | formatted `string \| null` |
+| range | omitted / `false` | `{ start: Date \| null; end: Date \| null }` |
+| range | `true` | `{ start: string \| null; end: string \| null }` |
 
-**Deprecation:** omitting `asString` still returns a formatted string today, but logs a one-time console warning. Set `asString={true}` to keep strings explicitly, or `asString={false}` to opt into `Date` / `TimeValue` now. A future major release will default to objects.
+Set `asString={true}` when you want formatted strings. Omitting `asString` (or passing `false`) returns `Date` / `TimeValue` objects.
 
 ### `TimeValue` (`mode="time"`, `asString={false}`)
 
@@ -258,8 +258,8 @@ Add `CUSTOM_ELEMENTS_SCHEMA` to your NgModule or standalone component, then use 
 |------|------|---------|-------------|
 | `value` | `Date \| string \| Dayjs \| null` | — | Controlled value |
 | `defaultValue` | same | — | Uncontrolled initial value |
-| `onChange` | `(value: Date \| TimeValue \| string \| null) => void` | — | Fired on OK / Clear |
-| `asString` | `boolean` | omitted → string (deprecated) | `true` = string; `false` = `Date` / `TimeValue` |
+| `onChange` | `(value: Date \| TimeValue \| string \| null) => void` | — | Date-only: fires on day click. Datetime/time (overlay): fires on OK / Clear |
+| `asString` | `boolean` | omitted → objects | `true` = formatted string; omit or `false` = `Date` / `TimeValue` |
 | `showSeconds` | `boolean` | `true` | Show seconds column; included in default format |
 | `format` | `string` | derived from mode | dayjs format (auto from mode / `use12Hours` / `showSeconds` when omitted) |
 | `mode` | `"datetime" \| "date" \| "time"` | `"datetime"` | Picker mode |
@@ -343,11 +343,13 @@ Leave out `popover` and `anchorEl` to open the same picker as a centered modal:
 
 ### `DateTimeInput` extras
 
-`placeholder`, `id`, `name`, `disabled`, `readOnly`, `aria-label`, `aria-labelledby`, `inputClassName`
+`placeholder`, `id`, `name`, `disabled`, `readOnly`, `aria-label`, `aria-labelledby`, `inputClassName`, `icon` (custom trailing icon; `null` hides), `customInput` (your own trigger element), `noStyle` (skip default input classes)
+
+A calendar icon is shown at the end of the input by default. Clicking it opens the picker.
 
 ### `DateTimeRange`
 
-Supports `asString` like the single picker. With `asString={false}`, `onChange` receives `{ start: Date | null; end: Date | null }`; with `asString={true}` (or omitted), ends are formatted strings. Also supports keyboard grid navigation, hover range preview, and the same `locale` / `weekStartsOn` / `labels` props.
+Supports `asString` like the single picker. With omitted/`false` `asString`, `onChange` receives `{ start: Date | null; end: Date | null }`; with `asString={true}`, ends are formatted strings. Selection commits immediately (no OK button). Also supports keyboard grid navigation, hover range preview, and the same `locale` / `weekStartsOn` / `labels` props.
 
 ### Labels
 

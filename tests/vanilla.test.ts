@@ -4,14 +4,6 @@ import { createDateTimePicker } from "../src/vanilla/renderer";
 import { createDateTimeRangePicker } from "../src/vanilla/rangeRenderer";
 import { defineCustomElements } from "../src/wc";
 
-function clickOk(root: ParentNode): void {
-  const ok = Array.from(root.querySelectorAll("button")).find(
-    (b) => b.textContent === "OK" && !(b as HTMLButtonElement).disabled
-  );
-  expect(ok).toBeTruthy();
-  ok?.click();
-}
-
 function clickDay(root: ParentNode, labelIncludes: string): void {
   const cell = Array.from(root.querySelectorAll('[role="gridcell"]')).find(
     (node) => node.getAttribute("aria-label")?.includes(labelIncludes)
@@ -202,12 +194,13 @@ describe("web components", () => {
 
     const input = el.querySelector("input.ctp-input");
     expect(input).toBeTruthy();
+    expect(el.querySelector(".ctp-input-icon-btn")).toBeTruthy();
     (input as HTMLInputElement).click();
     await Promise.resolve();
 
     const dialog = document.querySelector('[role="dialog"]');
     expect(dialog).toBeTruthy();
-    clickOk(dialog!);
+    clickToday(dialog!);
     expect(onChange).toHaveBeenCalled();
     expect(typeof onChange.mock.calls[0]?.[0]).toBe("string");
 

@@ -6,7 +6,9 @@ import {
   SCHEMA_KEYWORDS,
   SITE_DESCRIPTION,
   SITE_FAQS,
+  SITE_KEYWORDS,
   SITE_NAME,
+  SITE_ORIGIN,
   SITE_TITLE,
 } from "../site.config";
 import "../styles/global.css";
@@ -32,10 +34,11 @@ const {
   includeSoftwareApplication = false,
   breadcrumbs = [],
 } = Astro.props;
-const siteUrl = (Astro.site?.origin || "https://universal-datetime-picker.vercel.app").replace(
-  /\/$/,
-  ""
-);
+const siteUrl = (
+  Astro.site?.origin && !Astro.site.origin.includes("react-calendar-time.vercel.app")
+    ? Astro.site.origin
+    : SITE_ORIGIN
+).replace(/\/$/, "");
 const canonical = new URL(Astro.url.pathname, `${siteUrl}/`).href;
 const ogImage = `${siteUrl}/og.png`;
 
@@ -46,7 +49,14 @@ const softwareApplication = {
   alternateName: [
     "Universal Datetime Picker",
     "Universal Date Time Picker",
+    "Universal Date Picker",
     "universal-datetime-picker",
+    "universal date picker",
+    "React Date Picker",
+    "React Date Time Picker",
+    "React Datetime Picker",
+    "TypeScript Date Picker",
+    "Framework Agnostic Date Picker",
   ],
   applicationCategory: "DeveloperApplication",
   applicationSubCategory: "JavaScript UI component library",
@@ -102,8 +112,11 @@ const jsonLd = {
       alternateName: [
         "Universal Date Time Picker",
         "Universal Datetime Picker",
-        "Framework Agnostic Date Picker",
+        "Universal Date Picker",
+        "React Date Picker",
+        "React Date Time Picker",
         "Date Time Picker",
+        "Date Picker",
       ],
       description: SITE_DESCRIPTION,
       inLanguage: "en-US",
@@ -197,6 +210,7 @@ const jsonLd = {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="keywords" content={SITE_KEYWORDS} />
     <meta name="author" content="Raghav Bhardwaj" />
     <meta
       name="robots"

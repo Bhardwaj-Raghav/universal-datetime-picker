@@ -26,6 +26,24 @@ describe("DateTime", () => {
     expect(onChange.mock.calls[0]![0]).toMatch(/^2024-07-15/);
   });
 
+  it("returns a Date when asString is omitted for date mode", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <DateTime
+        inline
+        defaultValue={dayjs("2024-07-15 10:00:00")}
+        onChange={onChange}
+        mode="date"
+      />
+    );
+
+    await user.click(
+      screen.getByRole("gridcell", { name: /July 15, 2024/i })
+    );
+    expect(onChange.mock.calls[0]![0]).toBeInstanceOf(Date);
+  });
+
   it("returns a Date when asString is false for date mode", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -144,6 +162,160 @@ describe("DateTime", () => {
     await user.click(day15);
     expect(day15).toHaveAttribute("aria-selected", "true");
     expect(onChange.mock.calls[0]![0]).toContain("2024-07-15");
+  });
+
+  it("does not highlight a day when opened with no initial value", () => {
+    render(<DateTime inline mode="date" />);
+    const grid = screen.getByRole("grid");
+    const selected = within(grid)
+      .queryAllByRole("gridcell")
+      .filter((cell) => cell.getAttribute("aria-selected") === "true");
+    expect(selected).toHaveLength(0);
+  });
+
+  it("commits overlay date selection without OK", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onOpenChange = vi.fn();
+    render(
+      <DateTime
+        open
+        asString
+        onOpenChange={onOpenChange}
+        defaultValue={dayjs("2024-07-10 12:00:00")}
+        onChange={onChange}
+        mode="date"
+      />
+    );
+
+    await user.click(
+      screen.getByRole("gridcell", { name: /July 15, 2024/i })
+    );
+    expect(onChange).toHaveBeenCalledWith("2024-07-15");
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(screen.queryByRole("button", { name: /^OK$/i })).toBeNull();
+  });
+
+  it("commits datetime overlay only when OK is pressed", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onOpenChange = vi.fn();
+    render(
+      <DateTime
+        open
+        asString={false}
+        onOpenChange={onOpenChange}
+        defaultValue={dayjs("2024-07-10 12:00:00")}
+        onChange={onChange}
+        mode="datetime"
+      />
+    );
+
+    await user.click(
+      screen.getByRole("gridcell", { name: /July 15, 2024/i })
+    );
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+    expect(screen.getByRole("button", { name: /^OK$/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /^OK$/i }));
+    expect(onChange).toHaveBeenCalled();
+    expect(onChange.mock.calls[0]![0]).toBeInstanceOf(Date);
+    expect(dayjs(onChange.mock.calls[0]![0] as Date).format("YYYY-MM-DD")).toBe(
+      "2024-07-15"
+    );
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("does not commit when overlay is closed without selecting", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <DateTime
+        open
+        asString
+        defaultValue={dayjs("2024-07-10 12:00:00")}
+        onChange={onChange}
+        mode="date"
+        disableFutureDates
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Close$/i }));
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("opens on maxDate month when max is in the past", () => {
+    const max = dayjs().subtract(10, "day");
+    render(
+      <DateTime
+        inline
+        mode="date"
+        maxDate={max.toDate()}
+      />
+    );
+    expect(
+      screen.getByRole("button", {
+        name: new RegExp(`${max.format("MMMM YYYY")}.*Choose month`, "i"),
+      })
+    ).toBeInTheDocument();
+  });
+
+  it("opens on minDate month when min is in the future", () => {
+    const min = dayjs().add(10, "day");
+    render(
+      <DateTime
+        inline
+        mode="date"
+        minDate={min.toDate()}
+      />
+    );
+    expect(
+      screen.getByRole("button", {
+        name: new RegExp(`${min.format("MMMM YYYY")}.*Choose month`, "i"),
+      })
+    ).toBeInTheDocument();
+  });
+
+  it("resets month/year panel when overlay reopens", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const { rerender } = render(
+      <DateTime
+        open
+        asString
+        onOpenChange={onOpenChange}
+        defaultValue={dayjs("2024-07-10")}
+        mode="date"
+      />
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: /July 2024.*Choose month/i })
+    );
+    expect(screen.getByRole("grid", { name: /Choose month/i })).toBeInTheDocument();
+
+    rerender(
+      <DateTime
+        open={false}
+        asString
+        onOpenChange={onOpenChange}
+        defaultValue={dayjs("2024-07-10")}
+        mode="date"
+      />
+    );
+
+    rerender(
+      <DateTime
+        open
+        asString
+        onOpenChange={onOpenChange}
+        defaultValue={dayjs("2024-07-10")}
+        mode="date"
+      />
+    );
+
+    expect(screen.getByRole("grid", { name: /Choose date/i })).toBeInTheDocument();
   });
 
   it("closes without clearing when Close is pressed", async () => {
@@ -367,6 +539,35 @@ describe("DateTime", () => {
 });
 
 describe("DateTimeInput", () => {
+  it("renders a calendar icon by default", () => {
+    render(
+      <DateTimeInput
+        asString
+        value="2024-07-10 12:00:00"
+        mode="date"
+      />
+    );
+    expect(document.querySelector(".ctp-input-icon-btn")).toBeTruthy();
+    expect(document.querySelector(".ctp-input-with-icon")).toBeTruthy();
+  });
+
+  it("supports customInput and noStyle", async () => {
+    const user = userEvent.setup();
+    render(
+      <DateTimeInput
+        noStyle
+        asString
+        customInput={<button type="button">Pick</button>}
+        mode="date"
+      />
+    );
+
+    const trigger = screen.getByText("Pick");
+    expect(trigger.className).not.toContain("ctp-input-root");
+    await user.click(trigger);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
   it("opens popover and updates controlled value", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

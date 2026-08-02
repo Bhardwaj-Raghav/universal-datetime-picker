@@ -1,4 +1,13 @@
-import { buildCalendarMonth } from "./logic/calendar";
+import {
+  buildCalendarMonth,
+  canNavigateNext,
+  canNavigatePrev,
+  clampToSelectableDate,
+  clampViewMonth,
+  isMonthSelectable,
+  isYearSelectable,
+  resolveSelectableRange,
+} from "./logic/calendar";
 import type {
   DateRangeValue,
   DateTimeLabels,
@@ -14,7 +23,6 @@ import {
   getWeekdayLabels,
   parseValue,
   startOfWeek,
-  warnAsStringDeprecation,
   type Dayjs,
 } from "./logic/date";
 import type { CalendarDay, CalendarPanel } from "./types";
@@ -37,6 +45,8 @@ export interface RangeSnapshot {
   className?: string;
   weeks: CalendarDay[][];
   weekdayLabels: string[];
+  canNavigatePrev: boolean;
+  canNavigateNext: boolean;
 }
 
 export class RangeController {
@@ -57,8 +67,12 @@ export class RangeController {
     const parsed = this.parseRange(options.value ?? options.defaultValue, format);
     this.start = parsed.start;
     this.end = parsed.end;
-    this.viewMonth = (parsed.start ?? dayjs()).startOf("month");
-    this.focusedDay = parsed.start ?? dayjs();
+    const viewAnchor = clampToSelectableDate(
+      parsed.start ?? dayjs(),
+      this.getDayDisableOptions()
+    );
+    this.viewMonth = viewAnchor.startOf("month");
+    this.focusedDay = viewAnchor;
     this.open =
       options.open ?? (options.inline ? true : (options.defaultOpen ?? true));
     this.snapshot = this.buildSnapshot();
@@ -95,8 +109,17 @@ export class RangeController {
   }
 
   setOptions(partial: Partial<DateTimeRangeOptions>): void {
+    const prev = this.options;
     this.options = { ...this.options, ...partial };
-    if (partial.open !== undefined) {
+    if (partial.open !== undefined && partial.open !== prev.open) {
+      if (!this.options.inline) {
+        if (!partial.open) {
+          this.calPanel = "day";
+        }
+        this.resetViewToCommitted();
+      }
+      this.open = partial.open;
+    } else if (partial.open !== undefined) {
       this.open = partial.open;
     }
     if ("value" in partial) {
@@ -104,6 +127,9 @@ export class RangeController {
         this.start = null;
         this.end = null;
         this.hoverEnd = null;
+        const fallback = clampToSelectableDate(dayjs(), this.getDayDisableOptions());
+        this.viewMonth = fallback.startOf("month");
+        this.focusedDay = fallback;
       } else if (partial.value !== undefined) {
         const format = this.options.format ?? DATE_FORMAT;
         const parsed = this.parseRange(partial.value, format);
@@ -113,10 +139,12 @@ export class RangeController {
         if (!unchanged) {
           this.start = parsed.start;
           this.end = parsed.end;
-          if (parsed.start) {
-            this.viewMonth = parsed.start.startOf("month");
-            this.focusedDay = parsed.start;
-          }
+          const viewAnchor = clampToSelectableDate(
+            parsed.start ?? dayjs(),
+            this.getDayDisableOptions()
+          );
+          this.viewMonth = viewAnchor.startOf("month");
+          this.focusedDay = viewAnchor;
         }
       }
     }
@@ -172,12 +200,65 @@ export class RangeController {
       className: this.options.className,
       weeks,
       weekdayLabels: getWeekdayLabels(locale, weekStartsOn),
+      canNavigatePrev: canNavigatePrev(
+        this.viewMonth,
+        this.calPanel,
+        this.getDayDisableOptions()
+      ),
+      canNavigateNext: canNavigateNext(
+        this.viewMonth,
+        this.calPanel,
+        this.getDayDisableOptions()
+      ),
     };
+  }
+
+  private getDayDisableOptions() {
+    return {
+      minDate: this.options.minDate,
+      maxDate: this.options.maxDate,
+      disablePastDates: this.options.disablePastDates,
+      disableFutureDates: this.options.disableFutureDates,
+      weekStartsOn: this.options.weekStartsOn ?? 0,
+    };
+  }
+
+  /** Exposed for renderers that need month/year disable checks. */
+  getDisableOptions() {
+    return this.getDayDisableOptions();
+  }
+
+  private resetViewToCommitted(): void {
+    const bounds = this.getDayDisableOptions();
+    if (this.options.value === null) {
+      const fallback = clampToSelectableDate(dayjs(), bounds);
+      this.viewMonth = fallback.startOf("month");
+      this.focusedDay = fallback;
+      return;
+    }
+
+    const format = this.options.format ?? DATE_FORMAT;
+    const parsed = this.parseRange(
+      this.options.value ?? this.options.defaultValue,
+      format
+    );
+    const viewAnchor = clampToSelectableDate(
+      parsed.start ?? dayjs(),
+      bounds
+    );
+    this.viewMonth = viewAnchor.startOf("month");
+    this.focusedDay = viewAnchor;
   }
 
   setOpen(open: boolean): void {
     if (this.options.inline) {
       return;
+    }
+    if (open) {
+      this.resetViewToCommitted();
+    } else {
+      this.calPanel = "day";
+      this.resetViewToCommitted();
     }
     this.open = open;
     this.options.onOpenChange?.(open);
@@ -196,11 +277,17 @@ export class RangeController {
   }
 
   setViewMonth(next: Dayjs | ((prev: Dayjs) => Dayjs)): void {
-    this.viewMonth = typeof next === "function" ? next(this.viewMonth) : next;
+    const raw = typeof next === "function" ? next(this.viewMonth) : next;
+    this.viewMonth = clampViewMonth(raw, this.getDayDisableOptions());
     this.emit();
   }
 
   navigatePrev(): void {
+    if (
+      !canNavigatePrev(this.viewMonth, this.calPanel, this.getDayDisableOptions())
+    ) {
+      return;
+    }
     if (this.calPanel === "day") {
       this.viewMonth = this.viewMonth.subtract(1, "month");
     } else if (this.calPanel === "month") {
@@ -208,10 +295,16 @@ export class RangeController {
     } else {
       this.viewMonth = this.viewMonth.subtract(12, "year");
     }
+    this.viewMonth = clampViewMonth(this.viewMonth, this.getDayDisableOptions());
     this.emit();
   }
 
   navigateNext(): void {
+    if (
+      !canNavigateNext(this.viewMonth, this.calPanel, this.getDayDisableOptions())
+    ) {
+      return;
+    }
     if (this.calPanel === "day") {
       this.viewMonth = this.viewMonth.add(1, "month");
     } else if (this.calPanel === "month") {
@@ -219,37 +312,43 @@ export class RangeController {
     } else {
       this.viewMonth = this.viewMonth.add(12, "year");
     }
+    this.viewMonth = clampViewMonth(this.viewMonth, this.getDayDisableOptions());
     this.emit();
   }
 
   selectMonth(monthIndex: number): void {
-    this.viewMonth = this.viewMonth.month(monthIndex);
+    const candidate = this.viewMonth.month(monthIndex);
+    if (!isMonthSelectable(candidate, this.getDayDisableOptions())) {
+      return;
+    }
+    this.viewMonth = clampViewMonth(candidate, this.getDayDisableOptions());
     this.calPanel = "day";
     this.emit();
   }
 
   selectYear(year: number): void {
-    this.viewMonth = this.viewMonth.year(year);
+    if (!isYearSelectable(year, this.getDayDisableOptions())) {
+      return;
+    }
+    const candidate = this.viewMonth.year(year);
+    this.viewMonth = clampViewMonth(candidate, this.getDayDisableOptions());
     this.calPanel = "month";
     this.emit();
   }
 
   private emitRange(nextStart: Dayjs | null, nextEnd: Dayjs | null): void {
-    if (this.options.asString === false) {
-      this.options.onChange?.({
-        start: nextStart ? nextStart.toDate() : null,
-        end: nextEnd ? nextEnd.toDate() : null,
-      });
-    } else {
-      if (this.options.asString === undefined) {
-        warnAsStringDeprecation();
-      }
+    if (this.options.asString === true) {
       const format = this.options.format ?? DATE_FORMAT;
       this.options.onChange?.({
         start: formatValue(nextStart, format),
         end: formatValue(nextEnd, format),
       });
+      return;
     }
+    this.options.onChange?.({
+      start: nextStart ? nextStart.toDate() : null,
+      end: nextEnd ? nextEnd.toDate() : null,
+    });
   }
 
   pickDay(day: Dayjs): void {
@@ -269,10 +368,9 @@ export class RangeController {
       this.focusedDay = day;
     }
     this.emit();
-    if (this.options.asString === false) {
-      this.emitRange(this.start, this.end);
-    } else if (this.options.inline && this.start && this.end) {
-      this.emitRange(this.start, this.end);
+    this.emitRange(this.start, this.end);
+    if (!this.options.inline && this.start && this.end) {
+      this.close();
     }
   }
 
@@ -307,11 +405,9 @@ export class RangeController {
         break;
       case "PageUp":
         next = this.focusedDay.subtract(1, "month");
-        this.viewMonth = next.startOf("month");
         break;
       case "PageDown":
         next = this.focusedDay.add(1, "month");
-        this.viewMonth = next.startOf("month");
         break;
       case "Enter":
       case " ": {
@@ -326,10 +422,16 @@ export class RangeController {
       default:
         return false;
     }
-    this.focusedDay = next;
-    if (!next.isSame(this.viewMonth, "month")) {
-      this.viewMonth = next.startOf("month");
+    const bounds = this.getDayDisableOptions();
+    const range = resolveSelectableRange(bounds);
+    if (range.min && next.isBefore(range.min, "day")) {
+      next = range.min;
     }
+    if (range.max && next.isAfter(range.max, "day")) {
+      next = range.max;
+    }
+    this.focusedDay = next;
+    this.viewMonth = clampViewMonth(next, bounds);
     this.emit();
     return true;
   }

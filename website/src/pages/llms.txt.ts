@@ -1,18 +1,21 @@
 import type { APIRoute } from "astro";
-import { GITHUB_URL, NPM_URL, SITE_DESCRIPTION, SITE_NAME } from "../site.config";
+import { GITHUB_URL, NPM_URL, SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN } from "../site.config";
 import { FRAMEWORKS, FRAMEWORK_CARD_SUMMARY } from "../frameworks";
 
 export const GET: APIRoute = ({ site }) => {
-  const siteUrl = (site?.origin || "https://universal-datetime-picker.vercel.app").replace(
-    /\/$/,
-    ""
-  );
+  const siteUrl = (
+    site?.origin && !site.origin.includes("react-calendar-time.vercel.app")
+      ? site.origin
+      : SITE_ORIGIN
+  ).replace(/\/$/, "");
 
   const body = `# ${SITE_NAME}
 
 > ${SITE_DESCRIPTION}
 
-universal-datetime-picker is an open-source date picker, time picker, datetime picker, and date range calendar for React, Vue, Svelte, Angular, vanilla JS, and CDN. It ships TypeScript types, ESM/CJS builds, Web Components, a vanilla mount API, dayjs-powered values, CSS-variable theming, locales, and accessible keyboard navigation. React peers (>= 18) are optional when using vanilla/WC/CDN. License: MIT.
+universal-datetime-picker is an open-source **React date picker**, **date time picker**, **datetime picker**, and **date range calendar** for React, Vue, Svelte, Angular, vanilla JS, and CDN. Also known as a universal date picker or universal datetime picker.
+
+Also search: react date picker, react datetime picker, typescript date picker, accessible date picker, framework-agnostic date picker.
 
 Install: \`npm install universal-datetime-picker\`
 

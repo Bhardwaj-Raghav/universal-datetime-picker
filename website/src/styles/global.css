@@ -512,6 +512,17 @@ html[data-site-theme="dark"] .theme-toggle__icon--dark {
   font-weight: 600;
 }
 
+.showcase-note {
+  margin: -0.35rem 0 0.85rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--muted, #64748b);
+}
+
+.showcase-note code {
+  font-size: 0.78em;
+}
+
 .showcase-block .stage-value {
   margin-top: 0.75rem;
 }
