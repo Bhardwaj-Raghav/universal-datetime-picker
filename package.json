@@ -6,7 +6,7 @@
   "author": "Raghav Bhardwaj",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Bhardwaj-Raghav/universal-datetime-picker.git"
+    "url": "git+https://github.com/Bhardwaj-Raghav/universal-datetime-picker.git"
   },
   "homepage": "https://universal-datetime-picker.vercel.app",
   "bugs": {
