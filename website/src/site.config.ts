@@ -79,7 +79,7 @@ export const SITE_FAQS = [
   {
     question: "What does onChange return?",
     answer:
-      "Omitting asString (or asString={false}) returns a native Date for date/datetime modes and a TimeValue object for time mode. Set asString={true} for formatted strings. Date-only overlays commit on day click; datetime and time overlays commit when you press OK.",
+      "Omitting asString (or asString={false}) returns a native Date for date/datetime modes and a TimeValue object for time mode. Set asString={true} for formatted strings. Date-only overlays commit on day click; datetime and time overlays commit when you press OK. Month/year navigation stays inside min/max and past/future bounds, and the day grid always shows six weeks.",
   },
   {
     question: "How do I use it from a CDN?",

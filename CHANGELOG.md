@@ -10,6 +10,7 @@ UX and API improvements for single and range pickers.
 - **Initial month respects bounds** — when today is outside `minDate` / `maxDate` (or past/future disables), the picker opens on the first or last selectable day.
 - **Month/year drill-down resets on close** — reopening always returns to the day grid at the committed value's month.
 - Website landing page and SEO metadata updated for react date picker / date time picker discoverability.
+- npm `description` and `keywords` tuned for searches like “react date picker”, “datetime picker”, and “react date time picker”.
 
 ### Added
 - **`DateTimeInput` calendar icon** at the end of the field (override with `icon`, hide with `icon={null}`).

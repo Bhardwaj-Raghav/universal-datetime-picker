@@ -151,13 +151,13 @@ Omitting \`asString\` returns \`Date\` / \`TimeValue\` objects. Set \`asString={
 Shared by \`DateTime\` / \`DateTimeInput\`:
 
 - \`value\` / \`defaultValue\`: \`Date | string | Dayjs | null\`
-- \`onChange\`: \`(value: Date | TimeValue | string | null) => void\` (fires on selection or Clear)
+- \`onChange\`: \`(value: Date | TimeValue | string | null) => void\` — date-only overlays fire on day click; datetime/time overlays fire on OK / Clear
 - \`asString\`: \`true\` = string; omit or \`false\` = Date / TimeValue
 - \`showSeconds\`: show seconds column (default \`true\`); affects default format
 - \`format\`: dayjs format string (derived from mode / use12Hours / showSeconds when omitted)
 - \`mode\`: \`"datetime" | "date" | "time"\` (default \`"datetime"\`)
 - \`layout\`: \`"combined" | "tabs"\` for datetime mode
-- \`minDate\` / \`maxDate\`, \`disablePastDates\`, \`disableFutureDates\`
+- \`minDate\` / \`maxDate\`, \`disablePastDates\`, \`disableFutureDates\` (also clamp month/year navigation)
 - \`weekStartsOn\`: \`0–6\` (0 = Sunday)
 - \`use12Hours\`: 12-hour clock with AM/PM (\`false\` = 24-hour)
 - \`locale\`: dayjs locale string (import the locale module first)
@@ -165,11 +165,15 @@ Shared by \`DateTime\` / \`DateTimeInput\`:
 - \`theme\`: \`"light" | "dark"\` (useful for portaled popovers)
 - \`inline\`, \`className\`
 
+\`DateTimeInput\` extras: \`icon\` (default calendar icon; \`null\` hides), \`customInput\`, \`noStyle\`, plus \`placeholder\` / \`id\` / \`name\` / \`disabled\` / \`readOnly\` / aria props.
+
 Overlay control: \`open\` / \`defaultOpen\`, \`onOpenChange\`, \`popover\`, \`anchorEl\`.
 
 \`DateTimeInput\` always uses popover mode (fixed positioning, flip, scroll/resize, outside click / Escape). Time-only popovers are compact.
 
-\`DateTimeRange\` supports the same \`asString\` behavior for start/end values.
+Calendar notes: day grid is always 6 weeks; month/year navigation cannot leave min/max / past/future bounds; reopen resets drill-down to the committed month.
+
+\`DateTimeRange\` supports the same \`asString\` behavior for start/end values and commits immediately (no OK button).
 
 ## Custom trigger
 

@@ -6,7 +6,7 @@
 
 # universal-datetime-picker
 
-**Date picker, time picker, datetime picker, and date range calendar** — one accessible TypeScript package. The [docs site](https://universal-datetime-picker.vercel.app) home uses **vanilla JS**; **React, Vue, Svelte, Angular, and CDN** each have dedicated demo pages.
+**React date picker**, **date time picker**, **datetime picker**, and **date range calendar** — one accessible TypeScript package for React, Vue, Svelte, Angular, vanilla JS, and CDN. The [docs site](https://universal-datetime-picker.vercel.app) home uses **vanilla JS**; framework pages cover React and the rest.
 
 Native React components share a headless core with a vanilla DOM renderer and Web Components (`<datetime-picker>`, `<datetime-picker-input>`, `<datetime-picker-range>`).
 
@@ -80,13 +80,13 @@ import DateTime, { DateTimeInput } from "universal-datetime-picker";
 import "universal-datetime-picker/style.css";
 
 function App() {
-  // Prefer asString={false} for Date / TimeValue (recommended going forward)
+  // Omit asString (or pass false) to receive Date / TimeValue objects
   const [value, setValue] = useState<Date | null>(null);
 
   return (
     <>
-      <DateTimeInput asString={false} value={value} onChange={setValue} />
-      <DateTime inline asString={false} value={value} onChange={setValue} />
+      <DateTimeInput value={value} onChange={setValue} />
+      <DateTime inline value={value} onChange={setValue} />
     </>
   );
 }
@@ -264,9 +264,9 @@ Set `asString={true}` when you want formatted strings. Omitting `asString` (or p
 | `format` | `string` | derived from mode | dayjs format (auto from mode / `use12Hours` / `showSeconds` when omitted) |
 | `mode` | `"datetime" \| "date" \| "time"` | `"datetime"` | Picker mode |
 | `layout` | `"combined" \| "tabs"` | `"combined"` | When `mode="datetime"`: show both panels, or Date/Time tabs. Hidden for date-only / time-only |
-| `minDate` / `maxDate` | date-like | — | Inclusive bounds |
-| `disablePastDates` | `boolean` | `false` | Disable days before today |
-| `disableFutureDates` | `boolean` | `false` | Disable days after today |
+| `minDate` / `maxDate` | date-like | — | Inclusive bounds (also clamps month/year navigation) |
+| `disablePastDates` | `boolean` | `false` | Disable days before today (also clamps month/year navigation) |
+| `disableFutureDates` | `boolean` | `false` | Disable days after today (also clamps month/year navigation) |
 | `weekStartsOn` | `0–6` | `0` | First day of week (0 = Sunday) |
 | `use12Hours` | `boolean` | `false` | 12-hour clock with AM/PM (`false` = 24-hour) |
 | `locale` | `string` | `"en"` | dayjs locale (import locale first) |
@@ -285,6 +285,13 @@ Set `asString={true}` when you want formatted strings. Omitting `asString` (or p
 | `anchorEl` | `HTMLElement \| null` | Anchor for popover |
 
 `DateTimeInput` always uses popover mode. The popover uses `position: fixed`, flips above the input when needed, repositions on scroll/resize, and closes on outside click or Escape. Time-only popovers use a compact width.
+
+### Calendar behavior
+
+- The day grid always shows **6 weeks** so height stays stable when changing months.
+- Month/year arrows and month/year drill-down stay inside `minDate` / `maxDate` / past/future disable bounds (out-of-range months and years are disabled).
+- When today is outside those bounds, the picker opens on the first or last selectable day.
+- Closing an overlay resets month/year drill-down to the day grid at the committed value’s month.
 
 ### Use any button or input as the trigger
 
