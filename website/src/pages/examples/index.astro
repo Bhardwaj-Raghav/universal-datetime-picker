@@ -1,0 +1,184 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SiteNav from "../../components/SiteNav.astro";
+import { GITHUB_URL, NPM_URL } from "../../site.config";
+
+const breadcrumbs = [
+  { label: "Home", href: "/" },
+  { label: "Examples", href: "/examples/" },
+];
+
+const snippetFrameworks = [
+  { id: "react", label: "React" },
+  { id: "vanilla", label: "Vanilla" },
+  { id: "cdn", label: "CDN" },
+  { id: "vue", label: "Vue" },
+  { id: "svelte", label: "Svelte" },
+  { id: "angular", label: "Angular" },
+] as const;
+---
+
+<BaseLayout
+  title="Universal DateTime Picker — Examples Playground"
+  description="Interactive playground for date, time, datetime, and range pickers. Tune options live and copy snippets for React, Vue, Svelte, Angular, vanilla, and CDN."
+  keywords="date picker examples, datetime picker playground, react date picker demo"
+  breadcrumbs={breadcrumbs}
+>
+  <div class="site is-ready">
+    <div class="site-bg" aria-hidden="true"></div>
+    <SiteNav />
+
+    <main class="hub-page playground-page" data-playground>
+      <header class="hub-header">
+        <p class="eyebrow">Playground</p>
+        <h1>Examples</h1>
+        <p class="hub-lead">
+          Tune mode, layout, theme, and locale on a live picker, then copy a
+          snippet for React, Vue, Svelte, Angular, vanilla JS, or CDN. For setup
+          guides, see the <a href="/docs/getting-started/">getting started</a>
+          docs and each <a href="/docs/">framework guide</a>.
+        </p>
+      </header>
+
+      <aside class="playground-options" aria-label="Picker options">
+        <label class="play-field">
+          <span>Mode</span>
+          <select data-play-mode>
+            <option value="date">Date</option>
+            <option value="time">Time</option>
+            <option value="datetime" selected>Datetime</option>
+            <option value="range">Range</option>
+          </select>
+        </label>
+        <label class="play-field">
+          <span>Layout</span>
+          <select data-play-layout>
+            <option value="combined" selected>Combined</option>
+            <option value="tabs">Tabs</option>
+          </select>
+        </label>
+        <label class="play-field">
+          <span>Presentation</span>
+          <select data-play-presentation>
+            <option value="inline" selected>Inline</option>
+            <option value="popover">Popover</option>
+            <option value="overlay">Overlay</option>
+          </select>
+        </label>
+        <label class="play-field">
+          <span>Theme</span>
+          <select data-play-theme>
+            <option value="light" selected>Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
+        <label class="play-field">
+          <span>Week starts</span>
+          <select data-play-week>
+            <option value="0" selected>Sunday</option>
+            <option value="1">Monday</option>
+            <option value="6">Saturday</option>
+          </select>
+        </label>
+        <label class="play-field">
+          <span>Locale</span>
+          <select data-play-locale>
+            <option value="en" selected>English — United States (en)</option>
+            <option value="en-gb">English — United Kingdom (en-gb)</option>
+            <option value="en-ca">English — Canada (en-ca)</option>
+            <option value="fr">French — France (fr)</option>
+            <option value="fr-ca">French — Canada (fr-ca)</option>
+            <option value="de">German — Germany (de)</option>
+            <option value="es">Spanish — Spain (es)</option>
+            <option value="es-mx">Spanish — Mexico (es-mx)</option>
+            <option value="it">Italian — Italy (it)</option>
+            <option value="pt-br">Portuguese — Brazil (pt-br)</option>
+            <option value="ja">Japanese — Japan (ja)</option>
+            <option value="ko">Korean — South Korea (ko)</option>
+            <option value="zh-cn">Chinese — Simplified (zh-cn)</option>
+            <option value="zh-tw">Chinese — Traditional (zh-tw)</option>
+            <option value="nl">Dutch — Netherlands (nl)</option>
+            <option value="sv">Swedish — Sweden (sv)</option>
+          </select>
+        </label>
+        <label class="play-check">
+          <input type="checkbox" data-play-as-string />
+          <span>asString</span>
+        </label>
+        <label class="play-check">
+          <input type="checkbox" data-play-12h />
+          <span>12-hour</span>
+        </label>
+        <label class="play-check">
+          <input type="checkbox" data-play-seconds checked />
+          <span>Seconds</span>
+        </label>
+        <label class="play-check">
+          <input type="checkbox" data-play-past />
+          <span>Disable past</span>
+        </label>
+        <label class="play-check">
+          <input type="checkbox" data-play-future />
+          <span>Disable future</span>
+        </label>
+      </aside>
+
+      <p class="play-presentation-note" data-play-presentation-note hidden></p>
+
+      <div class="playground-split">
+        <div class="playground-stage-wrap">
+          <div class="stage-panel">
+            <div class="stage-mount" data-play-stage></div>
+            <p class="stage-value">
+              Selected: <span data-play-out>null</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="playground-code">
+          <div class="install-tablist" role="tablist" aria-label="Snippet framework">
+            {
+              snippetFrameworks.map((f, i) => (
+                <button
+                  type="button"
+                  role="tab"
+                  data-play-fw={f.id}
+                  class:list={{ "is-active": i === 0 }}
+                  aria-selected={i === 0 ? "true" : "false"}
+                >
+                  {f.label}
+                </button>
+              ))
+            }
+          </div>
+          <div class="install-panel playground-code-panel">
+            <button type="button" class="install-panel-copy" data-play-copy>
+              Copy
+            </button>
+            <pre><code data-play-snippet></code></pre>
+          </div>
+          <a class="install-demo-link" data-play-fw-link href="/react/">
+            Open the React page
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>
+        MIT-licensed ·{" "}
+        <a href="/docs/">Docs</a> {" · "}
+        <a href={NPM_URL} target="_blank" rel="noreferrer">npm</a> {" · "}
+        <a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
+      </p>
+    </footer>
+  </div>
+</BaseLayout>
+
+<script>
+  import { initExamplesPlayground } from "../../scripts/examplesPlayground.ts";
+
+  let cleanup = () => {};
+  cleanup = initExamplesPlayground();
+  document.addEventListener("astro:before-preparation", () => cleanup());
+</script>

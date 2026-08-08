@@ -1,0 +1,100 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import SiteNav from "../components/SiteNav.astro";
+import { DOCS_NAV, GITHUB_URL, NPM_URL } from "../site.config";
+
+interface Props {
+  title: string;
+  description: string;
+  currentPath: string;
+  keywords?: string;
+  includeFaq?: boolean;
+  /** Short label for the current crumb (defaults to title before em dash / pipe). */
+  crumbLabel?: string;
+}
+
+const {
+  title,
+  description,
+  currentPath,
+  keywords,
+  includeFaq = false,
+  crumbLabel,
+} = Astro.props;
+
+const derivedCrumb =
+  crumbLabel ??
+  title
+    .replace(/^Universal DateTime Picker Documentation\s*[—–-]\s*/i, "")
+    .replace(/\s*[|].*$/, "")
+    .trim();
+
+const isDocsOverview = currentPath === "/docs/";
+const breadcrumbs = isDocsOverview
+  ? [
+      { label: "Home", href: "/" },
+      { label: "Docs", href: "/docs/" },
+    ]
+  : [
+      { label: "Home", href: "/" },
+      { label: "Docs", href: "/docs/" },
+      { label: derivedCrumb, href: currentPath },
+    ];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  keywords={keywords}
+  ogType="article"
+  breadcrumbs={breadcrumbs}
+  includeFaq={includeFaq}
+  includeTechArticle
+>
+  <div class="site is-ready">
+    <div class="site-bg" aria-hidden="true"></div>
+    <SiteNav />
+
+    <div class="docs-shell">
+      <aside class="docs-sidebar" aria-label="Documentation">
+        <p class="docs-sidebar__label">Docs</p>
+        <nav class="docs-nav">
+          {
+            DOCS_NAV.map((item) =>
+              item.type === "heading" ? (
+                <p class="docs-nav-heading">{item.label}</p>
+              ) : (
+                <a
+                  href={item.href}
+                  class:list={{
+                    "is-active":
+                      currentPath === item.href ||
+                      (item.href !== "/docs/" &&
+                        currentPath.startsWith(item.href)),
+                  }}
+                  aria-current={currentPath === item.href ? "page" : undefined}
+                >
+                  {item.label}
+                </a>
+              ),
+            )
+          }
+        </nav>
+      </aside>
+
+      <main class="docs-main">
+        <slot />
+      </main>
+    </div>
+
+    <footer class="footer">
+      <p>
+        MIT-licensed ·{" "}
+        <a href="/examples/">Examples</a> {" · "}
+        <a href="/docs/">Docs</a> {" · "}
+        <a href={NPM_URL} target="_blank" rel="noreferrer">npm</a> {" · "}
+        <a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
+      </p>
+    </footer>
+  </div>
+</BaseLayout>

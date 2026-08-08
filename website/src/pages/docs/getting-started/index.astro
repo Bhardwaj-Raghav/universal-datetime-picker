@@ -1,0 +1,184 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Getting Started"
+  description="Install universal-datetime-picker and render your first date or datetime picker in React, vanilla JS, or from a CDN."
+  keywords="install date picker, getting started date time picker"
+  crumbLabel="Getting started"
+  currentPath="/docs/getting-started/"
+>
+  <article class="docs-article">
+    <h1>Getting started</h1>
+    <p>
+      This guide gets a working picker on screen. After that, pick the entry
+      point and props that match your app.
+    </p>
+
+    <h2>What this package does</h2>
+    <p>
+      <code>universal-datetime-picker</code> renders an accessible calendar
+      for date, time, datetime, or date-range selection. React gets native
+      components. Other stacks use vanilla factories or Web Components from
+      the same package.
+    </p>
+
+    <h2>Who should use it</h2>
+    <ul>
+      <li>You need a calendar UI, not only date parsing.</li>
+      <li>You want one CSS file and shared behavior across frameworks.</li>
+      <li>
+        You are fine with dayjs as a runtime dependency for formatting and
+        locales.
+      </li>
+    </ul>
+
+    <h2>Features at a glance</h2>
+    <ul>
+      <li>Modes: date, time, datetime</li>
+      <li>Inline calendar, centered overlay, or anchored popover</li>
+      <li>Built-in input trigger (<code>DateTimeInput</code>)</li>
+      <li>Date range start/end selection</li>
+      <li>Light/dark theme and CSS variables</li>
+      <li>dayjs locales plus overrideable UI labels</li>
+    </ul>
+
+    <h2>Prerequisites</h2>
+    <ul>
+      <li>Node.js and a package manager, or a plain HTML page for CDN.</li>
+      <li>
+        For React only: <code>react</code> and <code>react-dom</code> ≥ 18.
+        Those peers are optional if you use vanilla, Web Components, or CDN.
+      </li>
+      <li>
+        dayjs is installed automatically as a runtime dependency of this
+        package.
+      </li>
+    </ul>
+
+    <h2>Install</h2>
+    <pre><code>npm install universal-datetime-picker</code></pre>
+    <p>Yarn and pnpm work the same way.</p>
+    <pre><code>yarn add universal-datetime-picker
+pnpm add universal-datetime-picker</code></pre>
+
+    <h2>Always import the stylesheet</h2>
+    <p>
+      Without CSS, the calendar has almost no layout. Import once near your
+      app root:
+    </p>
+    <pre><code>import "universal-datetime-picker/style.css";</code></pre>
+    <p>CDN equivalent (pin a version in production):</p>
+    <pre><code>{`<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/universal-datetime-picker@2.1.1/dist/style.css"
+/>`}</code></pre>
+
+    <h2>Verify it worked</h2>
+    <ol>
+      <li>Install completes without peer errors for your stack.</li>
+      <li>The stylesheet loads (network tab or a visible green primary color).</li>
+      <li>
+        A picker appears. For non-inline React <code>DateTime</code>, the
+        overlay opens by default unless you set
+        <code>defaultOpen=&#123;false&#125;</code>.
+      </li>
+      <li>
+        Selecting a date (and OK for datetime/time) updates your state or
+        logs a value.
+      </li>
+    </ol>
+
+    <h2>Minimal React example</h2>
+    <pre><code>{`import { useState } from "react";
+import DateTime, { DateTimeInput } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";
+
+export function App() {
+  const [value, setValue] = useState<Date | null>(null);
+
+  return (
+    <>
+      <DateTimeInput
+        mode="date"
+        asString={false}
+        value={value}
+        onChange={(next) => setValue(next instanceof Date ? next : null)}
+      />
+      <DateTime
+        inline
+        mode="date"
+        asString={false}
+        value={value}
+        onChange={(next) => setValue(next instanceof Date ? next : null)}
+      />
+    </>
+  );
+}`}</code></pre>
+    <p>
+      Next.js App Router: put this in a Client Component
+      (<code>"use client"</code>). See <a href="/docs/nextjs/">Next.js</a>.
+    </p>
+
+    <h2>Minimal vanilla example</h2>
+    <pre><code>{`import { createDateTimePicker } from "universal-datetime-picker/vanilla";
+import "universal-datetime-picker/style.css";
+
+const mount = document.querySelector("#picker");
+if (!mount) throw new Error("#picker missing");
+
+const picker = createDateTimePicker(mount, {
+  mode: "date",
+  inline: true,
+  asString: false,
+  onChange: (value) => console.log(value),
+});
+
+// Later: picker.destroy();`}</code></pre>
+
+    <h2>Minimal CDN example</h2>
+    <pre><code>{`<!doctype html>
+<html lang="en">
+  <head>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/universal-datetime-picker@2.1.1/dist/style.css"
+    />
+  </head>
+  <body>
+    <datetime-picker mode="date" inline></datetime-picker>
+    <script src="https://cdn.jsdelivr.net/npm/universal-datetime-picker@2.1.1/dist/cdn/universal-datetime-picker.iife.js"></script>
+    <script>
+      UniversalDateTimePicker.defineCustomElements();
+      document
+        .querySelector("datetime-picker")
+        .addEventListener("change", (e) => console.log(e.detail));
+    </script>
+  </body>
+</html>`}</code></pre>
+
+    <h2>Default open behavior</h2>
+    <p>
+      For non-inline <code>DateTime</code> and <code>DateTimeRange</code>,
+      <code>defaultOpen</code> is <strong>true</strong>. The overlay appears
+      as soon as the component mounts. Pass
+      <code>defaultOpen=&#123;false&#125;</code> (or control
+      <code>open</code>) when you open from a button. 
+      <code>DateTimeInput</code> defaults to closed because it owns its
+      trigger. Details: <a href="/docs/overlay/">Overlay and triggers</a>.
+    </p>
+
+    <h2>Next steps</h2>
+    <ul>
+      <li>
+        <a href="/docs/entry-points/">Entry points</a>: which import to use
+      </li>
+      <li><a href="/docs/components/">Components</a>: DateTime vs Input vs Range</li>
+      <li><a href="/docs/props/">Props</a>: types and defaults</li>
+      <li><a href="/docs/react/">React</a>, <a href="/docs/vanilla/">Vanilla</a>, <a href="/docs/web-components/">Web Components</a></li>
+      <li><a href="/examples/">Examples playground</a></li>
+      <li><a href="/docs/troubleshooting/">Troubleshooting</a></li>
+    </ul>
+  </article>
+</DocsLayout>

@@ -19,7 +19,7 @@ export const GET: APIRoute = ({ site }) => {
     fromAstro && !fromAstro.includes("react-calendar-time.vercel.app")
       ? fromAstro
       : SITE_ORIGIN;
-  const sitemapURL = `${origin}/sitemap-index.xml`;
+  const sitemapURL = `${origin}/sitemap.xml`;
   return new Response(getRobotsTxt(sitemapURL, origin), {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",

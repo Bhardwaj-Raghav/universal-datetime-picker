@@ -1,0 +1,238 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Overlay & Triggers"
+  description="Inline, popover, and overlay presentation; controlled open state; and custom triggers for React, vanilla, and Web Components."
+  keywords="date picker popover, overlay calendar, custom trigger"
+  crumbLabel="Overlay & triggers"
+  currentPath="/docs/overlay/"
+>
+  <article class="docs-article">
+    <h1>Overlay and triggers</h1>
+    <p>
+      Presentation controls whether the calendar sits in the page flow or
+      floats. Open-state props control when it is visible.
+    </p>
+
+    <h2>Presentation modes</h2>
+    <div class="docs-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Mode</th>
+            <th>How to enable</th>
+            <th>Behavior</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Inline</td>
+            <td><code>inline</code></td>
+            <td>
+              Calendar stays in layout. Always "open". No backdrop.
+            </td>
+          </tr>
+          <tr>
+            <td>Overlay (modal)</td>
+            <td>
+              Default when not inline, and <code>popover</code> is not set
+            </td>
+            <td>
+              Centered panel with dimmed backdrop. Escape and outside click
+              close it.
+            </td>
+          </tr>
+          <tr>
+            <td>Popover</td>
+            <td>
+              <code>popover</code> + <code>anchorEl</code> on
+              <code>DateTime</code>
+            </td>
+            <td>
+              Positions near the anchor with
+              <code>position: fixed</code>, flips when needed, repositions on
+              scroll/resize.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      <code>DateTimeInput</code> is always popover + its own input as anchor.
+      <code>DateTimeRange</code> has no popover or <code>anchorEl</code>. Use
+      inline or the centered overlay only.
+    </p>
+
+    <h2>Open-state props</h2>
+    <div class="docs-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Prop</th>
+            <th>Type</th>
+            <th>Effect</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>open</code></td>
+            <td><code>boolean</code></td>
+            <td>Controlled open state</td>
+          </tr>
+          <tr>
+            <td><code>defaultOpen</code></td>
+            <td><code>boolean</code></td>
+            <td>Uncontrolled initial open</td>
+          </tr>
+          <tr>
+            <td><code>onOpenChange</code></td>
+            <td><code>(open: boolean) =&gt; void</code></td>
+            <td>Fires when open state changes</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>defaultOpen is true for non-inline DateTime</h2>
+    <p>
+      For <code>DateTime</code> (and <code>DateTimeRange</code>) when
+      <code>inline</code> is false, <code>defaultOpen</code> defaults to
+      <strong>true</strong>. The overlay appears on mount. That surprises
+      people building a closed custom button. Fix it with either:
+    </p>
+    <ul>
+      <li>
+        <code>defaultOpen=&#123;false&#125;</code> and open via
+        <code>onOpenChange</code> / a button, or
+      </li>
+      <li>
+        fully controlled <code>open</code> + <code>onOpenChange</code>.
+      </li>
+    </ul>
+    <p>
+      <code>DateTimeInput</code> defaults to closed because the field is the
+      trigger.
+    </p>
+
+    <h2>React: DateTimeInput (built-in trigger)</h2>
+    <pre><code>{`import { useState } from "react";
+import { DateTimeInput } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";
+
+export function FormDate() {
+  const [value, setValue] = useState<Date | null>(null);
+
+  return (
+    <DateTimeInput
+      mode="date"
+      asString={false}
+      value={value}
+      onChange={(next) => setValue(next instanceof Date ? next : null)}
+      placeholder="Choose a date"
+    />
+  );
+}`}</code></pre>
+
+    <h2>React: custom button with popover</h2>
+    <pre><code>{`import { useState } from "react";
+import { DateTime } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";
+
+function CustomDateTrigger() {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState<Date | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+  return (
+    <>
+      <button
+        ref={setAnchorEl}
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+      >
+        {value ? value.toLocaleDateString() : "Choose a date"}
+      </button>
+      <DateTime
+        mode="date"
+        open={open}
+        onOpenChange={setOpen}
+        popover
+        anchorEl={anchorEl}
+        asString={false}
+        value={value}
+        onChange={(next) => setValue(next instanceof Date ? next : null)}
+      />
+    </>
+  );
+}`}</code></pre>
+    <p>
+      Omit <code>popover</code> and <code>anchorEl</code> for a centered
+      modal overlay. Keep <code>open</code> controlled the same way.
+    </p>
+
+    <h2>Vanilla: popover + anchor + closed by default</h2>
+    <pre><code>{`import { createDateTimePicker } from "universal-datetime-picker/vanilla";
+import "universal-datetime-picker/style.css";
+
+const mount = document.querySelector("#picker-root");
+const trigger = document.querySelector("#open-picker");
+if (!mount || !trigger) throw new Error("missing mount or trigger");
+
+const picker = createDateTimePicker(mount, {
+  mode: "date",
+  asString: false,
+  popover: true,
+  anchorEl: trigger,
+  defaultOpen: false,
+  onChange: (value) => console.log(value),
+  onOpenChange: (isOpen) => {
+    trigger.setAttribute("aria-expanded", String(isOpen));
+  },
+});
+
+trigger.addEventListener("click", () => {
+  picker.update({ open: true });
+});
+
+// Later: picker.destroy();`}</code></pre>
+    <p>
+      The handle exposes <code>update</code>, <code>destroy</code>, and
+      <code>getController</code>. Pass <code>defaultOpen: false</code>,
+      <code>popover: true</code>, and <code>anchorEl</code>, then open with
+      <code>update(&#123; open: true &#125;)</code>.
+    </p>
+
+    <h2>Web Components note</h2>
+    <p>
+      For non-inline custom elements, an absent <code>open</code> attribute
+      means <strong>closed</strong>. That differs from React
+      <code>DateTime</code>'s <code>defaultOpen=true</code>. Set the
+      <code>open</code> attribute (or toggle it from script) when you want
+      the overlay visible. Listen for <code>openchange</code> to sync your
+      trigger button.
+    </p>
+    <pre><code>{`<button id="btn" type="button">Pick date</button>
+<datetime-picker id="dp" mode="date"></datetime-picker>
+<script>
+  const dp = document.getElementById("dp");
+  const btn = document.getElementById("btn");
+  btn.addEventListener("click", () => dp.setAttribute("open", ""));
+  dp.addEventListener("openchange", (e) => {
+    if (!e.detail) dp.removeAttribute("open");
+  });
+</script>`}</code></pre>
+
+    <p>
+      Related: <a href="/docs/components/">Components</a> ·
+      <a href="/docs/range/">Date range</a> ·
+      <a href="/docs/vanilla/">Vanilla</a> ·
+      <a href="/docs/web-components/">Web Components</a> ·
+      <a href="/examples/">Examples</a> ·
+      <a href="/docs/troubleshooting/">Troubleshooting</a>
+    </p>
+  </article>
+</DocsLayout>

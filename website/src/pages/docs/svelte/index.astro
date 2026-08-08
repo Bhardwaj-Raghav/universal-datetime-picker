@@ -1,0 +1,169 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Svelte"
+  description="Register datetime-picker elements for Svelte with onchange bindings and explicit closing tags."
+  keywords="svelte date picker, svelte date time picker"
+  crumbLabel="Svelte"
+  currentPath="/docs/svelte/"
+>
+  <article class="docs-article">
+    <h1>Svelte</h1>
+
+    <p class="docs-callout">
+      <a href="/svelte/">Try the live Svelte demo</a>
+      — interactive picker and copy-paste snippets.
+    </p>
+
+    <h2>Support tier</h2>
+    <p class="docs-callout">
+      Full support through Web Components. Register from
+      <code>universal-datetime-picker/svelte</code>. Use native
+      <code>onchange</code> handlers, not <code>on:change</code>.
+    </p>
+
+    <h2>Install + deps</h2>
+    <pre><code>npm install universal-datetime-picker</code></pre>
+    <p>Svelte 5 works with the patterns below. React peers are optional.</p>
+
+    <h2>Setup</h2>
+    <p>
+      Call <code>defineCustomElements()</code> once in root
+      <code>+layout.ts</code> or your app entry, import the stylesheet, then
+      render the custom elements in <code>.svelte</code> files.
+    </p>
+
+    <h2>Exact import path</h2>
+    <pre><code>{`import { defineCustomElements, calendarTime } from "universal-datetime-picker/svelte";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();`}</code></pre>
+    <p>
+      <code>calendarTime</code> is a Svelte action that only ensures elements
+      are defined. Most apps can call <code>defineCustomElements()</code> once
+      at startup and skip the action.
+    </p>
+
+    <h2>Minimal example</h2>
+    <pre><code>{`// src/routes/+layout.ts
+import { defineCustomElements } from "universal-datetime-picker/svelte";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();`}</code></pre>
+    <pre><code>{`<script lang="ts">
+  let date = $state<Date | null>(null);
+
+  function onChange(e: CustomEvent) {
+    const next = e.detail;
+    date = next instanceof Date ? next : null;
+  }
+</script>
+
+<datetime-picker
+  inline
+  mode="date"
+  as-string="false"
+  onchange={onChange}
+></datetime-picker>
+<p>Selected: {date ?? "null"}</p>`}</code></pre>
+
+    <h2>Realistic example</h2>
+    <pre><code>{`<script lang="ts">
+  let date = $state<Date | null>(null);
+  let open = $state(false);
+
+  function onChange(e: CustomEvent) {
+    date = e.detail instanceof Date ? e.detail : null;
+  }
+
+  function onOpenChange(e: CustomEvent) {
+    open = Boolean(e.detail);
+  }
+</script>
+
+<datetime-picker-input
+  placeholder="Pick date & time"
+  as-string="false"
+  onchange={onChange}
+  onopenchange={onOpenChange}
+></datetime-picker-input>
+
+<datetime-picker-range inline as-string="false"></datetime-picker-range>
+
+<p>Open: {open}</p>
+<p>Value: {date?.toLocaleString() ?? "none"}</p>`}</code></pre>
+
+    <h2>Configuration notes</h2>
+    <ul>
+      <li>
+        On Svelte 5 custom elements, bind the native
+        <code>change</code> CustomEvent with
+        <code>onchange=&#123;...&#125;</code>. The legacy
+        <code>on:change</code> directive does not wire these elements the way
+        you expect.
+      </li>
+      <li>
+        Use explicit closing tags.
+        <code>&lt;datetime-picker /&gt;</code> is rejected for non-void custom
+        elements in Svelte 5.
+      </li>
+      <li>
+        Attributes remain kebab-case: <code>as-string</code>,
+        <code>show-seconds</code>, and so on.
+      </li>
+      <li>
+        The <code>calendarTime</code> action is available if you prefer
+        <code>use:calendarTime</code> on a wrapper node instead of an entry
+        import.
+      </li>
+    </ul>
+
+    <h2>Events</h2>
+    <ul>
+      <li>
+        <code>onchange</code>: <code>event.detail</code> is the selected value
+      </li>
+      <li>
+        <code>onopenchange</code>: <code>event.detail</code> is the open
+        boolean
+      </li>
+    </ul>
+
+    <h2>Customization links</h2>
+    <ul>
+      <li><a href="/docs/theming/">Theming</a></li>
+      <li><a href="/docs/locales/">Locales</a></li>
+      <li><a href="/docs/web-components/">Web Components</a></li>
+      <li><a href="/docs/props/">Props</a></li>
+    </ul>
+
+    <h2>Pitfalls</h2>
+    <ul>
+      <li>
+        Using <code>on:change</code> instead of <code>onchange</code> silently
+        misses updates.
+      </li>
+      <li>
+        Self-closing custom element tags fail the Svelte 5 compiler.
+      </li>
+      <li>
+        Registering only inside a leaf component that is never mounted leaves
+        tags undefined. Prefer root layout registration.
+      </li>
+    </ul>
+
+    <h2>Troubleshooting</h2>
+    <p>
+      If events never fire, check <code>onchange</code> spelling and that
+      <code>defineCustomElements()</code> ran. See <a href="/docs/troubleshooting/">Troubleshooting</a> for CSS and SSR
+      issues.
+    </p>
+
+    <h2>Related links</h2>
+    <p>
+      <a href="/svelte/">Svelte live demo</a> · <a href="/examples/">Examples</a> · <a href="/docs/props/">Props</a> · <a href="/docs/troubleshooting/">Troubleshooting</a>
+    </p>
+  </article>
+</DocsLayout>

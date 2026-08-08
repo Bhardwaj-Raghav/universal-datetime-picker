@@ -1,0 +1,175 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Vanilla JS"
+  description="Mount createDateTimePicker and createDateTimeRangePicker without a framework UI layer."
+  keywords="vanilla js date picker, createDateTimePicker, javascript date picker"
+  crumbLabel="Vanilla JS"
+  currentPath="/docs/vanilla/"
+>
+  <article class="docs-article">
+    <h1>Vanilla JS</h1>
+
+    <p class="docs-callout">
+      <a href="/vanilla/">Try the live Vanilla JS demo</a>
+      — interactive picker and copy-paste snippets.
+    </p>
+
+    <h2>Support tier</h2>
+    <p class="docs-callout">
+      Full support. Imperative mount API with no React peers required. Handles
+      expose <code>update</code>, <code>destroy</code>, and
+      <code>getController</code>.
+    </p>
+
+    <h2>Install + deps</h2>
+    <pre><code>npm install universal-datetime-picker</code></pre>
+    <p>
+      Only <code>dayjs</code> ships as a dependency. React peers stay optional.
+    </p>
+
+    <h2>Setup</h2>
+    <p>
+      Pick a DOM node as the mount target. Call
+      <code>createDateTimePicker</code> or
+      <code>createDateTimeRangePicker</code> with options that match the React
+      prop names. Import the shared stylesheet once.
+    </p>
+
+    <h2>Exact import path</h2>
+    <pre><code>{`import {
+  createDateTimePicker,
+  createDateTimeRangePicker,
+} from "universal-datetime-picker/vanilla";
+import "universal-datetime-picker/style.css";`}</code></pre>
+
+    <h2>Minimal example</h2>
+    <pre><code>{`import { createDateTimePicker } from "universal-datetime-picker/vanilla";
+import "universal-datetime-picker/style.css";
+
+const root = document.getElementById("picker")!;
+const handle = createDateTimePicker(root, {
+  inline: true,
+  mode: "date",
+  asString: false,
+  onChange: (value) => console.log(value),
+});
+
+// later:
+// handle.update({ open: false });
+// handle.getController();
+// handle.destroy();`}</code></pre>
+
+    <h2>Realistic example</h2>
+    <p>
+      Popover trigger pattern. Keep the picker closed until the button is
+      clicked by setting <code>defaultOpen: false</code>, then open with
+      <code>update</code>.
+    </p>
+    <pre><code>{`import { createDateTimePicker } from "universal-datetime-picker/vanilla";
+import "universal-datetime-picker/style.css";
+
+const trigger = document.getElementById("open-picker") as HTMLButtonElement;
+const mount = document.getElementById("picker-host")!;
+
+const handle = createDateTimePicker(mount, {
+  mode: "datetime",
+  asString: false,
+  popover: true,
+  anchorEl: trigger,
+  defaultOpen: false,
+  onChange: (value) => {
+    trigger.textContent =
+      value instanceof Date ? value.toLocaleString() : "Pick date & time";
+  },
+  onOpenChange: (open) => {
+    trigger.setAttribute("aria-expanded", String(open));
+  },
+});
+
+trigger.addEventListener("click", () => {
+  handle.update({ open: true, anchorEl: trigger });
+});`}</code></pre>
+
+    <h2>Configuration notes</h2>
+    <ul>
+      <li>
+        Option names match React props: <code>mode</code>,
+        <code>asString</code>, <code>inline</code>, <code>popover</code>,
+        <code>anchorEl</code>, <code>locale</code>, and so on.
+      </li>
+      <li>
+        <code>update(partial)</code> merges options and re-renders.
+        <code>destroy()</code> unsubscribes and removes DOM.
+        <code>getController()</code> returns the headless controller.
+      </li>
+      <li>
+        Without <code>inline</code>, omit <code>popover</code> for a centered
+        modal overlay.
+      </li>
+      <li>
+        <code>createDateTimeRangePicker</code> uses the same handle shape. Range
+        pickers do not take <code>popover</code> / <code>anchorEl</code>.
+      </li>
+      <li>
+        Non-inline defaults to open. Use <code>defaultOpen: false</code> or
+        controlled <code>open</code> for trigger UIs.
+      </li>
+    </ul>
+
+    <h2>Events</h2>
+    <ul>
+      <li>
+        <code>onChange</code>: selected value callback on the options object
+      </li>
+      <li>
+        <code>onOpenChange</code>: open state callback on the options object
+      </li>
+    </ul>
+    <p>
+      There is no DOM CustomEvent on the vanilla handle. Wire callbacks in
+      options, or subscribe through <code>getController()</code>.
+    </p>
+
+    <h2>Customization links</h2>
+    <ul>
+      <li><a href="/docs/theming/">Theming</a></li>
+      <li><a href="/docs/locales/">Locales</a></li>
+      <li><a href="/docs/overlay/">Overlay and triggers</a></li>
+      <li><a href="/docs/props/">Props</a> (same option names)</li>
+    </ul>
+
+    <h2>Pitfalls</h2>
+    <ul>
+      <li>
+        <code>popover: true</code> without a valid <code>anchorEl</code>
+        mispositions or fails to open usefully.
+      </li>
+      <li>
+        Leaving <code>defaultOpen</code> at the default opens the picker as soon
+        as you mount a non-inline instance.
+      </li>
+      <li>
+        Calling <code>destroy()</code> and then <code>update()</code> on the
+        same handle is invalid. Create a new picker.
+      </li>
+      <li>
+        Importing from the React main entry pulls React components you do not
+        need. Use <code>/vanilla</code>.
+      </li>
+    </ul>
+
+    <h2>Troubleshooting</h2>
+    <p>
+      Missing CSS, wrong entry, or a popover without an anchor are the usual
+      failures. See <a href="/docs/troubleshooting/">Troubleshooting</a>.
+    </p>
+
+    <h2>Related links</h2>
+    <p>
+      <a href="/vanilla/">Vanilla live demo</a> · <a href="/examples/">Examples</a> · <a href="/docs/props/">Props</a> · <a href="/docs/troubleshooting/">Troubleshooting</a>
+    </p>
+  </article>
+</DocsLayout>

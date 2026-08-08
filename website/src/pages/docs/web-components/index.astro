@@ -1,0 +1,196 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+import { CDN_CSS, CDN_JS, PACKAGE_VERSION } from "../../../site.config";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Web Components & CDN"
+  description="Use datetime-picker custom elements from npm (./wc) or a CDN IIFE. Registration, events, and attributes."
+  keywords="web component date picker, CDN date picker, datetime-picker"
+  crumbLabel="Web Components & CDN"
+  currentPath="/docs/web-components/"
+>
+  <article class="docs-article">
+    <h1>Web Components and CDN</h1>
+
+    <p class="docs-callout">
+      <a href="/web-components/">Try the live Web Components demo</a>
+      or the <a href="/cdn/">CDN (no bundler) demo</a>
+      — interactive pickers and copy-paste snippets.
+    </p>
+
+    <h2>Support tier</h2>
+    <p class="docs-callout">
+      Full support. Standard custom elements via
+      <code>universal-datetime-picker/wc</code>, or the CDN IIFE that registers
+      the same tags. No React peers required.
+    </p>
+
+    <h2>Install + deps</h2>
+    <pre><code>npm install universal-datetime-picker</code></pre>
+    <p>
+      For CDN-only pages, skip npm and load the stylesheet plus IIFE from
+      jsDelivr. Pin a version in production.
+    </p>
+
+    <h2>Setup</h2>
+    <p>
+      Call <code>defineCustomElements()</code> once, import
+      <code>style.css</code>, then use the tags in HTML or any framework that
+      can render custom elements.
+    </p>
+
+    <h2>Exact import path</h2>
+    <pre><code>{`import { defineCustomElements } from "universal-datetime-picker/wc";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();`}</code></pre>
+
+    <h2>Minimal example</h2>
+    <pre><code>{`import { defineCustomElements } from "universal-datetime-picker/wc";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();
+
+const el = document.querySelector("datetime-picker");
+el?.addEventListener("change", (e) => {
+  console.log((e as CustomEvent).detail);
+});`}</code></pre>
+    <pre><code>{`<datetime-picker inline mode="date" as-string="false"></datetime-picker>
+<datetime-picker-input placeholder="Pick a date"></datetime-picker-input>
+<datetime-picker-range inline as-string="false"></datetime-picker-range>`}</code></pre>
+
+    <h2>Realistic example</h2>
+    <pre><code>{`import { defineCustomElements } from "universal-datetime-picker/wc";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();
+
+const picker = document.querySelector("datetime-picker")!;
+const label = document.querySelector("#selected")!;
+
+picker.addEventListener("change", (e) => {
+  const detail = (e as CustomEvent).detail;
+  label.textContent =
+    detail instanceof Date ? detail.toLocaleString() : String(detail ?? "");
+});
+
+picker.addEventListener("openchange", (e) => {
+  console.log("open:", (e as CustomEvent).detail);
+});`}</code></pre>
+    <pre><code>{`<button id="open" type="button">Open</button>
+<datetime-picker mode="datetime" as-string="false"></datetime-picker>
+<p id="selected"></p>
+<script>
+  const picker = document.querySelector("datetime-picker");
+  document.getElementById("open").addEventListener("click", () => {
+    picker.setAttribute("open", "");
+  });
+</script>`}</code></pre>
+
+    <h2>CDN</h2>
+    <p>
+      Unpinned URLs resolve to latest. Prefer a pinned path in production, for
+      example <code>@{PACKAGE_VERSION}</code>.
+    </p>
+    <pre><code>{`<link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/universal-datetime-picker/dist/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/universal-datetime-picker"></script>
+
+<datetime-picker inline mode="date" as-string="false"></datetime-picker>
+<script>
+  document
+    .querySelector("datetime-picker")
+    .addEventListener("change", (e) => console.log(e.detail));
+</script>`}</code></pre>
+    <p>Pinned equivalent used by this site:</p>
+    <pre><code>{`<link rel="stylesheet" href="${CDN_CSS}" />
+<script src="${CDN_JS}"></script>`}</code></pre>
+    <p>
+      You can also load
+      <code>/dist/cdn/universal-datetime-picker.iife.js</code> explicitly. The
+      package root CDN URL points at the same IIFE.
+    </p>
+
+    <h2>Configuration notes</h2>
+    <ul>
+      <li>
+        Tags: <code>&lt;datetime-picker&gt;</code>,
+        <code>&lt;datetime-picker-input&gt;</code>,
+        <code>&lt;datetime-picker-range&gt;</code>.
+      </li>
+      <li>
+        Attributes use kebab-case: <code>as-string</code>,
+        <code>show-seconds</code>, <code>use12hours</code>,
+        <code>mode</code>, <code>layout</code>, <code>inline</code>,
+        <code>open</code>, <code>popover</code>, <code>locale</code>,
+        <code>format</code>, <code>theme</code>, <code>value</code>.
+      </li>
+      <li>
+        Boolean attributes follow HTML conventions. Prefer
+        <code>as-string="false"</code> when you want Date / TimeValue objects in
+        <code>detail</code>.
+      </li>
+      <li>
+        For non-inline overlays, an absent <code>open</code> attribute means
+        closed on these elements. That differs from React's
+        <code>defaultOpen</code> default.
+      </li>
+      <li>
+        Vue, Svelte, and Angular helpers re-export the same registration. Solid
+        and Preact use this <code>./wc</code> path directly.
+      </li>
+    </ul>
+
+    <h2>Events</h2>
+    <ul>
+      <li>
+        <code>change</code>: bubbling, composed CustomEvent.
+        <code>detail</code> is the selected value.
+      </li>
+      <li>
+        <code>openchange</code>: bubbling, composed CustomEvent.
+        <code>detail</code> is the open boolean.
+      </li>
+    </ul>
+
+    <h2>Customization links</h2>
+    <ul>
+      <li><a href="/docs/theming/">Theming</a></li>
+      <li><a href="/docs/locales/">Locales</a></li>
+      <li><a href="/docs/overlay/">Overlay and triggers</a></li>
+      <li><a href="/docs/props/">Props</a></li>
+    </ul>
+
+    <h2>Pitfalls</h2>
+    <ul>
+      <li>
+        Forgetting <code>defineCustomElements()</code> leaves unknown HTML
+        tags with no behavior.
+      </li>
+      <li>
+        CDN pages that omit <code>dist/style.css</code> look broken even when
+        the IIFE loads.
+      </li>
+      <li>
+        Mixing camelCase attribute names in HTML often does nothing. Use
+        kebab-case.
+      </li>
+      <li>
+        Old <code>calendar-time*</code> tag names from
+        <code>react-calendar-time</code> are gone. See <a href="/docs/migration/">Migration</a>.
+      </li>
+    </ul>
+
+    <h2>Troubleshooting</h2>
+    <p>
+      Unstyled elements, wrong entry, or SSR custom-element errors are covered
+      in <a href="/docs/troubleshooting/">Troubleshooting</a>.
+    </p>
+
+    <h2>Related links</h2>
+    <p>
+      <a href="/web-components/">Web Components live demo</a> · <a href="/cdn/">CDN live demo</a> · <a href="/examples/">Examples</a> · <a href="/docs/props/">Props</a> · <a href="/docs/troubleshooting/">Troubleshooting</a>
+    </p>
+  </article>
+</DocsLayout>

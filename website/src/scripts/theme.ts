@@ -74,16 +74,69 @@ export function initSiteTheme(): void {
     });
 }
 
+function closeFrameworkDropdowns(root: ParentNode = document): void {
+  root.querySelectorAll<HTMLDetailsElement>("details.topnav-dropdown[open]").forEach((el) => {
+    el.open = false;
+  });
+}
+
+/**
+ * Outside-click + Escape dismiss for the Frameworks <details> menu.
+ * Idempotent: safe if Astro re-runs the SiteNav script.
+ */
+export function initFrameworkDropdown(): void {
+  const nav = document.querySelector<HTMLElement>("[data-site-nav]");
+  if (!nav || nav.dataset.frameworkDropdownReady === "true") {
+    return;
+  }
+  nav.dataset.frameworkDropdownReady = "true";
+
+  nav.querySelectorAll<HTMLDetailsElement>("details.topnav-dropdown").forEach((details) => {
+    details.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        details.open = false;
+      });
+    });
+  });
+
+  document.addEventListener(
+    "pointerdown",
+    (event) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      document.querySelectorAll<HTMLDetailsElement>("details.topnav-dropdown[open]").forEach((details) => {
+        if (!details.contains(target)) {
+          details.open = false;
+        }
+      });
+    },
+    true,
+  );
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeFrameworkDropdowns();
+    }
+  });
+}
+
 export function initMobileNav(): void {
   const toggle = document.querySelector<HTMLButtonElement>("[data-nav-toggle]");
   const nav = document.querySelector<HTMLElement>("[data-site-nav]");
   if (!toggle || !nav) {
     return;
   }
+  if (nav.dataset.mobileNavReady === "true") {
+    return;
+  }
+  nav.dataset.mobileNavReady = "true";
 
   const setOpen = (open: boolean) => {
     nav.classList.toggle("is-open", open);
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    if (!open) {
+      closeFrameworkDropdowns(nav);
+    }
   };
 
   toggle.addEventListener("click", () => {

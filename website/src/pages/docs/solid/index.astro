@@ -1,0 +1,173 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Solid"
+  description="Partial Solid support via datetime-picker Web Components from ./wc. No ./solid export."
+  keywords="solidjs date picker, solid date time picker, web components"
+  crumbLabel="Solid"
+  currentPath="/docs/solid/"
+>
+  <article class="docs-article">
+    <h1>Solid</h1>
+
+    <p class="docs-callout">
+      <a href="/solid/">Try the live Solid demo</a>
+      — interactive picker and copy-paste snippets.
+    </p>
+
+    <h2>Support tier</h2>
+    <p class="docs-callout">
+      Partial compatibility through Web Components only. There is no
+      <code>./solid</code> package export and no native Solid components. Import
+      <code>defineCustomElements</code> from
+      <code>universal-datetime-picker/wc</code> and render
+      <code>datetime-picker*</code> tags on the client.
+    </p>
+
+    <h2>Install + deps</h2>
+    <pre><code>npm install universal-datetime-picker</code></pre>
+    <p>SolidJS on the client. React peers are not required for this path.</p>
+
+    <h2>Setup</h2>
+    <p>
+      Register custom elements once in your client entry before
+      <code>render</code>. Keep registration and picker markup out of SSR
+      paths. Bind Solid signals from the native <code>change</code> event.
+    </p>
+
+    <h2>Exact import path</h2>
+    <pre><code>{`import { defineCustomElements } from "universal-datetime-picker/wc";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();`}</code></pre>
+    <p>
+      Do not import from <code>universal-datetime-picker</code> expecting Solid
+      components. That entry is React-only.
+    </p>
+
+    <h2>Minimal example</h2>
+    <pre><code>{`/** @jsxImportSource solid-js */
+import { createSignal } from "solid-js";
+import { defineCustomElements } from "universal-datetime-picker/wc";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();
+
+export function App() {
+  const [date, setDate] = createSignal<Date | null>(null);
+
+  return (
+    <>
+      <datetime-picker
+        inline
+        mode="date"
+        as-string="false"
+        onchange={(e: Event) => {
+          const next = (e as CustomEvent).detail;
+          setDate(next instanceof Date ? next : null);
+        }}
+      />
+      <p>Selected: {date()?.toString() ?? "null"}</p>
+    </>
+  );
+}`}</code></pre>
+
+    <h2>Realistic example</h2>
+    <pre><code>{`import { createSignal, onMount, Show } from "solid-js";
+import { defineCustomElements } from "universal-datetime-picker/wc";
+import "universal-datetime-picker/style.css";
+
+export function Booking() {
+  const [date, setDate] = createSignal<Date | null>(null);
+  const [ready, setReady] = createSignal(false);
+
+  onMount(() => {
+    defineCustomElements();
+    setReady(true);
+  });
+
+  return (
+    <Show when={ready()}>
+      <>
+        <datetime-picker-input
+          placeholder="Pick date & time"
+          as-string="false"
+          onchange={(e: Event) => {
+            const next = (e as CustomEvent).detail;
+            setDate(next instanceof Date ? next : null);
+          }}
+        />
+        <p>{date()?.toLocaleString() ?? "No date"}</p>
+      </>
+    </Show>
+  );
+}`}</code></pre>
+
+    <h2>Configuration notes</h2>
+    <ul>
+      <li>
+        This path is the same custom elements used by Vue, Svelte, and Angular
+        helpers, registered via <code>./wc</code> directly.
+      </li>
+      <li>
+        JSX may need a custom-elements / TypeScript JSX intrinsic declaration
+        for <code>datetime-picker</code> tags depending on your
+        <code>tsconfig</code>.
+      </li>
+      <li>
+        Attributes are kebab-case strings on the element.
+      </li>
+      <li>
+        Prefer client-only islands in SolidStart. Custom element classes are
+        browser APIs.
+      </li>
+    </ul>
+
+    <h2>Events</h2>
+    <ul>
+      <li>
+        <code>onchange</code>: <code>(e as CustomEvent).detail</code> is the
+        value
+      </li>
+      <li>
+        <code>onopenchange</code>: open boolean in <code>detail</code>
+      </li>
+    </ul>
+
+    <h2>Customization links</h2>
+    <ul>
+      <li><a href="/docs/web-components/">Web Components</a></li>
+      <li><a href="/docs/theming/">Theming</a></li>
+      <li><a href="/docs/locales/">Locales</a></li>
+      <li><a href="/docs/props/">Props</a></li>
+    </ul>
+
+    <h2>Pitfalls</h2>
+    <ul>
+      <li>
+        Importing <code>DateTime</code> from the main package pulls React
+        components and will not give you Solid primitives.
+      </li>
+      <li>
+        Looking for <code>universal-datetime-picker/solid</code> fails. That
+        export does not exist.
+      </li>
+      <li>
+        SSR without a client boundary throws when <code>HTMLElement</code>
+        subclasses load.
+      </li>
+    </ul>
+
+    <h2>Troubleshooting</h2>
+    <p>
+      Native React import mistakes and SSR failures are listed in <a href="/docs/troubleshooting/">Troubleshooting</a>.
+    </p>
+
+    <h2>Related links</h2>
+    <p>
+      <a href="/solid/">Solid live demo</a> · <a href="/examples/">Examples</a> · <a href="/docs/props/">Props</a> · <a href="/docs/troubleshooting/">Troubleshooting</a> · <a href="/docs/web-components/">Web Components</a>
+    </p>
+  </article>
+</DocsLayout>

@@ -1,0 +1,185 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Components"
+  description="When to use DateTime, DateTimeInput, and DateTimeRange: roles, commit rules, and how each component behaves."
+  keywords="DateTime, DateTimeInput, DateTimeRange"
+  crumbLabel="Components"
+  currentPath="/docs/components/"
+>
+  <article class="docs-article">
+    <h1>Components</h1>
+    <p>
+      Three UI building blocks cover single values, form-style inputs, and
+      ranges. React exports them from the main package entry. Matching custom
+      elements ship from <code>./wc</code>, CDN, and framework helpers.
+    </p>
+
+    <h2>Quick map</h2>
+    <div class="docs-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>React export</th>
+            <th>Custom element</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>DateTime</code></td>
+            <td><code>&lt;datetime-picker&gt;</code></td>
+            <td>
+              Date, time, or datetime picker. Inline, overlay, or popover.
+            </td>
+          </tr>
+          <tr>
+            <td><code>DateTimeInput</code></td>
+            <td><code>&lt;datetime-picker-input&gt;</code></td>
+            <td>
+              Text field plus icon that opens a popover picker. Always
+              popover + anchor.
+            </td>
+          </tr>
+          <tr>
+            <td><code>DateTimeRange</code></td>
+            <td><code>&lt;datetime-picker-range&gt;</code></td>
+            <td>
+              Start and end dates on one calendar. Inline or centered
+              overlay only.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>DateTime</h2>
+    <p>
+      Use when you control the trigger yourself, or when the calendar should
+      stay visible (<code>inline</code>). Modes:
+    </p>
+    <ul>
+      <li><code>date</code>: day grid only</li>
+      <li><code>time</code>: hour / minute / second columns</li>
+      <li>
+        <code>datetime</code>: date + time. Layout
+        <code>combined</code> (default) shows both panels;
+        <code>tabs</code> splits Date / Time tabs.
+      </li>
+    </ul>
+    <p>
+      Presentation when not inline: centered overlay by default, or
+      <code>popover</code> with <code>anchorEl</code>. Non-inline
+      <code>defaultOpen</code> is <strong>true</strong>, so pass
+      <code>defaultOpen=&#123;false&#125;</code> or control <code>open</code>
+      for button-driven UIs. See <a href="/docs/overlay/">Overlay and triggers</a>.
+    </p>
+
+    <h2>DateTimeInput</h2>
+    <p>
+      Use for forms and readouts that look like a text field. The component
+      owns the input, trailing icon, and popover placement. You do not pass
+      <code>popover</code> or <code>anchorEl</code>. It starts closed
+      (<code>defaultOpen</code> false) until the field or icon is activated.
+    </p>
+    <p>
+      Extra props include <code>placeholder</code>, <code>id</code>,
+      <code>name</code>, <code>disabled</code>, <code>readOnly</code>,
+      <code>customInput</code>, and <code>icon</code>. Full list: <a href="/docs/props/">Props</a>.
+    </p>
+
+    <h2>DateTimeRange</h2>
+    <p>
+      Use when the user picks a start and an end date. Value shape is
+      <code>&#123; start, end &#125;</code>. There is no time mode on the
+      range picker. It does not support <code>popover</code>,
+      <code>anchorEl</code>, <code>theme</code>, <code>mode</code>,
+      <code>layout</code>, <code>use12Hours</code>, or
+      <code>showSeconds</code>. Details: <a href="/docs/range/">Date range</a>.
+    </p>
+
+    <h2>When to use which</h2>
+    <div class="docs-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Situation</th>
+            <th>Choose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Form field that opens a calendar</td>
+            <td><code>DateTimeInput</code></td>
+          </tr>
+          <tr>
+            <td>Custom button or always-visible calendar</td>
+            <td><code>DateTime</code></td>
+          </tr>
+          <tr>
+            <td>Check-in / check-out or report date span</td>
+            <td><code>DateTimeRange</code></td>
+          </tr>
+          <tr>
+            <td>Time of day only</td>
+            <td><code>DateTime</code> or Input with <code>mode="time"</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Commit rules</h2>
+    <p>
+      "Commit" means <code>onChange</code> fires with the value the user
+      settled on.
+    </p>
+    <ul>
+      <li>
+        <strong>Date overlay.</strong> Clicking a day commits and closes. No
+        OK button.
+      </li>
+      <li>
+        <strong>Datetime or time overlay.</strong> Changing the day or clock
+        updates the draft. Commit on OK. Clear commits <code>null</code>.
+      </li>
+      <li>
+        <strong>Inline DateTime.</strong> Changes commit as the user
+        interacts (no separate OK gate for day selection).
+      </li>
+      <li>
+        <strong>DateTimeRange.</strong> Commits when the range is complete.
+        No OK button.
+      </li>
+    </ul>
+    <p>
+      With <code>asString</code> omitted or false, single pickers return
+      <code>Date</code> or <code>TimeValue</code>. With
+      <code>asString=&#123;true&#125;</code>, they return a formatted string.
+      Range returns <code>&#123; start, end &#125;</code> with
+      <code>Date</code> or string members accordingly.
+    </p>
+
+    <h2>Vanilla and WC names</h2>
+    <ul>
+      <li>
+        Vanilla: <code>createDateTimePicker</code>,
+        <code>createDateTimeRangePicker</code>
+      </li>
+      <li>
+        WC tags: <code>datetime-picker</code>,
+        <code>datetime-picker-input</code>,
+        <code>datetime-picker-range</code>
+      </li>
+      <li>WC events: <code>change</code>, <code>openchange</code></li>
+    </ul>
+
+    <p>
+      Next: <a href="/docs/props/">Props</a> ·
+      <a href="/docs/overlay/">Overlay</a> ·
+      <a href="/examples/">Examples</a> ·
+      <a href="/docs/troubleshooting/">Troubleshooting</a>
+    </p>
+  </article>
+</DocsLayout>

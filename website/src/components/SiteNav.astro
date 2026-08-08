@@ -72,11 +72,11 @@ const { currentSlug } = Astro.props;
   </div>
 
   <nav class="topnav" id="site-nav" data-site-nav aria-label="Primary">
-    <a href="/#live-demo">Live demo</a>
-    <a href="/#frameworks">Frameworks</a>
-    <a href="/#install">Install</a>
+    <a href="/docs/">Docs</a>
+    <a href="/examples/">Examples</a>
+    <a href="/changelog/">Changelog</a>
     <details class="topnav-dropdown">
-      <summary>All demos</summary>
+      <summary>Frameworks</summary>
       <div class="topnav-dropdown-panel">
         {
           FRAMEWORKS.map((fw) => (
@@ -97,7 +97,7 @@ const { currentSlug } = Astro.props;
 
 {
   currentSlug ? (
-    <nav class="framework-strip" aria-label="Framework demos">
+    <nav class="framework-strip" aria-label="Framework pages">
       {FRAMEWORKS.map((fw) => (
         <a
           href={`/${fw.slug}/`}
@@ -112,8 +112,13 @@ const { currentSlug } = Astro.props;
 }
 
 <script>
-  import { initMobileNav, initSiteTheme } from "../scripts/theme.ts";
+  import {
+    initFrameworkDropdown,
+    initMobileNav,
+    initSiteTheme,
+  } from "../scripts/theme.ts";
 
   initSiteTheme();
   initMobileNav();
+  initFrameworkDropdown();
 </script>

@@ -1,0 +1,202 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Locales"
+  description="Localize month and weekday names with dayjs locales, and override UI chrome strings with the labels prop."
+  keywords="date picker locale, dayjs locale, internationalized date picker"
+  crumbLabel="Locales"
+  currentPath="/docs/locales/"
+>
+  <article class="docs-article">
+    <h1>Locales</h1>
+    <p>
+      Calendar month names, weekday headers, and related dayjs formatting
+      follow a <strong>dayjs locale id</strong>, not a raw BCP-47 tag alone.
+      Import the locale module, then pass the same id to
+      <code>locale</code>.
+    </p>
+
+    <h2>Import rule</h2>
+    <p>
+      dayjs does not load locale data until you import it. Do this once before
+      rendering a picker that needs that locale:
+    </p>
+    <pre><code>{`import "dayjs/locale/fr";
+import { DateTime } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";
+
+<DateTime
+  locale="fr"
+  weekStartsOn={1}
+  inline
+  mode="date"
+  onChange={console.log}
+/>`}</code></pre>
+    <p>
+      Using <code>locale="fr-ca"</code> without
+      <code>import "dayjs/locale/fr-ca"</code> falls back to incomplete or
+      English names. Match the import path to the id you pass.
+    </p>
+
+    <h2>labels vs locale</h2>
+    <div class="docs-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Control</th>
+            <th>Affects</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>locale</code></td>
+            <td>
+              dayjs-driven calendar text: months, weekdays, and formatted
+              values that go through dayjs
+            </td>
+          </tr>
+          <tr>
+            <td><code>labels</code></td>
+            <td>
+              UI chrome strings: OK, Clear, Close, Date/Time tab titles,
+              range prompts, and similar
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Locale does not translate OK/Clear for you. Set <code>labels</code>
+      when those strings must match the user's language.
+    </p>
+    <pre><code>{`<DateTime
+  inline
+  locale="fr"
+  weekStartsOn={1}
+  labels={{
+    ok: "Valider",
+    clear: "Effacer",
+    close: "Fermer",
+    date: "Date",
+    time: "Heure",
+  }}
+/>`}</code></pre>
+
+    <h2>Verified playground locales</h2>
+    <p>
+      These ids are exercised in the site playground. Friendly names are for
+      humans. Pass the id string to <code>locale</code>.
+    </p>
+    <div class="docs-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>dayjs id</th>
+            <th>Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>en</code></td>
+            <td>English</td>
+          </tr>
+          <tr>
+            <td><code>en-gb</code></td>
+            <td>English (United Kingdom)</td>
+          </tr>
+          <tr>
+            <td><code>en-ca</code></td>
+            <td>English (Canada)</td>
+          </tr>
+          <tr>
+            <td><code>fr</code></td>
+            <td>French</td>
+          </tr>
+          <tr>
+            <td><code>fr-ca</code></td>
+            <td>French (Canada)</td>
+          </tr>
+          <tr>
+            <td><code>de</code></td>
+            <td>German</td>
+          </tr>
+          <tr>
+            <td><code>es</code></td>
+            <td>Spanish</td>
+          </tr>
+          <tr>
+            <td><code>es-mx</code></td>
+            <td>Spanish (Mexico)</td>
+          </tr>
+          <tr>
+            <td><code>it</code></td>
+            <td>Italian</td>
+          </tr>
+          <tr>
+            <td><code>pt-br</code></td>
+            <td>Portuguese (Brazil)</td>
+          </tr>
+          <tr>
+            <td><code>ja</code></td>
+            <td>Japanese</td>
+          </tr>
+          <tr>
+            <td><code>ko</code></td>
+            <td>Korean</td>
+          </tr>
+          <tr>
+            <td><code>zh-cn</code></td>
+            <td>Chinese (Simplified)</td>
+          </tr>
+          <tr>
+            <td><code>zh-tw</code></td>
+            <td>Chinese (Traditional)</td>
+          </tr>
+          <tr>
+            <td><code>nl</code></td>
+            <td>Dutch</td>
+          </tr>
+          <tr>
+            <td><code>sv</code></td>
+            <td>Swedish</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>React example (French, Monday start)</h2>
+    <pre><code>{`import { useState } from "react";
+import "dayjs/locale/fr";
+import { DateTime } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";
+
+export function FrenchDatePicker() {
+  const [value, setValue] = useState<Date | null>(null);
+
+  return (
+    <DateTime
+      inline
+      mode="date"
+      locale="fr"
+      weekStartsOn={1}
+      asString={false}
+      value={value}
+      onChange={(next) => setValue(next instanceof Date ? next : null)}
+      labels={{
+        clear: "Effacer",
+        close: "Fermer",
+        chooseDate: "Choisir une date",
+      }}
+    />
+  );
+}`}</code></pre>
+
+    <p>
+      Other locales ship with dayjs. Import the module, pass the id, and test
+      weekday order with <code>weekStartsOn</code>. See the <a href="/examples/">examples playground</a> and <a href="/docs/troubleshooting/">Troubleshooting</a> if names stay in
+      English.
+    </p>
+  </article>
+</DocsLayout>

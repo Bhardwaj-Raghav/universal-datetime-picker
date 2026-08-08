@@ -1,0 +1,177 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Vue"
+  description="Register datetime-picker custom elements in Vue 3 with defineCustomElements and @change handlers."
+  keywords="vue date picker, vue 3 date time picker"
+  crumbLabel="Vue"
+  currentPath="/docs/vue/"
+>
+  <article class="docs-article">
+    <h1>Vue</h1>
+
+    <p class="docs-callout">
+      <a href="/vue/">Try the live Vue demo</a>
+      — interactive picker and copy-paste snippets.
+    </p>
+
+    <h2>Support tier</h2>
+    <p class="docs-callout">
+      Full support through Web Components. Register once from
+      <code>universal-datetime-picker/vue</code>, then use
+      <code>datetime-picker*</code> tags in templates. Configure
+      <code>isCustomElement</code> for those tags.
+    </p>
+
+    <h2>Install + deps</h2>
+    <pre><code>npm install universal-datetime-picker</code></pre>
+    <p>Works with Vue 3. React peers are not required.</p>
+
+    <h2>Setup</h2>
+    <p>
+      Call <code>defineCustomElements()</code> in <code>main.ts</code> (or a
+      plugin), import the stylesheet, and tell the Vue compiler that
+      <code>datetime-picker*</code> tags are custom elements.
+    </p>
+
+    <h2>Exact import path</h2>
+    <pre><code>{`import { defineCustomElements } from "universal-datetime-picker/vue";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();`}</code></pre>
+
+    <h2>Minimal example</h2>
+    <pre><code>{`// main.ts
+import { createApp } from "vue";
+import App from "./App.vue";
+import { defineCustomElements } from "universal-datetime-picker/vue";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();
+
+createApp(App)
+  .config.compilerOptions.isCustomElement = (tag) =>
+    tag.startsWith("datetime-picker")
+  .mount("#app");`}</code></pre>
+    <pre><code>{`<!-- App.vue -->
+<script setup lang="ts">
+import { ref } from "vue";
+
+const date = ref<Date | null>(null);
+
+function onChange(e: CustomEvent) {
+  const next = e.detail;
+  date.value = next instanceof Date ? next : null;
+}
+</script>
+
+<template>
+  <datetime-picker
+    inline
+    mode="date"
+    as-string="false"
+    @change="onChange"
+  />
+  <p>Selected: {{ date }}</p>
+</template>`}</code></pre>
+
+    <h2>Realistic example</h2>
+    <pre><code>{`<script setup lang="ts">
+import { ref } from "vue";
+
+const date = ref<Date | null>(null);
+const range = ref<{ start: Date | null; end: Date | null }>({
+  start: null,
+  end: null,
+});
+
+function onDateChange(e: CustomEvent) {
+  date.value = e.detail instanceof Date ? e.detail : null;
+}
+
+function onRangeChange(e: CustomEvent) {
+  range.value = e.detail as { start: Date | null; end: Date | null };
+}
+</script>
+
+<template>
+  <datetime-picker-input
+    placeholder="Pick date & time"
+    as-string="false"
+    @change="onDateChange"
+  />
+  <datetime-picker-range
+    inline
+    as-string="false"
+    @change="onRangeChange"
+  />
+</template>`}</code></pre>
+
+    <h2>Configuration notes</h2>
+    <ul>
+      <li>
+        Register once at app startup, not inside every SFC.
+      </li>
+      <li>
+        Attributes are kebab-case on the custom elements:
+        <code>as-string</code>, <code>show-seconds</code>, and so on.
+      </li>
+      <li>
+        Vite and Vue CLI both accept
+        <code>app.config.compilerOptions.isCustomElement</code>. For
+        <code>vue-loader</code> / SFC compiler options, mirror the same
+        <code>tag.startsWith("datetime-picker")</code> check.
+      </li>
+      <li>
+        Nuxt needs a <code>.client</code> plugin and
+        <code>ClientOnly</code>. See <a href="/docs/nuxt/">Nuxt</a>.
+      </li>
+    </ul>
+
+    <h2>Events</h2>
+    <ul>
+      <li>
+        <code>@change</code>: <code>event.detail</code> is the selected value
+      </li>
+      <li>
+        <code>@openchange</code>: <code>event.detail</code> is the open boolean
+      </li>
+    </ul>
+
+    <h2>Customization links</h2>
+    <ul>
+      <li><a href="/docs/theming/">Theming</a></li>
+      <li><a href="/docs/locales/">Locales</a></li>
+      <li><a href="/docs/web-components/">Web Components attributes</a></li>
+      <li><a href="/docs/props/">Props</a></li>
+    </ul>
+
+    <h2>Pitfalls</h2>
+    <ul>
+      <li>
+        Skipping <code>isCustomElement</code> produces Vue warnings about
+        unresolved components for <code>datetime-picker*</code>.
+      </li>
+      <li>
+        Registering inside a component that re-runs is wasteful. Registration
+        is idempotent, but keep it in <code>main.ts</code>.
+      </li>
+      <li>
+        SSR frameworks must not define custom elements on the server. Use the
+        Nuxt pattern for Nuxt apps.
+      </li>
+    </ul>
+
+    <h2>Troubleshooting</h2>
+    <p>
+      CE compiler warnings and SSR issues are listed under <a href="/docs/troubleshooting/">Troubleshooting</a>.
+    </p>
+
+    <h2>Related links</h2>
+    <p>
+      <a href="/vue/">Vue live demo</a> · <a href="/examples/">Examples</a> · <a href="/docs/props/">Props</a> · <a href="/docs/troubleshooting/">Troubleshooting</a> · <a href="/docs/nuxt/">Nuxt</a>
+    </p>
+  </article>
+</DocsLayout>

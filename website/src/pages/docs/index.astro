@@ -1,0 +1,166 @@
+---
+import DocsLayout from "../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Overview"
+  description="Docs hub for universal-datetime-picker: support tiers, features, entry points, and where to start for React, vanilla, Web Components, and more."
+  keywords="date time picker documentation, universal-datetime-picker docs"
+  crumbLabel="Overview"
+  currentPath="/docs/"
+>
+  <article class="docs-article">
+    <h1>Documentation</h1>
+    <p>
+      <code>universal-datetime-picker</code> is a TypeScript date, time,
+      datetime, and date-range picker. One npm package, one stylesheet, and
+      entry points for React, vanilla JS, Web Components, Vue, Svelte, Angular,
+      and CDN.
+    </p>
+
+    <h2>Who this is for</h2>
+    <ul>
+      <li>React apps that want a native component API with optional peers.</li>
+      <li>
+        Vanilla or multi-framework apps that prefer
+        <code>createDateTimePicker</code> or custom elements.
+      </li>
+      <li>
+        Teams that need date-only, time-only, datetime, or start/end range
+        selection with shared CSS theming and dayjs locales.
+      </li>
+    </ul>
+
+    <h2>What you get</h2>
+    <ul>
+      <li>
+        Modes: <code>date</code>, <code>time</code>, <code>datetime</code>
+        (with <code>combined</code> or <code>tabs</code> layout).
+      </li>
+      <li>
+        Presentation: <code>inline</code>, centered overlay, or popover
+        anchored to an element.
+      </li>
+      <li>
+        Values as <code>Date</code> / <code>TimeValue</code> by default, or
+        formatted strings when <code>asString</code> is true.
+      </li>
+      <li>CSS-variable theming and dayjs locale ids for month and weekday names.</li>
+      <li>Accessible keyboard navigation, focus trap, Escape, and outside click.</li>
+    </ul>
+
+    <h2>Support tiers</h2>
+    <div class="docs-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Stack</th>
+            <th>How you use it</th>
+            <th>Docs</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>React</td>
+            <td>
+              Native components from
+              <code>universal-datetime-picker</code>. Peers
+              <code>react</code> / <code>react-dom</code> ≥ 18 are optional
+              only if you skip this entry.
+            </td>
+            <td><a href="/docs/react/">React</a></td>
+          </tr>
+          <tr>
+            <td>Vanilla</td>
+            <td>
+              <code>createDateTimePicker</code> /
+              <code>createDateTimeRangePicker</code> from
+              <code>./vanilla</code>
+            </td>
+            <td><a href="/docs/vanilla/">Vanilla</a></td>
+          </tr>
+          <tr>
+            <td>Web Components / CDN</td>
+            <td>
+              <code>defineCustomElements</code> from <code>./wc</code>. Tags
+              <code>datetime-picker</code>,
+              <code>datetime-picker-input</code>,
+              <code>datetime-picker-range</code>. Events
+              <code>change</code>, <code>openchange</code>.
+            </td>
+            <td>
+              <a href="/docs/web-components/">Web Components &amp; CDN</a>
+            </td>
+          </tr>
+          <tr>
+            <td>Vue / Svelte / Angular</td>
+            <td>
+              WC helpers from <code>./vue</code>, <code>./svelte</code>,
+              <code>./angular</code>
+            </td>
+            <td>
+              <a href="/docs/vue/">Vue</a>, <a href="/docs/svelte/">Svelte</a>, <a href="/docs/angular/">Angular</a>
+            </td>
+          </tr>
+          <tr>
+            <td>Next.js</td>
+            <td>React components in a <code>"use client"</code> module</td>
+            <td><a href="/docs/nextjs/">Next.js</a></td>
+          </tr>
+          <tr>
+            <td>Nuxt</td>
+            <td>
+              Vue helpers plus a <code>.client</code> plugin and
+              <code>ClientOnly</code>
+            </td>
+            <td><a href="/docs/nuxt/">Nuxt</a></td>
+          </tr>
+          <tr>
+            <td>Solid / Preact</td>
+            <td>
+              Web Components only. There is no <code>./solid</code> or
+              <code>./preact</code> export.
+            </td>
+            <td>
+              <a href="/docs/solid/">Solid</a>, <a href="/docs/preact/">Preact</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Suggested path</h2>
+    <ol>
+      <li>
+        <a href="/docs/getting-started/">Getting started</a>: install, import
+        CSS, render one picker.
+      </li>
+      <li>
+        <a href="/docs/entry-points/">Entry points</a>: pick the import that
+        matches your stack.
+      </li>
+      <li>
+        <a href="/docs/components/">Components</a> and <a href="/docs/props/">Props</a>: choose DateTime, DateTimeInput, or
+        DateTimeRange and wire values.
+      </li>
+      <li>
+        <a href="/docs/overlay/">Overlay and triggers</a> when you need a
+        custom button or closed-by-default popover.
+      </li>
+      <li>
+        <a href="/docs/range/">Date range</a>, <a href="/docs/theming/">Theming</a>, <a href="/docs/locales/">Locales</a> as needed.
+      </li>
+      <li>
+        Framework pages, then <a href="/docs/troubleshooting/">Troubleshooting</a> if something
+        fails.
+      </li>
+    </ol>
+
+    <ul class="docs-quicklinks">
+      <li><a href="/examples/">Examples playground</a></li>
+      <li><a href="/docs/faq/">FAQ</a></li>
+      <li><a href="/docs/troubleshooting/">Troubleshooting</a></li>
+      <li><a href="/docs/migration/">Migration</a></li>
+    </ul>
+  </article>
+</DocsLayout>

@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import {
+  DOCS_NAV,
   GITHUB_URL,
   NPM_URL,
   SITE_DESCRIPTION,
@@ -20,7 +21,14 @@ export const GET: APIRoute = ({ site }) => {
     (faq) => `### ${faq.question}\n\n${faq.answer}`
   ).join("\n\n");
 
-  const body = `# ${SITE_NAME} — full context for LLMs
+  const docsLinks = DOCS_NAV.filter(
+    (item): item is { href: string; label: string } =>
+      item.type !== "heading" && "href" in item,
+  )
+    .map((item) => `- [${item.label}](${siteUrl}${item.href})`)
+    .join("\n");
+
+  const body = `# ${SITE_NAME}: full context for LLMs
 
 > ${SITE_DESCRIPTION}
 
@@ -35,13 +43,22 @@ This file expands [${siteUrl}/llms.txt](${siteUrl}/llms.txt) with API and usage 
 - License: MIT
 - Stack: vanilla JS (home), React 18+ (optional peer), Web Components, TypeScript, dayjs, CSS variables
 - Modes: date, time, datetime, date range
-- Presentation: overlay, popover (input), or inline
-- Also: Vue / Svelte / Angular via custom elements; CDN IIFE
+- Presentation: inline, popover (anchored), or overlay (modal)
+- Non-inline \`DateTime\` / range defaultOpen is true unless overridden; \`DateTimeInput\` defaults closed
+- DateTimeRange has no popover, anchorEl, or theme
+- Solid / Preact: Web Components via \`./wc\` only (no dedicated subpaths)
+- Vue / Svelte / Angular: custom element registration helpers
 
-## Framework live demos (${siteUrl})
+## Framework pages and playground (${siteUrl})
 
-- \`/\` — vanilla \`createDateTimePicker\` showcase (home; no React runtime on this route)
-${FRAMEWORKS.map((fw) => `- \`/${fw.slug}/\` — ${fw.label}: ${FRAMEWORK_CARD_SUMMARY[fw.slug]}`).join("\n")}
+- \`/examples/\`: interactive playground (mode, presentation, locale, snippets)
+- \`/\`: vanilla mode switcher on the marketing home (no React runtime)
+${FRAMEWORKS.map((fw) => `- \`/${fw.slug}/\`: ${fw.label}: ${FRAMEWORK_CARD_SUMMARY[fw.slug]}`).join("\n")}
+- \`/changelog/\`: release notes
+
+## Documentation
+
+${docsLinks}
 
 ## Install
 
@@ -89,7 +106,7 @@ Elements: \`<datetime-picker>\`, \`<datetime-picker-input>\`, \`<datetime-picker
 
 Attributes (common): \`mode\`, \`inline\`, \`open\`, \`use12hours\`, \`show-seconds\`, \`as-string\`, \`locale\`, \`format\`, \`theme\`, \`value\`.
 
-Event: \`change\` CustomEvent — \`event.detail\` is the selected value (same shapes as React \`onChange\`).
+Event: \`change\` CustomEvent. \`event.detail\` is the selected value (same shapes as React \`onChange\`).
 
 \`\`\`html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/universal-datetime-picker/dist/style.css" />
@@ -151,7 +168,7 @@ Omitting \`asString\` returns \`Date\` / \`TimeValue\` objects. Set \`asString={
 Shared by \`DateTime\` / \`DateTimeInput\`:
 
 - \`value\` / \`defaultValue\`: \`Date | string | Dayjs | null\`
-- \`onChange\`: \`(value: Date | TimeValue | string | null) => void\` — date-only overlays fire on day click; datetime/time overlays fire on OK / Clear
+- \`onChange\`: \`(value: Date | TimeValue | string | null) => void\`. Date-only overlays fire on day click; datetime/time overlays fire on OK / Clear
 - \`asString\`: \`true\` = string; omit or \`false\` = Date / TimeValue
 - \`showSeconds\`: show seconds column (default \`true\`); affects default format
 - \`format\`: dayjs format string (derived from mode / use12Hours / showSeconds when omitted)

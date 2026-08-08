@@ -22,16 +22,22 @@ export type BreadcrumbItem = {
 interface Props {
   title?: string;
   description?: string;
+  keywords?: string;
+  ogType?: "website" | "article";
   includeFaq?: boolean;
   includeSoftwareApplication?: boolean;
+  includeTechArticle?: boolean;
   breadcrumbs?: BreadcrumbItem[];
 }
 
 const {
   title = SITE_TITLE,
   description = SITE_DESCRIPTION,
+  keywords = SITE_KEYWORDS,
+  ogType = "website",
   includeFaq = false,
   includeSoftwareApplication = false,
+  includeTechArticle = false,
   breadcrumbs = [],
 } = Astro.props;
 const siteUrl = (
@@ -157,6 +163,22 @@ const jsonLd = {
           },
         ]
       : []),
+    ...(includeTechArticle
+      ? [
+          {
+            "@type": "TechArticle",
+            "@id": `${canonical}#article`,
+            headline: title,
+            description,
+            url: canonical,
+            mainEntityOfPage: { "@id": `${canonical}#webpage` },
+            isPartOf: { "@id": `${siteUrl}/#website` },
+            about: { "@id": `${siteUrl}/#software` },
+            author: { "@id": `${siteUrl}/#author` },
+            inLanguage: "en-US",
+          },
+        ]
+      : []),
     softwareApplication,
     ...(includeSoftwareApplication
       ? [
@@ -187,7 +209,7 @@ const jsonLd = {
       ? [
           {
             "@type": "FAQPage",
-            "@id": `${siteUrl}/#faq`,
+            "@id": `${canonical}#faq`,
             mainEntity: SITE_FAQS.map((faq) => ({
               "@type": "Question",
               name: faq.question,
@@ -210,7 +232,7 @@ const jsonLd = {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="keywords" content={SITE_KEYWORDS} />
+    {keywords ? <meta name="keywords" content={keywords} /> : null}
     <meta name="author" content="Raghav Bhardwaj" />
     <meta
       name="robots"
@@ -229,7 +251,7 @@ const jsonLd = {
       href={`${siteUrl}/llms-full.txt`}
     />
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -241,7 +263,7 @@ const jsonLd = {
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="universal-datetime-picker — accessible date time picker for any framework"
+      content="universal-datetime-picker: accessible date time picker for any framework"
     />
     <meta property="og:locale" content="en_US" />
 
@@ -251,7 +273,7 @@ const jsonLd = {
     <meta name="twitter:image" content={ogImage} />
     <meta
       name="twitter:image:alt"
-      content="Universal date time picker — universal-datetime-picker"
+      content="Universal date time picker: universal-datetime-picker"
     />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
