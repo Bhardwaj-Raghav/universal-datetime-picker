@@ -33,6 +33,19 @@ function resolveSiteUrl() {
   return fromEnv;
 }
 
+function sitemapMeta(pathname) {
+  if (pathname === "/") {
+    return { changefreq: "weekly", priority: 1 };
+  }
+  if (pathname === "/changelog/") {
+    return { changefreq: "weekly", priority: 0.8 };
+  }
+  if (pathname.startsWith("/docs/") || pathname === "/examples/") {
+    return { changefreq: "weekly", priority: 0.8 };
+  }
+  return { changefreq: "monthly", priority: 0.7 };
+}
+
 const site = resolveSiteUrl();
 
 const pkgAliases = [
@@ -105,13 +118,18 @@ export default defineConfig({
     }),
     svelte(),
     sitemap({
+      lastmod: new Date(),
       filter: (page) =>
         !page.includes("/demo/") && !page.endsWith("/sitemap.xml"),
       serialize(item) {
         const url = item.url.endsWith("/") ? item.url : `${item.url}/`;
-        return { ...item, url };
+        const pathname = new URL(url).pathname;
+        const { changefreq, priority } = sitemapMeta(pathname);
+        return { ...item, url, changefreq, priority };
       },
     }),
+
+
   ],
   vite: {
     resolve: {
