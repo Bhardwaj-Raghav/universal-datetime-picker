@@ -72,6 +72,7 @@ const softwareApplication = {
   downloadUrl: NPM_URL,
   installUrl: NPM_URL,
   softwareVersion: PACKAGE_VERSION,
+  image: `${siteUrl}/apple-touch-icon.png`,
   ...(includeSoftwareApplication
     ? {
         keywords: SCHEMA_KEYWORDS,
@@ -277,7 +278,7 @@ const jsonLd = {
     />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#3f6a28" />
     <meta name="color-scheme" content="light dark" />
