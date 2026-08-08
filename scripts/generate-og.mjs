@@ -5,7 +5,6 @@ import { fileURLToPath } from "node:url";
 const root = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(root, "../website/public");
 const ogOut = path.join(publicDir, "og.png");
-const appleOut = path.join(publicDir, "apple-touch-icon.png");
 
 const ogSvg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
@@ -27,20 +26,5 @@ const ogSvg = `<?xml version="1.0" encoding="UTF-8"?>
   </g>
 </svg>`;
 
-const appleSvg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
-  <rect width="180" height="180" rx="36" fill="#f3f6ef"/>
-  <rect x="36" y="40" width="108" height="100" rx="16" fill="none" stroke="#3f6a28" stroke-width="8"/>
-  <line x1="36" y1="68" x2="144" y2="68" stroke="#3f6a28" stroke-width="8"/>
-  <circle cx="64" cy="100" r="7" fill="#3f6a28"/>
-  <circle cx="90" cy="100" r="7" fill="#3f6a28"/>
-  <circle cx="116" cy="100" r="7" fill="#3f6a28"/>
-  <circle cx="128" cy="128" r="18" fill="#f3f6ef" stroke="#3f6a28" stroke-width="6"/>
-  <line x1="128" y1="118" x2="128" y2="128" stroke="#3f6a28" stroke-width="5"/>
-  <line x1="128" y1="128" x2="136" y2="136" stroke="#3f6a28" stroke-width="5"/>
-</svg>`;
-
 await sharp(Buffer.from(ogSvg)).png().toFile(ogOut);
-await sharp(Buffer.from(appleSvg)).png().toFile(appleOut);
 console.log("Wrote", ogOut);
-console.log("Wrote", appleOut);
