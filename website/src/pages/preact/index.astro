@@ -7,5 +7,7 @@ const framework = FRAMEWORK_BY_SLUG.preact;
 ---
 
 <FrameworkLayout framework={framework}>
-  <PreactDemo slot="demo" client:only="preact" />
+  <div slot="demo">
+    <PreactDemo client:only="preact" />
+  </div>
 </FrameworkLayout>

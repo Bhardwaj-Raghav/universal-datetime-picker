@@ -126,12 +126,12 @@ function onChange(e: CustomEvent) {
   {
     slug: "svelte",
     label: "Svelte",
-    tagline: "Custom elements with on:change in Svelte 4/5.",
+    tagline: "Custom elements with onchange in Svelte 5.",
     pageTitle: "Svelte date time picker demo | universal-datetime-picker",
     pageDescription:
       "Register datetime-picker elements and bind change events in Svelte with the shared stylesheet.",
     intro:
-      "Svelte projects call defineCustomElements() from universal-datetime-picker/svelte during app startup, then bind on:change on datetime-picker, datetime-picker-input, or datetime-picker-range. You get the same calendar UI as React with Svelte-friendly event wiring and shared CSS-variable theming.",
+      "Svelte projects call defineCustomElements() from universal-datetime-picker/svelte during app startup, then bind onchange on datetime-picker, datetime-picker-input, or datetime-picker-range. You get the same calendar UI as React with Svelte-friendly event wiring and shared CSS-variable theming.",
     install: "npm install universal-datetime-picker",
     demoKind: "svelte",
     snippets: [
@@ -145,7 +145,7 @@ defineCustomElements();`,
       {
         title: "Page component",
         code: `<script lang="ts">
-  let date: Date | null = null;
+  let date = $state<Date | null>(null);
 
   function onChange(e: CustomEvent) {
     const next = e.detail;
@@ -153,13 +153,14 @@ defineCustomElements();`,
   }
 </script>
 
-<datetime-picker inline mode="date" as-string="false" on:change={onChange} />
+<datetime-picker inline mode="date" as-string="false" onchange={onChange}></datetime-picker>
 <p>Selected: {date ?? "null"}</p>`,
       },
     ],
     notes: [
       "Call defineCustomElements() once in root +layout.ts (or equivalent app entry), not in every component.",
-      "Use on:change for the native change CustomEvent.",
+      "On Svelte 5 custom elements, use onchange={...} for the native change CustomEvent (not on:change).",
+      "Use explicit closing tags for custom elements (Svelte 5 rejects self-closing non-void tags).",
       "The svelte entry also exports a calendarTime action that only registers elements.",
     ],
   },
@@ -477,7 +478,7 @@ function onChange(e: CustomEvent) {
       },
     ],
     notes: [
-      "The live demo below matches /vue; wrap tags in ClientOnly to avoid SSR.",
+      "The live demo below matches /vue (same Vue island); wrap tags in ClientOnly in a real Nuxt app to avoid SSR.",
       "Use a .client plugin to register elements once.",
     ],
   },
@@ -549,9 +550,16 @@ defineCustomElements();
   svelte: `// src/routes/+layout.ts — register once
 import { defineCustomElements } from "universal-datetime-picker/svelte";
 import "universal-datetime-picker/style.css";
-defineCustomElements();`,
+defineCustomElements();
+
+// +page.svelte
+// <datetime-picker inline mode="date" as-string="false" onchange={onChange} />
+// event.detail is the selected Date (when as-string="false")`,
   angular: `// main.ts
 import { registerDateTimePickerElements } from "universal-datetime-picker/angular";
 import "universal-datetime-picker/style.css";
-registerDateTimePickerElements();`,
+registerDateTimePickerElements();
+
+// Standalone component: schemas: [CUSTOM_ELEMENTS_SCHEMA]
+// <datetime-picker inline mode="date" as-string="false" (change)="onChange($event.detail)"></datetime-picker>`,
 };

@@ -139,11 +139,9 @@ export class DateTimePickerElement extends BaseCalendarElement {
   }
 
   protected mount(): void {
-    this.handle?.destroy();
     if (!this.mountEl) {
       return;
     }
-    this.mountEl.replaceChildren();
 
     const mode = (this.getAttribute("mode") as DateTimeMode) || "datetime";
     const layout = (this.getAttribute("layout") as DateTimeLayout) || "combined";
@@ -169,7 +167,7 @@ export class DateTimePickerElement extends BaseCalendarElement {
           ? attrValue
           : undefined;
 
-    this.handle = createDateTimePicker(this.mountEl, {
+    const partial = {
       mode,
       layout,
       showSeconds,
@@ -182,11 +180,11 @@ export class DateTimePickerElement extends BaseCalendarElement {
       theme,
       open,
       value: value === undefined ? undefined : (value as string | Date | null),
-      onChange: (next) => {
+      onChange: (next: DateTimeChangeValue) => {
         (this as unknown as { _value?: DateTimeChangeValue })._value = next;
         this.emitChange(next);
       },
-      onOpenChange: (isOpen) => {
+      onOpenChange: (isOpen: boolean) => {
         syncOpenAttribute(this, isOpen);
         this.dispatchEvent(
           new CustomEvent("openchange", {
@@ -196,7 +194,15 @@ export class DateTimePickerElement extends BaseCalendarElement {
           })
         );
       },
-    });
+    };
+
+    if (this.handle) {
+      (this.handle as DateTimePickerHandle).update(partial);
+      return;
+    }
+
+    this.mountEl.replaceChildren();
+    this.handle = createDateTimePicker(this.mountEl, partial);
   }
 }
 
@@ -257,7 +263,6 @@ export class DateTimePickerInputElement extends HTMLElement {
     if (!this.input || !this.root) {
       return;
     }
-    this.handle?.destroy();
 
     const mode = (this.getAttribute("mode") as DateTimeMode) || "datetime";
     const showSeconds = !this.hasAttribute("show-seconds")
@@ -295,11 +300,27 @@ export class DateTimePickerInputElement extends HTMLElement {
       : "";
     this.input.value = display;
 
+    if (this.handle) {
+      this.handle.update({
+        mode,
+        showSeconds,
+        use12Hours,
+        asString,
+        format: formatAttr,
+        locale,
+        theme,
+        value: attrValue,
+      });
+    }
+
     const openPicker = () => {
       if (disabled) {
         return;
       }
-      this.handle?.destroy();
+      if (this.handle) {
+        this.handle.update({ open: true, value: attrValue });
+        return;
+      }
       this.handle = createDateTimePicker(this.root!, {
         mode,
         showSeconds,
@@ -385,11 +406,9 @@ export class DateTimePickerRangeElement extends BaseCalendarElement {
   }
 
   protected mount(): void {
-    this.handle?.destroy();
     if (!this.mountEl) {
       return;
     }
-    this.mountEl.replaceChildren();
 
     const inline = boolAttr(this, "inline");
     const asString = parseAsString(this);
@@ -399,7 +418,7 @@ export class DateTimePickerRangeElement extends BaseCalendarElement {
     const start = this.getAttribute("value-start");
     const end = this.getAttribute("value-end");
 
-    this.handle = createDateTimeRangePicker(this.mountEl, {
+    const partial = {
       inline,
       asString,
       format,
@@ -426,7 +445,7 @@ export class DateTimePickerRangeElement extends BaseCalendarElement {
         }
         this.emitChange(next);
       },
-      onOpenChange: (isOpen) => {
+      onOpenChange: (isOpen: boolean) => {
         syncOpenAttribute(this, isOpen);
         this.dispatchEvent(
           new CustomEvent("openchange", {
@@ -436,7 +455,15 @@ export class DateTimePickerRangeElement extends BaseCalendarElement {
           })
         );
       },
-    });
+    };
+
+    if (this.handle) {
+      (this.handle as DateTimeRangePickerHandle).update(partial);
+      return;
+    }
+
+    this.mountEl.replaceChildren();
+    this.handle = createDateTimeRangePicker(this.mountEl, partial);
   }
 }
 

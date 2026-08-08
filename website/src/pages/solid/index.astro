@@ -7,5 +7,7 @@ const framework = FRAMEWORK_BY_SLUG.solid;
 ---
 
 <FrameworkLayout framework={framework}>
-  <SolidDemo slot="demo" client:only="solid-js" />
+  <div slot="demo">
+    <SolidDemo client:only="solid-js" />
+  </div>
 </FrameworkLayout>

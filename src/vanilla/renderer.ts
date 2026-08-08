@@ -421,31 +421,42 @@ function renderTimePanel(
   return body;
 }
 
-function renderPicker(
-  controller: PickerController,
+function pickerClassName(snap: PickerSnapshot, entering: boolean): string {
+  return cx(
+    "ctp-calendar-time-picker",
+    entering && "ctp-entering",
+    snap.popover && !snap.inline && "ctp-popover",
+    snap.use12Hours && "ctp-use-12h",
+    snap.mode === "time" && "ctp-mode-time",
+    !snap.showSeconds && "ctp-no-seconds",
+    snap.showDatePanel && snap.showTimePanel && "ctp-layout-combined",
+    snap.className
+  );
+}
+
+function syncPickerShell(
+  picker: HTMLElement,
   snap: PickerSnapshot,
   titleId: string,
   position: { top: number; left: number } | null,
-  options: PickerControllerOptions
-): HTMLElement {
-  const themeAttr = resolveThemeAttr(options.theme, options.anchorEl);
-  const picker = el("div", {
-    className: cx(
-      "ctp-calendar-time-picker",
-      snap.popover && !snap.inline && "ctp-popover",
-      snap.use12Hours && "ctp-use-12h",
-      snap.mode === "time" && "ctp-mode-time",
-      !snap.showSeconds && "ctp-no-seconds",
-      snap.showDatePanel && snap.showTimePanel && "ctp-layout-combined",
-      snap.className
-    ),
-    role: snap.inline ? undefined : "dialog",
-    ariaModal: snap.inline ? undefined : true,
-    ariaLabelledby: titleId,
-  });
+  options: PickerControllerOptions,
+  entering: boolean
+): void {
+  picker.className = pickerClassName(snap, entering);
+  if (snap.inline) {
+    picker.removeAttribute("role");
+    picker.removeAttribute("aria-modal");
+  } else {
+    picker.setAttribute("role", "dialog");
+    picker.setAttribute("aria-modal", "true");
+  }
+  picker.setAttribute("aria-labelledby", titleId);
 
+  const themeAttr = resolveThemeAttr(options.theme, options.anchorEl);
   if (themeAttr) {
     picker.setAttribute("data-ctp-theme", themeAttr);
+  } else {
+    picker.removeAttribute("data-ctp-theme");
   }
 
   applyStyle(picker, options.style);
@@ -454,9 +465,18 @@ function renderPicker(
     picker.style.top = `${position.top}px`;
     picker.style.left = `${position.left}px`;
   }
+}
+
+function fillPickerContent(
+  picker: HTMLElement,
+  controller: PickerController,
+  snap: PickerSnapshot,
+  titleId: string
+): void {
+  const children: HTMLElement[] = [];
 
   if (snap.showModeTabs) {
-    picker.append(
+    children.push(
       el("div", { className: "ctp-header" }, [
         el(
           "div",
@@ -489,10 +509,10 @@ function renderPicker(
   }
 
   if (snap.showDatePanel) {
-    picker.append(renderHeader(controller, snap, titleId));
+    children.push(renderHeader(controller, snap, titleId));
   }
   if (snap.showTimePanel) {
-    picker.append(renderTimePanel(controller, snap, titleId));
+    children.push(renderTimePanel(controller, snap, titleId));
   }
 
   const footerChildren: HTMLElement[] = [
@@ -522,8 +542,35 @@ function renderPicker(
       })
     );
   }
-  picker.append(el("div", { className: "ctp-footer" }, footerChildren));
+  children.push(el("div", { className: "ctp-footer" }, footerChildren));
+  picker.replaceChildren(...children);
+}
+
+function renderPicker(
+  controller: PickerController,
+  snap: PickerSnapshot,
+  titleId: string,
+  position: { top: number; left: number } | null,
+  options: PickerControllerOptions,
+  entering = false
+): HTMLElement {
+  const picker = document.createElement("div");
+  syncPickerShell(picker, snap, titleId, position, options, entering);
+  fillPickerContent(picker, controller, snap, titleId);
   return picker;
+}
+
+/** Update an existing picker root in place (keeps element identity). */
+function updatePickerInPlace(
+  picker: HTMLElement,
+  controller: PickerController,
+  snap: PickerSnapshot,
+  titleId: string,
+  position: { top: number; left: number } | null,
+  options: PickerControllerOptions
+): void {
+  syncPickerShell(picker, snap, titleId, position, options, false);
+  fillPickerContent(picker, controller, snap, titleId);
 }
 
 /**
@@ -540,6 +587,7 @@ export function createDateTimePicker(
   let position: { top: number; left: number } | null = null;
   let host: HTMLElement | null = null;
   let portalRoot: HTMLElement | null = null;
+  let shellMode: "inline" | "popover" | "overlay" | null = null;
 
   const teardown = () => {
     cleanups.forEach((c) => c());
@@ -550,26 +598,43 @@ export function createDateTimePicker(
       host.remove();
     }
     host = null;
+    shellMode = null;
   };
 
   const paint = () => {
-    teardown();
     const snap = controller.getSnapshot();
     if (!snap.open && !snap.inline) {
+      teardown();
       return;
     }
 
     const opts = { ...options };
+    const nextMode: "inline" | "popover" | "overlay" = snap.inline
+      ? "inline"
+      : snap.popover
+        ? "popover"
+        : "overlay";
+
+    // Reuse the open picker root so month/year navigation does not remount.
+    if (host && shellMode === nextMode) {
+      updatePickerInPlace(host, controller, snap, titleId, position, opts);
+      return;
+    }
+
+    teardown();
+
     const picker = renderPicker(
       controller,
       snap,
       titleId,
       position,
-      opts
+      opts,
+      true
     );
+    host = picker;
+    shellMode = nextMode;
 
     if (snap.inline) {
-      host = picker;
       target.append(picker);
       return;
     }

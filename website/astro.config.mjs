@@ -72,6 +72,10 @@ const pkgAliases = [
 
 export default defineConfig({
   site,
+  // Match sitemap + <link rel="canonical"> (…/react/). Without this, Vercel
+  // serves /react and /react/ as 200 duplicates; Google keeps the no-slash URL
+  // as "Alternate page with proper canonical tag".
+  trailingSlash: "always",
   root,
   srcDir: path.join(root, "src"),
   publicDir: path.join(root, "public"),

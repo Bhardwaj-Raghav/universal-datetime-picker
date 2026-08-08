@@ -140,6 +140,258 @@ function canPatchHoverOnly(prev: RangeSnapshot, next: RangeSnapshot): boolean {
   );
 }
 
+function syncRangePickerShell(
+  picker: HTMLElement,
+  snap: RangeSnapshot,
+  titleId: string,
+  options: DateTimeRangeOptions,
+  entering: boolean
+): void {
+  picker.className = cx(
+    "ctp-calendar-time-picker",
+    entering && "ctp-entering",
+    snap.className
+  );
+  if (snap.inline) {
+    picker.removeAttribute("role");
+    picker.removeAttribute("aria-modal");
+  } else {
+    picker.setAttribute("role", "dialog");
+    picker.setAttribute("aria-modal", "true");
+  }
+  picker.setAttribute("aria-labelledby", titleId);
+  applyStyle(picker, options.style);
+}
+
+function buildRangePickerContent(
+  controller: RangeController,
+  snap: RangeSnapshot,
+  titleId: string
+): { children: HTMLElement[]; dayButtons: Map<string, HTMLButtonElement> | null } {
+  const now = dayjs();
+  const year = snap.viewMonth.year();
+  const windowStart = Math.floor(year / 12) * 12;
+  const windowEnd = windowStart + 11;
+
+  const statusText =
+    snap.start && !snap.end
+      ? snap.labels.selectEnd
+      : `${snap.start ? formatLocalized(snap.start, "MMM D, YYYY", snap.locale) : snap.labels.start} — ${
+          snap.end
+            ? formatLocalized(snap.end, "MMM D, YYYY", snap.locale)
+            : snap.labels.end
+        }`;
+
+  let title: HTMLElement;
+  if (snap.calPanel === "day") {
+    title = el("button", {
+      type: "button",
+      className: "ctp-current-month",
+      ariaLabel: `${formatLocalized(snap.viewMonth, "MMMM YYYY", snap.locale)}. ${snap.labels.chooseMonth}`,
+      onClick: () => controller.setCalPanel("month"),
+      textContent: formatLocalized(snap.viewMonth, "MMMM YYYY", snap.locale),
+    });
+  } else if (snap.calPanel === "month") {
+    title = el("button", {
+      type: "button",
+      className: "ctp-current-month",
+      ariaLabel: `${year}. ${snap.labels.chooseYear}`,
+      onClick: () => controller.setCalPanel("year"),
+      textContent: String(year),
+    });
+  } else {
+    title = el("span", {
+      className: "ctp-current-month",
+      textContent: `${windowStart} – ${windowEnd}`,
+    });
+  }
+
+  const body = el("div", { className: "ctp-body ctp-body-calendar-date" }, [
+    el("div", { className: "ctp-month-year" }, [
+      el("button", {
+        type: "button",
+        className: "ctp-prev-month",
+        ariaLabel:
+          snap.calPanel === "day"
+            ? snap.labels.previousMonth
+            : snap.labels.previousYear,
+        disabled: !snap.canNavigatePrev,
+        onClick: () => controller.navigatePrev(),
+        textContent: "‹",
+      }),
+      title,
+      el("button", {
+        type: "button",
+        className: "ctp-next-month",
+        ariaLabel:
+          snap.calPanel === "day"
+            ? snap.labels.nextMonth
+            : snap.labels.nextYear,
+        disabled: !snap.canNavigateNext,
+        onClick: () => controller.navigateNext(),
+        textContent: "›",
+      }),
+    ]),
+  ]);
+
+  let dayButtons: Map<string, HTMLButtonElement> | null = null;
+
+  if (snap.calPanel === "day") {
+    const buttons = new Map<string, HTMLButtonElement>();
+    const grid = el("div", {
+      className: "ctp-main-calendar",
+      role: "grid",
+      ariaLabel: snap.labels.chooseDateRange,
+      tabIndex: 0,
+      onKeydown: (event: Event) => {
+        const ke = event as KeyboardEvent;
+        if (controller.handleGridKeyDown(ke.key)) {
+          ke.preventDefault();
+        }
+      },
+      onMouseleave: () => controller.setHoverEnd(null),
+    });
+    for (const label of snap.weekdayLabels) {
+      grid.append(
+        el("div", {
+          className: "ctp-box ctp-box-days",
+          role: "columnheader",
+          textContent: label,
+        })
+      );
+    }
+    for (const week of snap.weeks) {
+      for (const dayData of week) {
+        const focused = dayData.date.isSame(snap.focusedDay, "day");
+        const disabled = !dayData.isCurrentMonth || dayData.isDisabled;
+        const btn = el("button", {
+          type: "button",
+          role: "gridcell",
+          tabIndex: focused ? 0 : -1,
+          ariaSelected: Boolean(dayData.isRangeStart || dayData.isRangeEnd),
+          ariaDisabled: disabled,
+          disabled,
+          ariaLabel: formatLocalized(
+            dayData.date,
+            "dddd, MMMM D, YYYY",
+            snap.locale
+          ),
+          className: dayDateClassName(dayData),
+          onClick: () => {
+            if (!disabled) {
+              controller.pickDay(dayData.date);
+            }
+          },
+          onMouseenter: () => {
+            if (!disabled && snap.start && !snap.end) {
+              controller.setHoverEnd(dayData.date);
+            }
+          },
+          textContent: dayData.date.format("D"),
+        }) as HTMLButtonElement;
+        buttons.set(dayData.date.format("YYYY-MM-DD"), btn);
+        grid.append(btn);
+      }
+    }
+    dayButtons = buttons;
+    body.append(grid);
+  } else if (snap.calPanel === "month") {
+    const grid = el("div", {
+      className: "ctp-month-grid",
+      role: "grid",
+      ariaLabel: snap.labels.chooseMonth,
+    });
+    const disableOptions = controller.getDisableOptions();
+    for (let monthIndex = 0; monthIndex < 12; monthIndex += 1) {
+      const monthDate = snap.viewMonth.month(monthIndex);
+      const isCurrent =
+        snap.viewMonth.year() === now.year() && monthIndex === now.month();
+      const disabled = !isMonthSelectable(monthDate, disableOptions);
+      grid.append(
+        el("button", {
+          type: "button",
+          role: "gridcell",
+          disabled,
+          ariaDisabled: disabled,
+          ariaCurrent: isCurrent ? "date" : undefined,
+          className: cx(
+            "ctp-box",
+            "ctp-box-month",
+            isCurrent && "ctp-current",
+            disabled && "disabled-date"
+          ),
+          onClick: () => controller.selectMonth(monthIndex),
+          textContent: formatLocalized(monthDate, "MMM", snap.locale),
+        })
+      );
+    }
+    body.append(grid);
+  } else {
+    const grid = el("div", {
+      className: "ctp-year-grid",
+      role: "grid",
+      ariaLabel: snap.labels.chooseYear,
+    });
+    const disableOptions = controller.getDisableOptions();
+    for (let offset = 0; offset < 12; offset += 1) {
+      const y = windowStart + offset;
+      const disabled = !isYearSelectable(y, disableOptions);
+      grid.append(
+        el("button", {
+          type: "button",
+          role: "gridcell",
+          disabled,
+          ariaDisabled: disabled,
+          ariaCurrent: now.year() === y ? "date" : undefined,
+          className: cx(
+            "ctp-box",
+            "ctp-box-year",
+            now.year() === y && "ctp-current",
+            disabled && "disabled-date"
+          ),
+          onClick: () => controller.selectYear(y),
+          textContent: String(y),
+        })
+      );
+    }
+    body.append(grid);
+  }
+
+  const footerChildren: HTMLElement[] = [
+    el("button", {
+      type: "button",
+      className: "close-button",
+      onClick: () => controller.clear(),
+      textContent: snap.labels.clear,
+    }),
+  ];
+  if (!snap.inline) {
+    footerChildren.push(
+      el("button", {
+        type: "button",
+        className: "ctp-cancel",
+        onClick: () => controller.close(),
+        textContent: snap.labels.close,
+      })
+    );
+  }
+
+  return {
+    children: [
+      el("div", { className: "ctp-header" }, [
+        el("span", {
+          id: titleId,
+          className: "ctp-range-title",
+          textContent: statusText,
+        }),
+      ]),
+      body,
+      el("div", { className: "ctp-footer" }, footerChildren),
+    ],
+    dayButtons,
+  };
+}
+
 export function createDateTimeRangePicker(
   target: HTMLElement,
   options: DateTimeRangeOptions = {}
@@ -151,6 +403,7 @@ export function createDateTimeRangePicker(
   let portalRoot: HTMLElement | null = null;
   let lastSnap: RangeSnapshot | null = null;
   let dayButtons: Map<string, HTMLButtonElement> | null = null;
+  let shellMode: "inline" | "overlay" | null = null;
 
   const teardown = () => {
     cleanups.forEach((c) => c());
@@ -161,6 +414,7 @@ export function createDateTimeRangePicker(
     host = null;
     lastSnap = null;
     dayButtons = null;
+    shellMode = null;
   };
 
   const paint = () => {
@@ -189,242 +443,33 @@ export function createDateTimeRangePicker(
       return;
     }
 
+    const nextMode: "inline" | "overlay" = snap.inline ? "inline" : "overlay";
+    const { children, dayButtons: nextButtons } = buildRangePickerContent(
+      controller,
+      snap,
+      titleId
+    );
+
+    if (host && shellMode === nextMode) {
+      syncRangePickerShell(host, snap, titleId, options, false);
+      host.replaceChildren(...children);
+      dayButtons = nextButtons;
+      lastSnap = snap;
+      return;
+    }
+
     teardown();
 
-    const now = dayjs();
-    const year = snap.viewMonth.year();
-    const windowStart = Math.floor(year / 12) * 12;
-    const windowEnd = windowStart + 11;
-
-    const statusText =
-      snap.start && !snap.end
-        ? snap.labels.selectEnd
-        : `${snap.start ? formatLocalized(snap.start, "MMM D, YYYY", snap.locale) : snap.labels.start} — ${
-            snap.end
-              ? formatLocalized(snap.end, "MMM D, YYYY", snap.locale)
-              : snap.labels.end
-          }`;
-
-    let title: HTMLElement;
-    if (snap.calPanel === "day") {
-      title = el("button", {
-        type: "button",
-        className: "ctp-current-month",
-        ariaLabel: `${formatLocalized(snap.viewMonth, "MMMM YYYY", snap.locale)}. ${snap.labels.chooseMonth}`,
-        onClick: () => controller.setCalPanel("month"),
-        textContent: formatLocalized(snap.viewMonth, "MMMM YYYY", snap.locale),
-      });
-    } else if (snap.calPanel === "month") {
-      title = el("button", {
-        type: "button",
-        className: "ctp-current-month",
-        ariaLabel: `${year}. ${snap.labels.chooseYear}`,
-        onClick: () => controller.setCalPanel("year"),
-        textContent: String(year),
-      });
-    } else {
-      title = el("span", {
-        className: "ctp-current-month",
-        textContent: `${windowStart} – ${windowEnd}`,
-      });
-    }
-
-    const body = el("div", { className: "ctp-body ctp-body-calendar-date" }, [
-      el("div", { className: "ctp-month-year" }, [
-        el("button", {
-          type: "button",
-          className: "ctp-prev-month",
-          ariaLabel:
-            snap.calPanel === "day"
-              ? snap.labels.previousMonth
-              : snap.labels.previousYear,
-          disabled: !snap.canNavigatePrev,
-          onClick: () => controller.navigatePrev(),
-          textContent: "‹",
-        }),
-        title,
-        el("button", {
-          type: "button",
-          className: "ctp-next-month",
-          ariaLabel:
-            snap.calPanel === "day"
-              ? snap.labels.nextMonth
-              : snap.labels.nextYear,
-          disabled: !snap.canNavigateNext,
-          onClick: () => controller.navigateNext(),
-          textContent: "›",
-        }),
-      ]),
-    ]);
-
-    if (snap.calPanel === "day") {
-      const buttons = new Map<string, HTMLButtonElement>();
-      const grid = el("div", {
-        className: "ctp-main-calendar",
-        role: "grid",
-        ariaLabel: snap.labels.chooseDateRange,
-        tabIndex: 0,
-        onKeydown: (event: Event) => {
-          const ke = event as KeyboardEvent;
-          if (controller.handleGridKeyDown(ke.key)) {
-            ke.preventDefault();
-          }
-        },
-        onMouseleave: () => controller.setHoverEnd(null),
-      });
-      for (const label of snap.weekdayLabels) {
-        grid.append(
-          el("div", {
-            className: "ctp-box ctp-box-days",
-            role: "columnheader",
-            textContent: label,
-          })
-        );
-      }
-      for (const week of snap.weeks) {
-        for (const dayData of week) {
-          const focused = dayData.date.isSame(snap.focusedDay, "day");
-          const disabled = !dayData.isCurrentMonth || dayData.isDisabled;
-          const btn = el("button", {
-            type: "button",
-            role: "gridcell",
-            tabIndex: focused ? 0 : -1,
-            ariaSelected: Boolean(
-              dayData.isRangeStart || dayData.isRangeEnd
-            ),
-            ariaDisabled: disabled,
-            disabled,
-            ariaLabel: formatLocalized(
-              dayData.date,
-              "dddd, MMMM D, YYYY",
-              snap.locale
-            ),
-            className: dayDateClassName(dayData),
-            onClick: () => {
-              if (!disabled) {
-                controller.pickDay(dayData.date);
-              }
-            },
-            onMouseenter: () => {
-              if (!disabled && snap.start && !snap.end) {
-                controller.setHoverEnd(dayData.date);
-              }
-            },
-            textContent: dayData.date.format("D"),
-          }) as HTMLButtonElement;
-          buttons.set(dayData.date.format("YYYY-MM-DD"), btn);
-          grid.append(btn);
-        }
-      }
-      dayButtons = buttons;
-      body.append(grid);
-    } else if (snap.calPanel === "month") {
-      const grid = el("div", {
-        className: "ctp-month-grid",
-        role: "grid",
-        ariaLabel: snap.labels.chooseMonth,
-      });
-      const disableOptions = controller.getDisableOptions();
-      for (let monthIndex = 0; monthIndex < 12; monthIndex += 1) {
-        const monthDate = snap.viewMonth.month(monthIndex);
-        const isCurrent =
-          snap.viewMonth.year() === now.year() && monthIndex === now.month();
-        const disabled = !isMonthSelectable(monthDate, disableOptions);
-        grid.append(
-          el("button", {
-            type: "button",
-            role: "gridcell",
-            disabled,
-            ariaDisabled: disabled,
-            ariaCurrent: isCurrent ? "date" : undefined,
-            className: cx(
-              "ctp-box",
-              "ctp-box-month",
-              isCurrent && "ctp-current",
-              disabled && "disabled-date"
-            ),
-            onClick: () => controller.selectMonth(monthIndex),
-            textContent: formatLocalized(monthDate, "MMM", snap.locale),
-          })
-        );
-      }
-      body.append(grid);
-    } else {
-      const grid = el("div", {
-        className: "ctp-year-grid",
-        role: "grid",
-        ariaLabel: snap.labels.chooseYear,
-      });
-      const disableOptions = controller.getDisableOptions();
-      for (let offset = 0; offset < 12; offset += 1) {
-        const y = windowStart + offset;
-        const disabled = !isYearSelectable(y, disableOptions);
-        grid.append(
-          el("button", {
-            type: "button",
-            role: "gridcell",
-            disabled,
-            ariaDisabled: disabled,
-            ariaCurrent: now.year() === y ? "date" : undefined,
-            className: cx(
-              "ctp-box",
-              "ctp-box-year",
-              now.year() === y && "ctp-current",
-              disabled && "disabled-date"
-            ),
-            onClick: () => controller.selectYear(y),
-            textContent: String(y),
-          })
-        );
-      }
-      body.append(grid);
-    }
-
-    const footerChildren: HTMLElement[] = [
-      el("button", {
-        type: "button",
-        className: "close-button",
-        onClick: () => controller.clear(),
-        textContent: snap.labels.clear,
-      }),
-    ];
-    if (!snap.inline) {
-      footerChildren.push(
-        el("button", {
-          type: "button",
-          className: "ctp-cancel",
-          onClick: () => controller.close(),
-          textContent: snap.labels.close,
-        })
-      );
-    }
-
-    const picker = el(
-      "div",
-      {
-        className: cx("ctp-calendar-time-picker", snap.className),
-        role: snap.inline ? undefined : "dialog",
-        ariaModal: snap.inline ? undefined : true,
-        ariaLabelledby: titleId,
-      },
-      [
-        el("div", { className: "ctp-header" }, [
-          el("span", {
-            id: titleId,
-            className: "ctp-range-title",
-            textContent: statusText,
-          }),
-        ]),
-        body,
-        el("div", { className: "ctp-footer" }, footerChildren),
-      ]
-    );
-    applyStyle(picker, options.style);
+    const picker = document.createElement("div");
+    syncRangePickerShell(picker, snap, titleId, options, true);
+    picker.replaceChildren(...children);
+    host = picker;
+    dayButtons = nextButtons;
+    shellMode = nextMode;
+    lastSnap = snap;
 
     if (snap.inline) {
-      host = picker;
       target.append(picker);
-      lastSnap = snap;
       return;
     }
 
@@ -443,7 +488,6 @@ export function createDateTimeRangePicker(
       attachFocusTrap(picker, true),
       attachEscape(() => controller.close(), true)
     );
-    lastSnap = snap;
   };
 
   const unsub = controller.subscribe(paint);

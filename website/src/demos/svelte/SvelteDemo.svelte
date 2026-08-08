@@ -2,10 +2,10 @@
   import "universal-datetime-picker/svelte";
   import "universal-datetime-picker/style.css";
 
-  let date: Date | null = null;
-  let input: Date | null = null;
-  let rangeStart: Date | null = null;
-  let rangeEnd: Date | null = null;
+  let date = $state<Date | null>(null);
+  let input = $state<Date | null>(null);
+  let rangeStart = $state<Date | null>(null);
+  let rangeEnd = $state<Date | null>(null);
 
   function preview(value: unknown): string {
     if (value == null) return "null";
@@ -38,7 +38,7 @@
       mode="date"
       as-string="false"
       onchange={onDateChange}
-    />
+    ></datetime-picker>
     <pre class="demo-value">{preview(date)}</pre>
   </div>
 
@@ -50,7 +50,7 @@
       use12hours
       placeholder="Pick date & time"
       onchange={onInputChange}
-    />
+    ></datetime-picker-input>
     <pre class="demo-value">{preview(input)}</pre>
   </div>
 
@@ -60,7 +60,7 @@
       inline
       as-string="false"
       onchange={onRangeChange}
-    />
+    ></datetime-picker-range>
     <pre class="demo-value">
       {preview(rangeStart)} → {preview(rangeEnd)}
     </pre>

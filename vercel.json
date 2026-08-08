@@ -2,6 +2,7 @@
   "buildCommand": "npm run website:build",
   "outputDirectory": "site-dist",
   "framework": "astro",
+  "trailingSlash": true,
   "redirects": [
     {
       "source": "/:path*",

@@ -93,6 +93,37 @@ describe("createDateTimePicker", () => {
     handle.destroy();
     root.remove();
   });
+
+  it("keeps the same picker root across month navigation and month panel open", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const handle = createDateTimePicker(root, {
+      inline: true,
+      mode: "date",
+      asString: false,
+    });
+
+    const picker = root.querySelector(".ctp-calendar-time-picker");
+    expect(picker).toBeTruthy();
+
+    const next = root.querySelector(".ctp-next-month") as HTMLButtonElement;
+    expect(next).toBeTruthy();
+    next.click();
+    expect(root.querySelector(".ctp-calendar-time-picker")).toBe(picker);
+
+    const title = root.querySelector(".ctp-current-month") as HTMLButtonElement;
+    expect(title).toBeTruthy();
+    title.click();
+    expect(root.querySelector(".ctp-calendar-time-picker")).toBe(picker);
+    expect(root.querySelector(".ctp-month-grid")).toBeTruthy();
+
+    handle.getController().setCalPanel("year");
+    expect(root.querySelector(".ctp-calendar-time-picker")).toBe(picker);
+    expect(root.querySelector(".ctp-year-grid")).toBeTruthy();
+
+    handle.destroy();
+    root.remove();
+  });
 });
 
 describe("createDateTimeRangePicker", () => {
@@ -147,8 +178,29 @@ describe("createDateTimeRangePicker", () => {
     handle.destroy();
     root.remove();
   });
-});
 
+  it("keeps the same picker root across month navigation", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const handle = createDateTimeRangePicker(root, {
+      inline: true,
+      asString: false,
+    });
+
+    const picker = root.querySelector(".ctp-calendar-time-picker");
+    expect(picker).toBeTruthy();
+
+    (root.querySelector(".ctp-next-month") as HTMLButtonElement).click();
+    expect(root.querySelector(".ctp-calendar-time-picker")).toBe(picker);
+
+    (root.querySelector(".ctp-current-month") as HTMLButtonElement).click();
+    expect(root.querySelector(".ctp-calendar-time-picker")).toBe(picker);
+    expect(root.querySelector(".ctp-month-grid")).toBeTruthy();
+
+    handle.destroy();
+    root.remove();
+  });
+});
 describe("web components", () => {
   it("defines custom elements and emits change", async () => {
     defineCustomElements();

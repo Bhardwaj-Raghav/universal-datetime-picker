@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.1
+
+Month/year navigation flicker fix for vanilla, CDN, and Web Component integrations.
+
+### Fixed
+- **Month/year flicker** — vanilla `paint()` reuses the open picker root instead of tearing down and remounting on every navigation emit (CDN, WC, Vue, Svelte, Angular). Enter animation runs only on first open (`.ctp-entering`).
+- **Web Component remount thrashing** — attribute/`value` updates call `handle.update()` when a handle already exists instead of destroy + recreate.
+
 ## 2.1.0
 
 UX and API improvements for single and range pickers.

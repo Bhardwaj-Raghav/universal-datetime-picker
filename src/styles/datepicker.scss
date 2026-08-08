@@ -197,6 +197,9 @@
   border-radius: var(--ctp-border-radius);
   z-index: calc(var(--ctp-z-index) + 1);
   overflow: hidden;
+}
+
+.ctp-calendar-time-picker.ctp-entering {
   animation: ctp-popover-in var(--ctp-transition);
 }
 
@@ -280,7 +283,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ctp-calendar-time-picker {
+  .ctp-calendar-time-picker.ctp-entering {
     animation: none;
   }
 }

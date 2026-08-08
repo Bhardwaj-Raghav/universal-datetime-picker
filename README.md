@@ -156,6 +156,17 @@ createApp(App)
 ```
 
 ```vue
+<script setup lang="ts">
+import { ref } from "vue";
+
+const date = ref<Date | null>(null);
+
+function onChange(e: CustomEvent) {
+  const next = e.detail;
+  date.value = next instanceof Date ? next : null;
+}
+</script>
+
 <template>
   <datetime-picker
     inline
@@ -163,6 +174,7 @@ createApp(App)
     as-string="false"
     @change="onChange"
   />
+  <p>Selected: {{ date }}</p>
 </template>
 ```
 
@@ -170,7 +182,7 @@ More examples: [Vue demo](https://universal-datetime-picker.vercel.app/vue/) on 
 
 ## Svelte
 
-Register once in root `+layout.ts` (or app entry), not in every component.
+Register once in root `+layout.ts` (or app entry), then use the custom elements in any page. On Svelte 5, bind the native `change` event with `onchange` (not the legacy `on:change` directive).
 
 ```ts
 // src/routes/+layout.ts
@@ -181,26 +193,65 @@ defineCustomElements();
 ```
 
 ```svelte
+<script lang="ts">
+  let date = $state<Date | null>(null);
+
+  function onChange(e: CustomEvent) {
+    const next = e.detail;
+    date = next instanceof Date ? next : null;
+  }
+</script>
+
 <datetime-picker
   inline
   mode="date"
   as-string="false"
-  on:change={(e) => console.log(e.detail)}
-/>
+  onchange={onChange}
+></datetime-picker>
+<p>Selected: {date ?? "null"}</p>
 ```
 
 More examples: [Svelte demo](https://universal-datetime-picker.vercel.app/svelte/) on the docs site.
 
 ## Angular
 
+Register the custom elements once at startup, add `CUSTOM_ELEMENTS_SCHEMA`, then use the tags in templates.
+
 ```ts
+// main.ts
 import { registerDateTimePickerElements } from "universal-datetime-picker/angular";
 import "universal-datetime-picker/style.css";
 
 registerDateTimePickerElements();
 ```
 
-Add `CUSTOM_ELEMENTS_SCHEMA` to your NgModule or standalone component, then use `<datetime-picker>`, `<datetime-picker-input>`, or `<datetime-picker-range>` in templates. Listen with `(change)="onChange($event.detail)"`.
+```ts
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
+
+@Component({
+  selector: "app-booking",
+  standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: `
+    <datetime-picker
+      inline
+      mode="date"
+      as-string="false"
+      (change)="onChange($event.detail)"
+    ></datetime-picker>
+    <p>Selected: {{ date }}</p>
+  `,
+})
+export class BookingComponent {
+  date: Date | null = null;
+
+  onChange(detail: unknown) {
+    this.date = detail instanceof Date ? detail : null;
+  }
+}
+```
+
+You can also use `<datetime-picker-input>` and `<datetime-picker-range>` the same way.
 
 ## Components
 
