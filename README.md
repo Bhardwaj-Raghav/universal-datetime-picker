@@ -6,11 +6,14 @@
 
 # universal-datetime-picker
 
-**React date picker**, **date time picker**, **datetime picker**, and **date range calendar** — one accessible TypeScript package for React, Vue, Svelte, Angular, vanilla JS, and CDN. The [docs site](https://universal-datetime-picker.vercel.app) home uses **vanilla JS**; framework pages cover React and the rest.
+**React date picker**, **date time picker**, **datetime picker**, and **date range calendar**. One accessible TypeScript package for React, Vue, Svelte, Angular, vanilla JS, and CDN. The [docs site](https://universal-datetime-picker.vercel.app) covers install guides, an examples playground, and per-framework pages.
 
 Native React components share a headless core with a vanilla DOM renderer and Web Components (`<datetime-picker>`, `<datetime-picker-input>`, `<datetime-picker-range>`).
 
-- **Live demos:** [universal-datetime-picker.vercel.app](https://universal-datetime-picker.vercel.app) — home page uses the **vanilla** `createDateTimePicker` API; per-framework pages: [`/react/`](https://universal-datetime-picker.vercel.app/react/), [`/vue/`](https://universal-datetime-picker.vercel.app/vue/), [`/svelte/`](https://universal-datetime-picker.vercel.app/svelte/), [`/angular/`](https://universal-datetime-picker.vercel.app/angular/), [`/vanilla/`](https://universal-datetime-picker.vercel.app/vanilla/), [`/web-components/`](https://universal-datetime-picker.vercel.app/web-components/), [`/cdn/`](https://universal-datetime-picker.vercel.app/cdn/), [`/solid/`](https://universal-datetime-picker.vercel.app/solid/), [`/preact/`](https://universal-datetime-picker.vercel.app/preact/), [`/nextjs/`](https://universal-datetime-picker.vercel.app/nextjs/), [`/nuxt/`](https://universal-datetime-picker.vercel.app/nuxt/)
+- **Docs:** [Getting started](https://universal-datetime-picker.vercel.app/docs/getting-started/) · [full docs](https://universal-datetime-picker.vercel.app/docs/)
+- **Examples:** [Playground](https://universal-datetime-picker.vercel.app/examples/)
+- **Frameworks:** [`/react/`](https://universal-datetime-picker.vercel.app/react/), [`/vue/`](https://universal-datetime-picker.vercel.app/vue/), [`/svelte/`](https://universal-datetime-picker.vercel.app/svelte/), [`/angular/`](https://universal-datetime-picker.vercel.app/angular/), [`/vanilla/`](https://universal-datetime-picker.vercel.app/vanilla/), [`/web-components/`](https://universal-datetime-picker.vercel.app/web-components/), [`/cdn/`](https://universal-datetime-picker.vercel.app/cdn/), [`/solid/`](https://universal-datetime-picker.vercel.app/solid/), [`/preact/`](https://universal-datetime-picker.vercel.app/preact/), [`/nextjs/`](https://universal-datetime-picker.vercel.app/nextjs/), [`/nuxt/`](https://universal-datetime-picker.vercel.app/nuxt/)
+- **Changelog:** [Release notes](https://universal-datetime-picker.vercel.app/changelog/)
 - **npm:** [universal-datetime-picker](https://www.npmjs.com/package/universal-datetime-picker)
 - **GitHub:** [Bhardwaj-Raghav/universal-datetime-picker](https://github.com/Bhardwaj-Raghav/universal-datetime-picker)
 
@@ -178,7 +181,7 @@ function onChange(e: CustomEvent) {
 </template>
 ```
 
-More examples: [Vue demo](https://universal-datetime-picker.vercel.app/vue/) on the docs site.
+More examples: [Vue page](https://universal-datetime-picker.vercel.app/vue/) on the docs site.
 
 ## Svelte
 
@@ -211,7 +214,7 @@ defineCustomElements();
 <p>Selected: {date ?? "null"}</p>
 ```
 
-More examples: [Svelte demo](https://universal-datetime-picker.vercel.app/svelte/) on the docs site.
+More examples: [Svelte page](https://universal-datetime-picker.vercel.app/svelte/) on the docs site.
 
 ## Angular
 
@@ -307,24 +310,24 @@ Set `asString={true}` when you want formatted strings. Omitting `asString` (or p
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `value` | `Date \| string \| Dayjs \| null` | — | Controlled value |
-| `defaultValue` | same | — | Uncontrolled initial value |
-| `onChange` | `(value: Date \| TimeValue \| string \| null) => void` | — | Date-only: fires on day click. Datetime/time (overlay): fires on OK / Clear |
+| `value` | `Date \| string \| Dayjs \| null` | none | Controlled value |
+| `defaultValue` | same | none | Uncontrolled initial value |
+| `onChange` | `(value: Date \| TimeValue \| string \| null) => void` | none | Date-only: fires on day click. Datetime/time (overlay): fires on OK / Clear |
 | `asString` | `boolean` | omitted → objects | `true` = formatted string; omit or `false` = `Date` / `TimeValue` |
 | `showSeconds` | `boolean` | `true` | Show seconds column; included in default format |
 | `format` | `string` | derived from mode | dayjs format (auto from mode / `use12Hours` / `showSeconds` when omitted) |
 | `mode` | `"datetime" \| "date" \| "time"` | `"datetime"` | Picker mode |
 | `layout` | `"combined" \| "tabs"` | `"combined"` | When `mode="datetime"`: show both panels, or Date/Time tabs. Hidden for date-only / time-only |
-| `minDate` / `maxDate` | date-like | — | Inclusive bounds (also clamps month/year navigation) |
+| `minDate` / `maxDate` | date-like | none | Inclusive bounds (also clamps month/year navigation) |
 | `disablePastDates` | `boolean` | `false` | Disable days before today (also clamps month/year navigation) |
 | `disableFutureDates` | `boolean` | `false` | Disable days after today (also clamps month/year navigation) |
 | `weekStartsOn` | `0–6` | `0` | First day of week (0 = Sunday) |
 | `use12Hours` | `boolean` | `false` | 12-hour clock with AM/PM (`false` = 24-hour) |
 | `locale` | `string` | `"en"` | dayjs locale (import locale first) |
 | `labels` | `DateTimeLabels` | English defaults | Override chrome strings |
-| `theme` | `"light" \| "dark"` | — | Force theme (useful for portaled popovers) |
+| `theme` | `"light" \| "dark"` | none | Force theme (useful for portaled popovers) |
 | `inline` | `boolean` | `false` | Render without overlay |
-| `className` | `string` | — | Root class |
+| `className` | `string` | none | Root class |
 
 ### Overlay control
 
@@ -420,7 +423,7 @@ Supports `asString` like the single picker. With omitted/`false` `asString`, `on
 
 ### Layout
 
-By default (`layout="combined"`), datetime mode shows the calendar and time controls together — no Date/Time badges. Use `layout="tabs"` for the classic switcher. When `mode` is `"date"` or `"time"`, the badges are never shown.
+By default (`layout="combined"`), datetime mode shows the calendar and time controls together. No Date/Time badges. Use `layout="tabs"` for the classic switcher. When `mode` is `"date"` or `"time"`, the badges are never shown.
 
 ```tsx
 {/* Default: both panels */}
@@ -429,7 +432,7 @@ By default (`layout="combined"`), datetime mode shows the calendar and time cont
 {/* Classic tabs */}
 <DateTime inline mode="datetime" layout="tabs" asString={false} onChange={setValue} />
 
-{/* Date only — no badges */}
+{/* Date only: no badges */}
 <DateTime inline mode="date" asString={false} onChange={setValue} />
 ```
 

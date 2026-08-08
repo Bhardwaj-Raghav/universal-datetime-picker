@@ -1,0 +1,177 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Preact"
+  description="Use datetime-picker Web Components in Preact from ./wc, or preact/compat with the React entry."
+  keywords="preact date picker, preact date time picker"
+  crumbLabel="Preact"
+  currentPath="/docs/preact/"
+>
+  <article class="docs-article">
+    <h1>Preact</h1>
+
+    <p class="docs-callout">
+      <a href="/preact/">Try the live Preact demo</a>
+      — interactive picker and copy-paste snippets.
+    </p>
+
+    <h2>Support tier</h2>
+    <p class="docs-callout">
+      Partial compatibility through Web Components. There is no
+      <code>./preact</code> export. Register
+      <code>defineCustomElements</code> from
+      <code>universal-datetime-picker/wc</code>. As an alternative, use
+      <code>preact/compat</code> with the React component entry for a native
+      React-like API.
+    </p>
+
+    <h2>Install + deps</h2>
+    <pre><code>npm install universal-datetime-picker</code></pre>
+    <p>
+      Web Components path: no React required. Compat path: install
+      <code>preact</code> and alias React to <code>preact/compat</code>, then
+      use the main package entry like a React app.
+    </p>
+
+    <h2>Setup</h2>
+    <p>
+      For the WC path, call <code>defineCustomElements()</code> once in
+      <code>main.tsx</code>, import the stylesheet, and render
+      <code>datetime-picker*</code> tags with <code>onchange</code> props.
+    </p>
+
+    <h2>Exact import path</h2>
+    <pre><code>{`// Web Components path (recommended default for Preact)
+import { defineCustomElements } from "universal-datetime-picker/wc";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();`}</code></pre>
+    <pre><code>{`// Alternative: preact/compat + React entry
+import DateTime, { DateTimeInput } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";`}</code></pre>
+
+    <h2>Minimal example</h2>
+    <pre><code>{`import { useState } from "preact/hooks";
+import { defineCustomElements } from "universal-datetime-picker/wc";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();
+
+export function App() {
+  const [date, setDate] = useState<Date | null>(null);
+
+  return (
+    <>
+      <datetime-picker
+        inline
+        mode="date"
+        as-string="false"
+        onchange={(e: Event) => {
+          const next = (e as CustomEvent).detail;
+          setDate(next instanceof Date ? next : null);
+        }}
+      />
+      <p>Selected: {date ? date.toString() : "null"}</p>
+    </>
+  );
+}`}</code></pre>
+
+    <h2>Realistic example</h2>
+    <pre><code>{`import { useState } from "preact/hooks";
+import { defineCustomElements } from "universal-datetime-picker/wc";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();
+
+export function Booking() {
+  const [date, setDate] = useState<Date | null>(null);
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <datetime-picker-input
+        placeholder="Pick date & time"
+        as-string="false"
+        onchange={(e: Event) => {
+          const next = (e as CustomEvent).detail;
+          setDate(next instanceof Date ? next : null);
+        }}
+        onopenchange={(e: Event) => {
+          setOpen(Boolean((e as CustomEvent).detail));
+        }}
+      />
+      <p>Open: {String(open)}</p>
+      <p>{date ? date.toLocaleString() : "No date"}</p>
+    </>
+  );
+}`}</code></pre>
+
+    <h2>Configuration notes</h2>
+    <ul>
+      <li>
+        Prefer <code>./wc</code> unless you already standardize on
+        <code>preact/compat</code> and want React props like
+        <code>onChange</code> / <code>asString</code>.
+      </li>
+      <li>
+        On the WC path, attributes stay kebab-case and events use
+        <code>onchange</code> / <code>onopenchange</code>.
+      </li>
+      <li>
+        The compat + React path follows the <a href="/docs/react/">React</a> guide once aliases are in place.
+      </li>
+      <li>
+        There is no <code>universal-datetime-picker/preact</code> subpath.
+      </li>
+    </ul>
+
+    <h2>Events</h2>
+    <ul>
+      <li>
+        WC: <code>onchange</code> and <code>onopenchange</code> CustomEvents
+        with <code>detail</code>
+      </li>
+      <li>
+        Compat + React: <code>onChange</code> and <code>onOpenChange</code>
+        callbacks
+      </li>
+    </ul>
+
+    <h2>Customization links</h2>
+    <ul>
+      <li><a href="/docs/web-components/">Web Components</a></li>
+      <li><a href="/docs/react/">React</a> for the compat path</li>
+      <li><a href="/docs/theming/">Theming</a></li>
+      <li><a href="/docs/props/">Props</a></li>
+    </ul>
+
+    <h2>Pitfalls</h2>
+    <ul>
+      <li>
+        Assuming a dedicated Preact build exists. Use <code>./wc</code> or
+        compat.
+      </li>
+      <li>
+        Mixing WC tags with React prop names like
+        <code>asString=&#123;false&#125;</code>
+        on a custom element does not map the same way as React components. Use
+        <code>as-string="false"</code> on the WC path.
+      </li>
+      <li>
+        Incomplete React aliases break the compat path at runtime.
+      </li>
+    </ul>
+
+    <h2>Troubleshooting</h2>
+    <p>
+      Wrong entry and missing CSS are the common failures. See <a href="/docs/troubleshooting/">Troubleshooting</a>.
+    </p>
+
+    <h2>Related links</h2>
+    <p>
+      <a href="/preact/">Preact live demo</a> · <a href="/examples/">Examples</a> · <a href="/docs/props/">Props</a> · <a href="/docs/troubleshooting/">Troubleshooting</a> · <a href="/docs/web-components/">Web Components</a>
+    </p>
+  </article>
+</DocsLayout>

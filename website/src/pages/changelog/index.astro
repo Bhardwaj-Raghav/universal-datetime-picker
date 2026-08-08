@@ -1,0 +1,117 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SiteNav from "../../components/SiteNav.astro";
+import { GITHUB_URL, NPM_URL } from "../../site.config";
+import changelogRaw from "../../../../CHANGELOG.md?raw";
+
+const breadcrumbs = [
+  { label: "Home", href: "/" },
+  { label: "Changelog", href: "/changelog/" },
+];
+
+type Section = { version: string; body: string };
+
+function parseChangelog(raw: string): Section[] {
+  const lines = raw.replace(/\r\n/g, "\n").split("\n");
+  const sections: Section[] = [];
+  let current: Section | null = null;
+
+  for (const line of lines) {
+    const match = /^##\s+(.+)\s*$/.exec(line);
+    if (match) {
+      if (current) sections.push(current);
+      current = { version: match[1].trim(), body: "" };
+      continue;
+    }
+    if (!current) continue;
+    if (line.startsWith("# ")) continue;
+    current.body += `${line}\n`;
+  }
+  if (current) sections.push(current);
+  return sections;
+}
+
+function renderBody(body: string): string {
+  return body
+    .trim()
+    .split("\n")
+    .map((line) => {
+      if (/^###\s+/.test(line)) {
+        return `<h3>${escapeHtml(line.replace(/^###\s+/, ""))}</h3>`;
+      }
+      if (/^-\s+/.test(line)) {
+        return `<li>${inlineMd(line.replace(/^-\s+/, ""))}</li>`;
+      }
+      if (!line.trim()) return "";
+      return `<p>${inlineMd(line)}</p>`;
+    })
+    .reduce((acc, chunk, i, arr) => {
+      if (chunk.startsWith("<li>")) {
+        const prev = arr[i - 1];
+        const next = arr[i + 1];
+        const open = !prev?.startsWith("<li>") ? "<ul>" : "";
+        const close = !next?.startsWith("<li>") ? "</ul>" : "";
+        return acc + open + chunk + close;
+      }
+      return acc + chunk;
+    }, "");
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function inlineMd(s: string): string {
+  return escapeHtml(s)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+}
+
+const sections = parseChangelog(changelogRaw);
+---
+
+<BaseLayout
+  title="Universal DateTime Picker — Changelog"
+  description="Release notes for universal-datetime-picker: features, fixes, and breaking changes by version."
+  keywords="universal-datetime-picker changelog, release notes"
+  breadcrumbs={breadcrumbs}
+>
+  <div class="site is-ready">
+    <div class="site-bg" aria-hidden="true"></div>
+    <SiteNav />
+
+    <main class="hub-page changelog-page">
+      <header class="hub-header">
+        <p class="eyebrow">Releases</p>
+        <h1>Changelog</h1>
+        <p class="hub-lead">
+          From <a href={`${GITHUB_URL}/blob/main/CHANGELOG.md`}>CHANGELOG.md</a> in the repo.
+        </p>
+      </header>
+
+      <div class="changelog-list">
+        {
+          sections.map((section) => (
+            <section class="changelog-entry">
+              <h2>{section.version}</h2>
+              <div class="changelog-body" set:html={renderBody(section.body)} />
+            </section>
+          ))
+        }
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>
+        MIT-licensed ·{" "}
+        <a href="/docs/">Docs</a> {" · "}
+        <a href={NPM_URL} target="_blank" rel="noreferrer">npm</a> {" · "}
+        <a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
+      </p>
+    </footer>
+  </div>
+</BaseLayout>

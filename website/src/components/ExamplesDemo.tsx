@@ -60,7 +60,7 @@ export default function ExamplesDemo() {
       <div className="showcase-block">
         <h3>Date · disable past</h3>
         <p className="showcase-note">
-          <code>disablePastDates</code> — past days greyed out.
+          <code>disablePastDates</code>: past days greyed out.
         </p>
         <DateTime
           inline
@@ -76,7 +76,7 @@ export default function ExamplesDemo() {
       <div className="showcase-block">
         <h3>Date · disable future</h3>
         <p className="showcase-note">
-          <code>disableFutureDates</code> — future days blocked.
+          <code>disableFutureDates</code>: future days blocked.
         </p>
         <DateTime
           inline
@@ -92,7 +92,7 @@ export default function ExamplesDemo() {
       <div className="showcase-block">
         <h3>Date · min &amp; max</h3>
         <p className="showcase-note">
-          <code>minDate</code> / <code>maxDate</code> — window from 7 days ago to
+          <code>minDate</code> / <code>maxDate</code>: window from 7 days ago to
           14 days ahead.
         </p>
         <DateTime
@@ -110,7 +110,7 @@ export default function ExamplesDemo() {
       <div className="showcase-block">
         <h3>Time only · TimeValue</h3>
         <p className="showcase-note">
-          Popover — adjust time, then press <strong>OK</strong> to commit.
+          Popover: adjust time, then press <strong>OK</strong> to commit.
         </p>
         <DateTimeInput
           mode="time"
@@ -130,7 +130,7 @@ export default function ExamplesDemo() {
       <div className="showcase-block">
         <h3>Time · no seconds</h3>
         <p className="showcase-note">
-          Popover without seconds — confirm with <strong>OK</strong>.
+          Popover without seconds: confirm with <strong>OK</strong>.
         </p>
         <DateTimeInput
           mode="time"
@@ -151,7 +151,7 @@ export default function ExamplesDemo() {
       <div className="showcase-block">
         <h3>Combined date &amp; time · Date</h3>
         <p className="showcase-note">
-          Datetime popover — day + time draft until <strong>OK</strong>.
+          Datetime popover: day + time draft until <strong>OK</strong>.
         </p>
         <DateTimeInput
           mode="datetime"
@@ -167,7 +167,7 @@ export default function ExamplesDemo() {
       <div className="showcase-block">
         <h3>Separate view (tabs) · Date</h3>
         <p className="showcase-note">
-          Tabs layout popover — confirm with <strong>OK</strong>.
+          Tabs layout popover: confirm with <strong>OK</strong>.
         </p>
         <DateTimeInput
           mode="datetime"
@@ -183,7 +183,7 @@ export default function ExamplesDemo() {
       <div className="showcase-block">
         <h3>Input · string (asString)</h3>
         <p className="showcase-note">
-          Datetime input — commit with <strong>OK</strong> (not on day click alone).
+          Datetime input: commit with <strong>OK</strong> (not on day click alone).
         </p>
         <DateTimeInput
           asString
@@ -191,7 +191,7 @@ export default function ExamplesDemo() {
           use12Hours
           value={dateTimeInput}
           onChange={(next) => setDateTimeInput(typeof next === "string" ? next : null)}
-          placeholder="Pick a date & time — confirm with OK"
+          placeholder="Pick a date & time. Confirm with OK"
         />
         <p className="stage-value">Selected: {dateTimeInput ?? "null"}</p>
       </div>

@@ -1,0 +1,150 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Date Range"
+  description="DateTimeRange value shape, React and vanilla examples, limitations, and closed-by-default trigger patterns."
+  keywords="date range picker, DateTimeRange, start end date"
+  crumbLabel="Date range"
+  currentPath="/docs/range/"
+>
+  <article class="docs-article">
+    <h1>Date range</h1>
+    <p>
+      Pick a start and end date on one calendar. React:
+      <code>DateTimeRange</code>. Vanilla:
+      <code>createDateTimeRangePicker</code>. Web Component:
+      <code>&lt;datetime-picker-range&gt;</code>.
+    </p>
+
+    <h2>Value shape</h2>
+    <ul>
+      <li>
+        <code>asString</code> omitted or false:
+        <code>&#123; start: Date | null; end: Date | null &#125;</code>
+      </li>
+      <li>
+        <code>asString=&#123;true&#125;</code>:
+        <code>&#123; start: string | null; end: string | null &#125;</code>
+      </li>
+    </ul>
+    <p>
+      Controlled usage passes the same shape to <code>value</code>. Incomplete
+      ranges may have one side still <code>null</code> while the user
+      finishes the second click.
+    </p>
+
+    <h2>Behavior</h2>
+    <ul>
+      <li>First click sets start. Second click sets end and commits.</li>
+      <li>No OK button. Commit happens when the range is complete.</li>
+      <li>Hover preview highlights the tentative span.</li>
+      <li>
+        Keyboard grid navigation works like the single-date calendar.
+      </li>
+      <li>
+        Non-inline <code>defaultOpen</code> defaults to
+        <strong>true</strong>. Use <code>defaultOpen=&#123;false&#125;</code>
+        or controlled <code>open</code> for a closed trigger pattern.
+      </li>
+    </ul>
+
+    <h2>Limitations</h2>
+    <p>
+      Range is date-only and intentionally smaller than
+      <code>DateTime</code>:
+    </p>
+    <ul>
+      <li>No <code>popover</code></li>
+      <li>No <code>anchorEl</code></li>
+      <li>No <code>theme</code> prop (use CSS / <code>data-ctp-theme</code>)</li>
+      <li>No <code>mode</code> or <code>layout</code></li>
+      <li>No <code>use12Hours</code> or <code>showSeconds</code></li>
+    </ul>
+    <p>
+      Still supported: bounds, disable past/future, <code>weekStartsOn</code>,
+      <code>locale</code>, <code>labels</code>, <code>format</code>,
+      <code>asString</code>, open-state props, <code>inline</code>,
+      <code>className</code>, <code>style</code>.
+    </p>
+
+    <h2>React example</h2>
+    <pre><code>{`import { useState } from "react";
+import { DateTimeRange } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";
+
+type Range = { start: Date | null; end: Date | null };
+
+export function StayDates() {
+  const [range, setRange] = useState<Range>({ start: null, end: null });
+
+  return (
+    <DateTimeRange
+      inline
+      asString={false}
+      value={range}
+      onChange={setRange}
+      disablePastDates
+      weekStartsOn={1}
+    />
+  );
+}`}</code></pre>
+
+    <h2>Vanilla example</h2>
+    <pre><code>{`import { createDateTimeRangePicker } from "universal-datetime-picker/vanilla";
+import "universal-datetime-picker/style.css";
+
+const mount = document.querySelector("#range");
+if (!mount) throw new Error("#range missing");
+
+createDateTimeRangePicker(mount, {
+  inline: true,
+  asString: false,
+  disablePastDates: true,
+  onChange: (value) => console.log(value.start, value.end),
+});`}</code></pre>
+
+    <h2>Closed-by-default overlay trigger</h2>
+    <p>
+      Range overlays are centered (no popover). Keep them closed until a
+      button opens them:
+    </p>
+    <pre><code>{`import { useState } from "react";
+import { DateTimeRange } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";
+
+export function RangeModal() {
+  const [open, setOpen] = useState(false);
+  const [range, setRange] = useState({ start: null, end: null });
+
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        Select dates
+      </button>
+      <DateTimeRange
+        open={open}
+        onOpenChange={setOpen}
+        asString={false}
+        value={range}
+        onChange={setRange}
+      />
+    </>
+  );
+}`}</code></pre>
+    <p>
+      Uncontrolled alternative: <code>defaultOpen=&#123;false&#125;</code>
+      plus a way to call into open state if your wrapper exposes it. Controlled
+      <code>open</code> is the clearest pattern.
+    </p>
+
+    <p>
+      <a href="/docs/components/">Components</a> ·
+      <a href="/docs/props/">Props</a> ·
+      <a href="/docs/overlay/">Overlay</a> ·
+      <a href="/examples/">Examples</a> ·
+      <a href="/docs/troubleshooting/">Troubleshooting</a>
+    </p>
+  </article>
+</DocsLayout>

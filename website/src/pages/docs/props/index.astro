@@ -1,0 +1,454 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — API Reference"
+  description="Full prop reference for DateTime, DateTimeInput, and DateTimeRange: types, defaults, return values, and asString behavior."
+  keywords="date picker props, datetime picker API, asString"
+  crumbLabel="Props"
+  currentPath="/docs/props/"
+>
+  <article class="docs-article">
+    <h1>Props</h1>
+    <p>
+      Shared by <code>DateTime</code> and <code>DateTimeInput</code> unless
+      noted. Vanilla options use the same names. Web Components use
+      kebab-case attributes (for example <code>as-string</code>,
+      <code>disable-past-dates</code>, <code>week-starts-on</code>).
+    </p>
+
+    <h2>Return values</h2>
+    <div class="docs-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Mode</th>
+            <th>asString</th>
+            <th>onChange receives</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>date</code></td>
+            <td>omitted / false</td>
+            <td><code>Date</code> at start of day, or <code>null</code></td>
+          </tr>
+          <tr>
+            <td><code>datetime</code></td>
+            <td>omitted / false</td>
+            <td><code>Date</code>, or <code>null</code></td>
+          </tr>
+          <tr>
+            <td><code>time</code></td>
+            <td>omitted / false</td>
+            <td><code>TimeValue</code>, or <code>null</code></td>
+          </tr>
+          <tr>
+            <td>any single mode</td>
+            <td><code>true</code></td>
+            <td>formatted <code>string | null</code></td>
+          </tr>
+          <tr>
+            <td>range</td>
+            <td>omitted / false</td>
+            <td>
+              <code>&#123; start: Date | null; end: Date | null &#125;</code>
+            </td>
+          </tr>
+          <tr>
+            <td>range</td>
+            <td><code>true</code></td>
+            <td>
+              <code
+                >&#123; start: string | null; end: string | null &#125;</code
+              >
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>TimeValue</h2>
+    <p>
+      Returned in time mode when <code>asString</code> is omitted or false.
+    </p>
+    <pre><code>{`{
+  hour: 2,           // 1-12
+  hour24: 14,        // 0-23
+  minute: 30,
+  second: 0,
+  ampm: "PM",
+  formatted: "14:30:00" // or "02:30:00 PM" when use12Hours
+}`}</code></pre>
+
+    <h2>Shared props (DateTime / DateTimeInput)</h2>
+    <div class="docs-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Prop</th>
+            <th>Required</th>
+            <th>Type</th>
+            <th>Default</th>
+            <th>Effect</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>value</code></td>
+            <td>no</td>
+            <td><code>Date | string | Dayjs | null</code></td>
+            <td>none</td>
+            <td>Controlled value</td>
+          </tr>
+          <tr>
+            <td><code>defaultValue</code></td>
+            <td>no</td>
+            <td>same</td>
+            <td>none</td>
+            <td>Uncontrolled initial value</td>
+          </tr>
+          <tr>
+            <td><code>onChange</code></td>
+            <td>no</td>
+            <td><code>(value) =&gt; void</code></td>
+            <td>none</td>
+            <td>Fires on commit (see Components)</td>
+          </tr>
+          <tr>
+            <td><code>asString</code></td>
+            <td>no</td>
+            <td><code>boolean</code></td>
+            <td>objects (<code>false</code> behavior)</td>
+            <td>
+              <code>true</code> returns formatted strings instead of
+              <code>Date</code> / <code>TimeValue</code>
+            </td>
+          </tr>
+          <tr>
+            <td><code>mode</code></td>
+            <td>no</td>
+            <td><code>"datetime" | "date" | "time"</code></td>
+            <td><code>"datetime"</code></td>
+            <td>Which panels and commit rules apply</td>
+          </tr>
+          <tr>
+            <td><code>layout</code></td>
+            <td>no</td>
+            <td><code>"combined" | "tabs"</code></td>
+            <td><code>"combined"</code></td>
+            <td>Datetime only: both panels or Date/Time tabs</td>
+          </tr>
+          <tr>
+            <td><code>showSeconds</code></td>
+            <td>no</td>
+            <td><code>boolean</code></td>
+            <td><code>true</code></td>
+            <td>Seconds column and default format include seconds</td>
+          </tr>
+          <tr>
+            <td><code>format</code></td>
+            <td>no</td>
+            <td><code>string</code></td>
+            <td>derived from mode / clock</td>
+            <td>
+              dayjs format for display and for <code>asString</code> output
+            </td>
+          </tr>
+          <tr>
+            <td><code>minDate</code></td>
+            <td>no</td>
+            <td>date-like</td>
+            <td>none</td>
+            <td>Inclusive lower bound; clamps navigation</td>
+          </tr>
+          <tr>
+            <td><code>maxDate</code></td>
+            <td>no</td>
+            <td>date-like</td>
+            <td>none</td>
+            <td>Inclusive upper bound; clamps navigation</td>
+          </tr>
+          <tr>
+            <td><code>disablePastDates</code></td>
+            <td>no</td>
+            <td><code>boolean</code></td>
+            <td><code>false</code></td>
+            <td>Blocks days before today</td>
+          </tr>
+          <tr>
+            <td><code>disableFutureDates</code></td>
+            <td>no</td>
+            <td><code>boolean</code></td>
+            <td><code>false</code></td>
+            <td>Blocks days after today</td>
+          </tr>
+          <tr>
+            <td><code>weekStartsOn</code></td>
+            <td>no</td>
+            <td><code>0 | 1 | 2 | 3 | 4 | 5 | 6</code></td>
+            <td><code>0</code></td>
+            <td>First weekday (0 = Sunday)</td>
+          </tr>
+          <tr>
+            <td><code>use12Hours</code></td>
+            <td>no</td>
+            <td><code>boolean</code></td>
+            <td><code>false</code></td>
+            <td>12-hour clock with AM/PM</td>
+          </tr>
+          <tr>
+            <td><code>locale</code></td>
+            <td>no</td>
+            <td><code>string</code></td>
+            <td><code>"en"</code></td>
+            <td>
+              dayjs locale id. Import <code>dayjs/locale/...</code> first
+            </td>
+          </tr>
+          <tr>
+            <td><code>labels</code></td>
+            <td>no</td>
+            <td><code>DateTimeLabels</code></td>
+            <td>English chrome</td>
+            <td>Override OK, Clear, Close, panel titles, a11y strings</td>
+          </tr>
+          <tr>
+            <td><code>theme</code></td>
+            <td>no</td>
+            <td><code>"light" | "dark"</code></td>
+            <td>inherit from CSS / ancestors</td>
+            <td>
+              Force theme on the picker (important for portaled popovers)
+            </td>
+          </tr>
+          <tr>
+            <td><code>inline</code></td>
+            <td>no</td>
+            <td><code>boolean</code></td>
+            <td><code>false</code></td>
+            <td>Render without overlay chrome</td>
+          </tr>
+          <tr>
+            <td><code>className</code></td>
+            <td>no</td>
+            <td><code>string</code></td>
+            <td>none</td>
+            <td>Root class</td>
+          </tr>
+          <tr>
+            <td><code>style</code></td>
+            <td>no</td>
+            <td>CSS properties / string (vanilla)</td>
+            <td>none</td>
+            <td>Inline styles on the root</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Open-state and placement props</h2>
+    <p>
+      Apply to <code>DateTime</code>. <code>DateTimeInput</code> supports
+      open-state props but always uses popover placement against its own
+      input.
+    </p>
+    <div class="docs-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Prop</th>
+            <th>Required</th>
+            <th>Type</th>
+            <th>Default</th>
+            <th>Effect</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>open</code></td>
+            <td>no</td>
+            <td><code>boolean</code></td>
+            <td>none</td>
+            <td>Controlled open state</td>
+          </tr>
+          <tr>
+            <td><code>defaultOpen</code></td>
+            <td>no</td>
+            <td><code>boolean</code></td>
+            <td>
+              <code>true</code> for non-inline <code>DateTime</code>;
+              <code>false</code> for <code>DateTimeInput</code>
+            </td>
+            <td>
+              Uncontrolled initial open. Non-inline DateTime opens on mount
+              unless you set this to false
+            </td>
+          </tr>
+          <tr>
+            <td><code>onOpenChange</code></td>
+            <td>no</td>
+            <td><code>(open: boolean) =&gt; void</code></td>
+            <td>none</td>
+            <td>Fires when the overlay opens or closes</td>
+          </tr>
+          <tr>
+            <td><code>popover</code></td>
+            <td>no</td>
+            <td><code>boolean</code></td>
+            <td><code>false</code> (DateTime)</td>
+            <td>
+              Anchor near <code>anchorEl</code> instead of a centered modal.
+              DateTimeInput always behaves as popover
+            </td>
+          </tr>
+          <tr>
+            <td><code>anchorEl</code></td>
+            <td>when popover</td>
+            <td><code>HTMLElement | null</code></td>
+            <td>none</td>
+            <td>
+              Anchor element for popover placement. Required for DateTime
+              popover mode
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>DateTimeInput extras</h2>
+    <div class="docs-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Prop</th>
+            <th>Type</th>
+            <th>Default</th>
+            <th>Effect</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>placeholder</code></td>
+            <td><code>string</code></td>
+            <td>none</td>
+            <td>Input placeholder</td>
+          </tr>
+          <tr>
+            <td><code>id</code></td>
+            <td><code>string</code></td>
+            <td>none</td>
+            <td>Input id</td>
+          </tr>
+          <tr>
+            <td><code>name</code></td>
+            <td><code>string</code></td>
+            <td>none</td>
+            <td>Input name</td>
+          </tr>
+          <tr>
+            <td><code>disabled</code></td>
+            <td><code>boolean</code></td>
+            <td><code>false</code></td>
+            <td>Disables interaction</td>
+          </tr>
+          <tr>
+            <td><code>readOnly</code></td>
+            <td><code>boolean</code></td>
+            <td><code>false</code></td>
+            <td>Prevents typing; open via control still follows props</td>
+          </tr>
+          <tr>
+            <td><code>aria-label</code></td>
+            <td><code>string</code></td>
+            <td>none</td>
+            <td>Accessible name</td>
+          </tr>
+          <tr>
+            <td><code>aria-labelledby</code></td>
+            <td><code>string</code></td>
+            <td>none</td>
+            <td>Accessible name from another element</td>
+          </tr>
+          <tr>
+            <td><code>inputClassName</code></td>
+            <td><code>string</code></td>
+            <td>none</td>
+            <td>Class on the input element</td>
+          </tr>
+          <tr>
+            <td><code>icon</code></td>
+            <td><code>ReactNode</code></td>
+            <td>calendar icon</td>
+            <td>
+              Trailing icon. Pass <code>null</code> to hide
+            </td>
+          </tr>
+          <tr>
+            <td><code>customInput</code></td>
+            <td><code>ReactElement</code></td>
+            <td>none</td>
+            <td>
+              Replace the built-in input. Ref, value, and click handlers are
+              injected
+            </td>
+          </tr>
+          <tr>
+            <td><code>noStyle</code></td>
+            <td><code>boolean</code></td>
+            <td><code>false</code></td>
+            <td>
+              Omit default wrapper/input classes; style via
+              <code>className</code> / <code>inputClassName</code>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>DateTimeRange differences</h2>
+    <p>
+      Range supports value/defaultValue/onChange, asString, format, bounds,
+      disable past/future, weekStartsOn, locale, labels, open/defaultOpen /
+      onOpenChange, inline, className, and style.
+    </p>
+    <p>Not available on range:</p>
+    <ul>
+      <li><code>popover</code>, <code>anchorEl</code></li>
+      <li><code>theme</code></li>
+      <li>
+        <code>mode</code>, <code>layout</code>, <code>use12Hours</code>,
+        <code>showSeconds</code>
+      </li>
+    </ul>
+    <p>
+      Non-inline range also defaults <code>defaultOpen</code> to
+      <code>true</code>. See <a href="/docs/range/">Date range</a>.
+    </p>
+
+    <h2>Calendar behavior notes</h2>
+    <ul>
+      <li>Day grid always shows 6 weeks so height stays stable.</li>
+      <li>
+        Month/year navigation stays inside min/max and past/future bounds.
+      </li>
+      <li>
+        When today is outside bounds, the picker opens on the first or last
+        selectable day.
+      </li>
+      <li>
+        Closing an overlay resets month/year drill-down to the committed
+        value month.
+      </li>
+    </ul>
+
+    <p>
+      <a href="/docs/components/">Components</a> ·
+      <a href="/docs/overlay/">Overlay</a> ·
+      <a href="/docs/theming/">Theming</a> ·
+      <a href="/docs/locales/">Locales</a> ·
+      <a href="/docs/troubleshooting/">Troubleshooting</a>
+    </p>
+  </article>
+</DocsLayout>

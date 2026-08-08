@@ -1,7 +1,7 @@
 {
-  "name": "Universal Date Time Picker — React date picker for every framework",
-  "short_name": "Date Picker",
-  "description": "React date picker and date time picker: vanilla JS, Vue, Svelte, Angular, Web Components, CDN. TypeScript, accessible calendar, date ranges.",
+  "name": "Universal DateTime Picker",
+  "short_name": "DateTime Picker",
+  "description": "Date and time picker for React, vanilla JS, Web Components, Vue, Svelte, and Angular. TypeScript, accessible calendar, ranges, and themes.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f3f6ef",
@@ -9,13 +9,14 @@
   "icons": [
     {
       "src": "/apple-touch-icon.png",
-      "sizes": "512x512",
+      "sizes": "180x180",
       "type": "image/png"
     },
     {
       "src": "/favicon.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ]
 }

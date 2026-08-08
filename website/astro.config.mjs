@@ -72,10 +72,16 @@ const pkgAliases = [
 
 export default defineConfig({
   site,
+  // Astro 7 defaults to compressHTML: 'jsx', which strips newlines around
+  // inline tags. That glues prose to links when <a> wraps to the next line.
+  // HTML-aware compression keeps those newlines as spaces.
+  compressHTML: true,
   // Match sitemap + <link rel="canonical"> (…/react/). Without this, Vercel
   // serves /react and /react/ as 200 duplicates; Google keeps the no-slash URL
   // as "Alternate page with proper canonical tag".
   trailingSlash: "always",
+  // /sitemap.xml → /sitemap-index.xml is handled in vercel.json (Astro redirects
+  // with trailingSlash:"always" would emit site-dist/sitemap.xml/index.html).
   root,
   srcDir: path.join(root, "src"),
   publicDir: path.join(root, "public"),
@@ -98,7 +104,14 @@ export default defineConfig({
       },
     }),
     svelte(),
-    sitemap(),
+    sitemap({
+      filter: (page) =>
+        !page.includes("/demo/") && !page.endsWith("/sitemap.xml"),
+      serialize(item) {
+        const url = item.url.endsWith("/") ? item.url : `${item.url}/`;
+        return { ...item, url };
+      },
+    }),
   ],
   vite: {
     resolve: {

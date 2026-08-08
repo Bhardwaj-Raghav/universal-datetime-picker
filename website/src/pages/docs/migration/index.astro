@@ -1,0 +1,166 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Migration"
+  description="Migrate from react-calendar-time to universal-datetime-picker: package rename, imports, and breaking changes."
+  keywords="migrate react-calendar-time, universal-datetime-picker migration"
+  crumbLabel="Migration"
+  currentPath="/docs/migration/"
+>
+  <article class="docs-article">
+    <h1>Migration from react-calendar-time</h1>
+    <p>
+      The package was renamed to <code>universal-datetime-picker</code> in
+      v2.0.0. Props, CSS class names (<code>ctp-*</code>), and React component
+      exports are unchanged. Update the package name, import paths, and Web
+      Component tag names.
+    </p>
+
+    <h2>Support tier</h2>
+    <p class="docs-callout">
+      This page covers the rename only. After migration, use the framework
+      guides for your stack. React stays native; Vue, Svelte, and Angular stay
+      on Web Components.
+    </p>
+
+    <h2>Install + deps</h2>
+    <pre><code>npm uninstall react-calendar-time
+npm install universal-datetime-picker</code></pre>
+    <p>
+      React apps need React 18+. React 17 is no longer supported. Vanilla, Web
+      Components, and CDN users can omit React peers.
+    </p>
+
+    <h2>Setup</h2>
+    <ol>
+      <li>Replace the dependency as shown above.</li>
+      <li>
+        Change every import specifier from
+        <code>react-calendar-time</code> to
+        <code>universal-datetime-picker</code>, including subpaths such as
+        <code>/vanilla</code>, <code>/wc</code>, <code>/vue</code>,
+        <code>/svelte</code>, <code>/angular</code>, and
+        <code>/style.css</code>.
+      </li>
+      <li>
+        Rename Web Component tags from <code>calendar-time*</code> to
+        <code>datetime-picker*</code>.
+      </li>
+      <li>
+        In Angular, prefer
+        <code>registerDateTimePickerElements</code>. The old
+        <code>registerCalendarTimeElements</code> name remains as a deprecated
+        alias.
+      </li>
+    </ol>
+
+    <h2>Exact import path</h2>
+    <pre><code>{`// Before
+import DateTime, { DateTimeInput } from "react-calendar-time";
+import "react-calendar-time/style.css";
+
+// After
+import DateTime, { DateTimeInput } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";`}</code></pre>
+
+    <h2>Minimal example</h2>
+    <pre><code>{`import { useState } from "react";
+import DateTime, { DateTimeInput } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";
+
+function App() {
+  const [value, setValue] = useState<Date | null>(null);
+  return (
+    <DateTimeInput asString={false} value={value} onChange={setValue} />
+  );
+}`}</code></pre>
+
+    <h2>Realistic example</h2>
+    <p>Web Component tag renames:</p>
+    <pre><code>{`<!-- Before -->
+<calendar-time inline mode="date" as-string="false"></calendar-time>
+<calendar-time-input></calendar-time-input>
+<calendar-time-range inline></calendar-time-range>
+
+<!-- After -->
+<datetime-picker inline mode="date" as-string="false"></datetime-picker>
+<datetime-picker-input></datetime-picker-input>
+<datetime-picker-range inline></datetime-picker-range>`}</code></pre>
+    <pre><code>{`// Before
+import { defineCustomElements } from "react-calendar-time/wc";
+
+// After
+import { defineCustomElements } from "universal-datetime-picker/wc";`}</code></pre>
+
+    <h2>Configuration notes</h2>
+    <ul>
+      <li>
+        React component names stay <code>DateTime</code>,
+        <code>DateTimeInput</code>, and <code>DateTimeRange</code>.
+      </li>
+      <li>
+        Prop names and defaults are the same. Keep using
+        <code>asString</code>, <code>mode</code>, <code>inline</code>, and the
+        rest as before.
+      </li>
+      <li>
+        CSS variables and <code>ctp-*</code> classes are unchanged, so existing
+        themes keep working.
+      </li>
+      <li>
+        CDN URLs must point at
+        <code>universal-datetime-picker</code> instead of
+        <code>react-calendar-time</code>. Pin a version.
+      </li>
+    </ul>
+
+    <h2>Events</h2>
+    <ul>
+      <li>
+        React: <code>onChange</code> and <code>onOpenChange</code> are
+        unchanged.
+      </li>
+      <li>
+        Custom elements still dispatch bubbling <code>change</code> and
+        <code>openchange</code> CustomEvents.
+      </li>
+    </ul>
+
+    <h2>Customization links</h2>
+    <ul>
+      <li><a href="/docs/theming/">Theming</a></li>
+      <li><a href="/docs/locales/">Locales</a></li>
+      <li><a href="/docs/props/">Props</a></li>
+      <li><a href="/docs/entry-points/">Entry points</a></li>
+    </ul>
+
+    <h2>Pitfalls</h2>
+    <ul>
+      <li>
+        Leaving old <code>calendar-time</code> tags in HTML after upgrading
+        registers nothing useful.
+      </li>
+      <li>
+        Staying on React 17 fails peer checks. Upgrade to 18+ or switch to
+        vanilla / WC / CDN.
+      </li>
+      <li>
+        Mixed imports from both package names duplicate calendars and styles.
+      </li>
+    </ul>
+
+    <h2>Troubleshooting</h2>
+    <p>
+      If tags or imports still point at the old package, search the repo for
+      <code>react-calendar-time</code> and <code>calendar-time</code>. Broader
+      setup issues are in <a href="/docs/troubleshooting/">Troubleshooting</a>.
+    </p>
+
+    <h2>Related links</h2>
+    <p>
+      <a href="/">Home</a> · <a href="/examples/">Examples</a> · <a href="/docs/props/">Props</a> · <a href="/docs/troubleshooting/">Troubleshooting</a> · <a href="/docs/getting-started/">Getting started</a> · <a href="/changelog/">Changelog</a>
+    </p>
+  </article>
+</DocsLayout>

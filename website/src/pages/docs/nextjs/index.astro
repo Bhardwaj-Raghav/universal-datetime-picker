@@ -1,0 +1,172 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Next.js"
+  description="Use DateTime and DateTimeInput in the Next.js App Router with a client boundary and CSS import."
+  keywords="nextjs date picker, next.js app router date picker"
+  crumbLabel="Next.js"
+  currentPath="/docs/nextjs/"
+>
+  <article class="docs-article">
+    <h1>Next.js</h1>
+
+    <p class="docs-callout">
+      <a href="/nextjs/">Try the live Next.js demo</a>
+      — interactive picker and copy-paste snippets.
+    </p>
+
+    <h2>Support tier</h2>
+    <p class="docs-callout">
+      Full support via the React entry. App Router needs a client boundary
+      (<code>"use client"</code>). Server Components must not import the picker
+      directly.
+    </p>
+
+    <h2>Install + deps</h2>
+    <pre><code>npm install universal-datetime-picker</code></pre>
+    <p>
+      Same peers as React: <code>react</code> and <code>react-dom</code> ≥ 18,
+      which Next.js already provides.
+    </p>
+
+    <h2>Setup</h2>
+    <p>
+      Put interactive pickers in a client component. Import
+      <code>universal-datetime-picker/style.css</code> in that client file or
+      another client module loaded on the page. Keep the Server Component page
+      thin and render the client child.
+    </p>
+
+    <h2>Exact import path</h2>
+    <pre><code>{`"use client";
+
+import DateTime, { DateTimeInput, DateTimeRange } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";`}</code></pre>
+
+    <h2>Minimal example</h2>
+    <pre><code>{`// app/booking/DatePicker.tsx
+"use client";
+
+import { useState } from "react";
+import { DateTimeInput } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";
+
+export function BookingDatePicker() {
+  const [value, setValue] = useState<Date | null>(null);
+  return (
+    <DateTimeInput
+      asString={false}
+      value={value}
+      onChange={(next) => setValue(next instanceof Date ? next : null)}
+    />
+  );
+}`}</code></pre>
+
+    <h2>Realistic example</h2>
+    <pre><code>{`// app/booking/page.tsx  (Server Component)
+import { BookingPanel } from "./BookingPanel";
+
+export default function BookingPage() {
+  return (
+    <main>
+      <h1>Book a slot</h1>
+      <BookingPanel />
+    </main>
+  );
+}
+
+// app/booking/BookingPanel.tsx
+"use client";
+
+import { useState } from "react";
+import DateTime, { DateTimeInput } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";
+
+export function BookingPanel() {
+  const [value, setValue] = useState<Date | null>(null);
+
+  return (
+    <section>
+      <DateTimeInput
+        asString={false}
+        value={value}
+        onChange={(next) => setValue(next instanceof Date ? next : null)}
+        placeholder="Pick date and time"
+        use12Hours
+      />
+      <DateTime
+        inline
+        mode="date"
+        asString={false}
+        value={value}
+        onChange={setValue}
+      />
+    </section>
+  );
+}`}</code></pre>
+
+    <h2>Configuration notes</h2>
+    <ul>
+      <li>
+        Use the main React import, not <code>./wc</code> or <code>./vanilla</code>,
+        unless you intentionally want those APIs.
+      </li>
+      <li>
+        CSS can live in the client component or a shared client layout. Do not
+        rely on a Server Component-only CSS import path that never reaches the
+        client bundle.
+      </li>
+      <li>
+        Pages Router works the same as any React SPA: no
+        <code>"use client"</code> directive required.
+      </li>
+      <li>
+        All React props apply. See <a href="/docs/react/">React</a> and <a href="/docs/props/">Props</a>.
+      </li>
+    </ul>
+
+    <h2>Events</h2>
+    <ul>
+      <li><code>onChange</code> for the selected value</li>
+      <li><code>onOpenChange</code> for overlay open state</li>
+    </ul>
+
+    <h2>Customization links</h2>
+    <ul>
+      <li><a href="/docs/theming/">Theming</a></li>
+      <li><a href="/docs/locales/">Locales</a></li>
+      <li><a href="/docs/overlay/">Overlay and triggers</a></li>
+      <li><a href="/docs/props/">Props</a></li>
+    </ul>
+
+    <h2>Pitfalls</h2>
+    <ul>
+      <li>
+        Importing the picker in a Server Component without
+        <code>"use client"</code> fails the build or hydrates incorrectly.
+      </li>
+      <li>
+        Missing <code>style.css</code> in the client graph yields an unstyled
+        picker.
+      </li>
+      <li>
+        Non-inline pickers still default to open. Set
+        <code>defaultOpen=&#123;false&#125;</code> or control
+        <code>open</code>.
+      </li>
+    </ul>
+
+    <h2>Troubleshooting</h2>
+    <p>
+      If you see React SSR or hydration errors, move the import behind
+      <code>"use client"</code>. For missing styles or wrong entries, see <a href="/docs/troubleshooting/">Troubleshooting</a>.
+    </p>
+
+    <h2>Related links</h2>
+    <p>
+      <a href="/nextjs/">Next.js live demo</a> · <a href="/examples/">Examples</a> · <a href="/docs/props/">Props</a> · <a href="/docs/troubleshooting/">Troubleshooting</a> · <a href="/docs/react/">React guide</a>
+    </p>
+  </article>
+</DocsLayout>

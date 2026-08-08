@@ -1,0 +1,192 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — React"
+  description="Use DateTime, DateTimeInput, and DateTimeRange as native React components. Install, import paths, examples, and peers."
+  keywords="react date picker, react date time picker, DateTime React"
+  crumbLabel="React"
+  currentPath="/docs/react/"
+>
+  <article class="docs-article">
+    <h1>React</h1>
+
+    <p class="docs-callout">
+      <a href="/react/">Try the live React demo</a>
+      — interactive picker and copy-paste snippets.
+    </p>
+
+    <h2>Support tier</h2>
+    <p class="docs-callout">
+      Full support. Native React components on the main package entry. No Web
+      Components required. Peers: <code>react</code> and <code>react-dom</code> ≥
+      18.
+    </p>
+
+    <h2>Install + deps</h2>
+    <pre><code>npm install universal-datetime-picker</code></pre>
+    <p>
+      Install React 18+ if your app does not already have it. Yarn and pnpm work
+      the same.
+    </p>
+
+    <h2>Setup</h2>
+    <p>
+      Import the stylesheet once in your app entry or a shared layout. Then
+      render <code>DateTime</code>, <code>DateTimeInput</code>, or
+      <code>DateTimeRange</code> in any client React tree.
+    </p>
+
+    <h2>Exact import path</h2>
+    <pre><code>{`import DateTime, { DateTimeInput, DateTimeRange } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";`}</code></pre>
+
+    <h2>Minimal example</h2>
+    <pre><code>{`import { useState } from "react";
+import DateTime, { DateTimeInput } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";
+
+function App() {
+  const [value, setValue] = useState<Date | null>(null);
+
+  return (
+    <>
+      <DateTimeInput asString={false} value={value} onChange={setValue} />
+      <DateTime inline asString={false} value={value} onChange={setValue} />
+    </>
+  );
+}`}</code></pre>
+
+    <h2>Realistic example</h2>
+    <p>
+      Controlled value and open state with a custom trigger. Pass
+      <code>popover</code> and <code>anchorEl</code> to position beside the
+      button.
+    </p>
+    <pre><code>{`import { useState } from "react";
+import DateTime, { DateTimeRange } from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";
+
+function BookingForm() {
+  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState<Date | null>(null);
+  const [range, setRange] = useState<{
+    start: Date | null;
+    end: Date | null;
+  }>({ start: null, end: null });
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+  return (
+    <>
+      <button
+        ref={setAnchorEl}
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+      >
+        {date ? date.toLocaleDateString() : "Choose a date"}
+      </button>
+
+      <DateTime
+        mode="date"
+        open={open}
+        onOpenChange={setOpen}
+        popover
+        anchorEl={anchorEl}
+        asString={false}
+        value={date}
+        onChange={(next) => setDate(next instanceof Date ? next : null)}
+      />
+
+      <DateTimeRange
+        inline
+        asString={false}
+        value={range}
+        onChange={setRange}
+      />
+    </>
+  );
+}`}</code></pre>
+
+    <h2>Configuration notes</h2>
+    <ul>
+      <li>
+        Omit <code>asString</code> (or pass <code>false</code>) for
+        <code>Date</code> / <code>TimeValue</code> objects. Set
+        <code>asString=&#123;true&#125;</code> for formatted strings.
+      </li>
+      <li>
+        Controlled: pass <code>value</code> + <code>onChange</code>. Uncontrolled:
+        pass <code>defaultValue</code>.
+      </li>
+      <li>
+        Open state: <code>open</code> / <code>defaultOpen</code> +
+        <code>onOpenChange</code>. Non-inline pickers default to open unless you
+        set <code>open</code> or <code>defaultOpen</code> to <code>false</code>.
+      </li>
+      <li>
+        Date-only overlays commit on day click. Datetime and time overlays
+        commit on OK.
+      </li>
+      <li>
+        TypeScript types ship with the package. Props are documented on <a href="/docs/props/">Props</a>.
+      </li>
+      <li>
+        <code>DateTimeRange</code> supports inline and modal open/close. It does
+        not accept <code>popover</code> or <code>anchorEl</code>.
+      </li>
+    </ul>
+
+    <h2>Events</h2>
+    <ul>
+      <li>
+        <code>onChange</code>: selected value. Shape depends on
+        <code>mode</code> and <code>asString</code>.
+      </li>
+      <li>
+        <code>onOpenChange</code>: overlay open/closed. Receives a boolean.
+      </li>
+    </ul>
+
+    <h2>Customization links</h2>
+    <ul>
+      <li><a href="/docs/theming/">Theming</a> with CSS variables and dark mode</li>
+      <li><a href="/docs/locales/">Locales</a> via dayjs</li>
+      <li><a href="/docs/overlay/">Overlay and triggers</a></li>
+      <li><a href="/docs/props/">Full props reference</a></li>
+    </ul>
+
+    <h2>Pitfalls</h2>
+    <ul>
+      <li>
+        Forgetting <code>style.css</code> leaves an unstyled calendar.
+      </li>
+      <li>
+        Non-inline <code>DateTime</code> without
+        <code>defaultOpen=&#123;false&#125;</code> or controlled
+        <code>open</code> opens
+        immediately on mount.
+      </li>
+      <li>
+        Importing from <code>./wc</code> in a React app skips the native API.
+        Prefer the main entry.
+      </li>
+      <li>
+        React 17 is not supported. Use React 18+ or a non-React entry.
+      </li>
+    </ul>
+
+    <h2>Troubleshooting</h2>
+    <p>
+      Blank or broken UI usually means missing CSS, a wrong import path, or an
+      SSR boundary issue in Next.js. See <a href="/docs/troubleshooting/">Troubleshooting</a> and the <a href="/docs/nextjs/">Next.js guide</a>.
+    </p>
+
+    <h2>Related links</h2>
+    <p>
+      <a href="/react/">React live demo</a> · <a href="/examples/">Examples</a> · <a href="/docs/props/">Props</a> · <a href="/docs/troubleshooting/">Troubleshooting</a> · <a href="/docs/nextjs/">Next.js</a>
+    </p>
+  </article>
+</DocsLayout>

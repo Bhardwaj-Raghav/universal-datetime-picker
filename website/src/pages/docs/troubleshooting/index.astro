@@ -1,0 +1,170 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Troubleshooting"
+  description="Symptom, cause, and fix for common setup issues: styles, SSR, custom elements, and event wiring."
+  keywords="date picker troubleshooting, datetime picker errors"
+  crumbLabel="Troubleshooting"
+  currentPath="/docs/troubleshooting/"
+>
+  <article class="docs-article">
+    <h1>Troubleshooting</h1>
+    <p>
+      Each item lists the symptom, likely cause, and fix. For API details, see <a href="/docs/props/">Props</a> and the framework guides under Integrate.
+    </p>
+
+    <h2>Missing CSS</h2>
+    <p>
+      <strong>Symptom.</strong> The calendar mounts but looks unstyled, stacked
+      wrong, or missing the popover chrome.
+    </p>
+    <p>
+      <strong>Cause.</strong> <code>universal-datetime-picker/style.css</code>
+      never entered the bundle, or a CDN page omitted
+      <code>dist/style.css</code>.
+    </p>
+    <p>
+      <strong>Fix.</strong> Import the stylesheet once from the package, or link
+      <code>https://cdn.jsdelivr.net/npm/universal-datetime-picker/dist/style.css</code>
+      and pin a version in production.
+    </p>
+
+    <h2>Wrong entry</h2>
+    <p>
+      <strong>Symptom.</strong> Build errors for missing exports, unexpected
+      React peer warnings, or <code>defineCustomElements</code> is undefined.
+    </p>
+    <p>
+      <strong>Cause.</strong> Import path does not match the stack. Example:
+      importing React components in a Vue app, or expecting
+      <code>./solid</code> / <code>./preact</code>.
+    </p>
+    <p>
+      <strong>Fix.</strong> Use
+      <code>universal-datetime-picker</code> for React,
+      <code>./vanilla</code> for imperative mounts,
+      <code>./wc</code> for raw custom elements,
+      <code>./vue</code> / <code>./svelte</code> / <code>./angular</code> for
+      those helpers. See <a href="/docs/entry-points/">Entry points</a>.
+    </p>
+
+    <h2>Vue custom element warnings</h2>
+    <p>
+      <strong>Symptom.</strong> Vue warns that
+      <code>datetime-picker</code> failed to resolve as a component.
+    </p>
+    <p>
+      <strong>Cause.</strong> The compiler treats the tag as a Vue component
+      because <code>isCustomElement</code> is not set.
+    </p>
+    <p>
+      <strong>Fix.</strong> Set
+      <code>app.config.compilerOptions.isCustomElement = (tag) =&gt; tag.startsWith("datetime-picker")</code>
+      in Vue, or the equivalent <code>vue.compilerOptions</code> in Nuxt. Still
+      call <code>defineCustomElements()</code> once.
+    </p>
+
+    <h2>SSR errors</h2>
+    <p>
+      <strong>Symptom.</strong> Server render throws on
+      <code>HTMLElement</code>, custom elements, or hydration mismatches.
+    </p>
+    <p>
+      <strong>Cause.</strong> Custom element classes or interactive React
+      pickers loaded in a server-only module.
+    </p>
+    <p>
+      <strong>Fix.</strong> Next.js: mark the module with
+      <code>"use client"</code>. Nuxt: register in a
+      <code>*.client.ts</code> plugin and wrap tags in <code>ClientOnly</code>.
+      SolidStart and similar: keep <code>./wc</code> registration on the client.
+    </p>
+
+    <h2>Popover without an anchor</h2>
+    <p>
+      <strong>Symptom.</strong> Popover opens off-screen, at the wrong place, or
+      not next to the trigger.
+    </p>
+    <p>
+      <strong>Cause.</strong> <code>popover</code> is true but
+      <code>anchorEl</code> is null, detached, or never updated after the
+      trigger mounts.
+    </p>
+    <p>
+      <strong>Fix.</strong> Pass a live element ref or node as
+      <code>anchorEl</code>. On vanilla, call
+      <code>update(&#123; open: true, anchorEl: trigger &#125;)</code> from
+      the click handler. Or drop <code>popover</code> and use the centered
+      overlay.
+    </p>
+
+    <h2>Missing dayjs locale</h2>
+    <p>
+      <strong>Symptom.</strong> Month and weekday labels stay English after
+      setting <code>locale="fr"</code> or similar.
+    </p>
+    <p>
+      <strong>Cause.</strong> The dayjs locale module was never imported.
+      Passing a BCP-47 tag that is not a dayjs locale id also fails.
+    </p>
+    <p>
+      <strong>Fix.</strong> Import the module first, for example
+      <code>import "dayjs/locale/fr"</code>, then pass the dayjs id to
+      <code>locale</code>. See <a href="/docs/locales/">Locales</a>.
+    </p>
+
+    <h2>Picker opens immediately</h2>
+    <p>
+      <strong>Symptom.</strong> Overlay or popover appears on mount without a
+      user click.
+    </p>
+    <p>
+      <strong>Cause.</strong> Non-inline React and vanilla pickers default
+      <code>defaultOpen</code> to <code>true</code>.
+    </p>
+    <p>
+      <strong>Fix.</strong> Set <code>defaultOpen=&#123;false&#125;</code> /
+      <code>defaultOpen: false</code>, or fully control <code>open</code> from
+      your trigger. Web Components keep overlays closed until the
+      <code>open</code> attribute is present.
+    </p>
+
+    <h2>Solid trying a native import</h2>
+    <p>
+      <strong>Symptom.</strong> Solid app imports
+      <code>DateTime</code> from <code>universal-datetime-picker</code> or
+      <code>./solid</code> and breaks.
+    </p>
+    <p>
+      <strong>Cause.</strong> The main entry is React. There is no
+      <code>./solid</code> export.
+    </p>
+    <p>
+      <strong>Fix.</strong> Import
+      <code>defineCustomElements</code> from
+      <code>universal-datetime-picker/wc</code> and render
+      <code>datetime-picker*</code> tags. See <a href="/docs/solid/">Solid</a>.
+    </p>
+
+    <h2>Angular missing schema</h2>
+    <p>
+      <strong>Symptom.</strong> Template error: not a known element
+      <code>datetime-picker</code>.
+    </p>
+    <p>
+      <strong>Cause.</strong> The component or NgModule lacks
+      <code>CUSTOM_ELEMENTS_SCHEMA</code>.
+    </p>
+    <p>
+      <strong>Fix.</strong> Add <code>schemas: [CUSTOM_ELEMENTS_SCHEMA]</code>
+      and call <code>registerDateTimePickerElements()</code> at startup. See <a href="/docs/angular/">Angular</a>.
+    </p>
+
+    <h2>Related links</h2>
+    <p>
+      <a href="/docs/faq/">FAQ</a> · <a href="/examples/">Examples</a> · <a href="/docs/props/">Props</a> · <a href="/docs/getting-started/">Getting started</a> · <a href="/react/">React live demo</a>
+    </p>
+  </article>
+</DocsLayout>

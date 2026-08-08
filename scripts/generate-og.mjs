@@ -3,9 +3,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-const out = path.join(root, "../website/public/og.png");
+const publicDir = path.join(root, "../website/public");
+const ogOut = path.join(publicDir, "og.png");
 
-const svg = `<?xml version="1.0" encoding="UTF-8"?>
+const ogSvg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
   <rect width="1200" height="630" fill="#f3f6ef"/>
   <path d="M0 420 Q200 520 420 480 L0 630 Z" fill="#2d4a1c"/>
@@ -25,5 +26,5 @@ const svg = `<?xml version="1.0" encoding="UTF-8"?>
   </g>
 </svg>`;
 
-await sharp(Buffer.from(svg)).png().toFile(out);
-console.log("Wrote", out);
+await sharp(Buffer.from(ogSvg)).png().toFile(ogOut);
+console.log("Wrote", ogOut);

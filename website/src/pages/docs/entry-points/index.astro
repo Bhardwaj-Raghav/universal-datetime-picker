@@ -1,0 +1,167 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Entry Points"
+  description="Package subpath exports for React, vanilla, Web Components, Vue, Svelte, Angular, core controllers, CSS, and CDN."
+  keywords="npm entry points, package exports date picker"
+  crumbLabel="Entry points"
+  currentPath="/docs/entry-points/"
+>
+  <article class="docs-article">
+    <h1>Entry points</h1>
+    <p>
+      The package name is <code>universal-datetime-picker</code>. Import the
+      subpath that matches your runtime. There are no
+      <code>./solid</code> or <code>./preact</code> exports. Solid and Preact
+      use Web Components.
+    </p>
+
+    <h2>Export table</h2>
+    <div class="docs-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Import / URL</th>
+            <th>Provides</th>
+            <th>When to use</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>universal-datetime-picker</code></td>
+            <td>
+              <code>DateTime</code>, <code>DateTimeInput</code>,
+              <code>DateTimeRange</code>, shared types
+            </td>
+            <td>React (and Next.js client components)</td>
+          </tr>
+          <tr>
+            <td><code>universal-datetime-picker/vanilla</code></td>
+            <td>
+              <code>createDateTimePicker</code>,
+              <code>createDateTimeRangePicker</code>
+            </td>
+            <td>Plain JS/TS without custom elements</td>
+          </tr>
+          <tr>
+            <td><code>universal-datetime-picker/wc</code></td>
+            <td>
+              <code>defineCustomElements</code>, element classes,
+              <code>ensureStylesheet</code>
+            </td>
+            <td>Custom elements in any DOM host</td>
+          </tr>
+          <tr>
+            <td><code>universal-datetime-picker/vue</code></td>
+            <td>Vue registration helpers around the WC build</td>
+            <td>Vue SFCs and Nuxt client plugins</td>
+          </tr>
+          <tr>
+            <td><code>universal-datetime-picker/svelte</code></td>
+            <td>Svelte registration helpers around the WC build</td>
+            <td>Svelte apps</td>
+          </tr>
+          <tr>
+            <td><code>universal-datetime-picker/angular</code></td>
+            <td>
+              <code>registerDateTimePickerElements()</code> and related helpers
+            </td>
+            <td>Angular apps</td>
+          </tr>
+          <tr>
+            <td><code>universal-datetime-picker/core</code></td>
+            <td>Headless controllers and date/calendar logic</td>
+            <td>Custom UI on top of the same state machine</td>
+          </tr>
+          <tr>
+            <td><code>universal-datetime-picker/style.css</code></td>
+            <td>Shared stylesheet</td>
+            <td>Required for every UI entry point</td>
+          </tr>
+          <tr>
+            <td>
+              CDN CSS<br />
+              <code
+                >https://cdn.jsdelivr.net/npm/universal-datetime-picker@&#123;version&#125;/dist/style.css</code
+              >
+            </td>
+            <td>Same stylesheet as the npm CSS export</td>
+            <td>Script-tag pages; pin <code>&#123;version&#125;</code></td>
+          </tr>
+          <tr>
+            <td>
+              CDN JS<br />
+              <code
+                >https://cdn.jsdelivr.net/npm/universal-datetime-picker@&#123;version&#125;/dist/cdn/universal-datetime-picker.iife.js</code
+              >
+            </td>
+            <td>
+              IIFE global (includes
+              <code>defineCustomElements</code>)
+            </td>
+            <td>CDN / no bundler</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>React</h2>
+    <pre><code>{`import DateTime, {
+  DateTimeInput,
+  DateTimeRange,
+} from "universal-datetime-picker";
+import "universal-datetime-picker/style.css";`}</code></pre>
+    <p>
+      Peer dependencies <code>react</code> and <code>react-dom</code> ≥ 18
+      apply only when you use this entry.
+    </p>
+
+    <h2>Vanilla</h2>
+    <pre><code>{`import {
+  createDateTimePicker,
+  createDateTimeRangePicker,
+} from "universal-datetime-picker/vanilla";
+import "universal-datetime-picker/style.css";`}</code></pre>
+
+    <h2>Web Components</h2>
+    <pre><code>{`import { defineCustomElements } from "universal-datetime-picker/wc";
+import "universal-datetime-picker/style.css";
+
+defineCustomElements();
+// <datetime-picker>, <datetime-picker-input>, <datetime-picker-range>`}</code></pre>
+    <p>
+      Events: <code>change</code> and <code>openchange</code> (detail carries
+      the value or open boolean). Attributes use kebab-case, for example
+      <code>as-string</code>, <code>default-open</code>.
+    </p>
+
+    <h2>Vue, Svelte, Angular</h2>
+    <p>
+      Prefer the framework helper entry so custom elements register once.
+      Under the hood they wrap the same WC tags. See <a href="/docs/vue/">Vue</a>, <a href="/docs/svelte/">Svelte</a>, and <a href="/docs/angular/">Angular</a>.
+    </p>
+
+    <h2>Solid and Preact</h2>
+    <p>
+      Use <code>./wc</code> (or CDN) and mount the custom elements. Do not
+      look for <code>universal-datetime-picker/solid</code> or
+      <code>.../preact</code>. Guides: <a href="/docs/solid/">Solid</a>, <a href="/docs/preact/">Preact</a>.
+    </p>
+
+    <h2>CDN without a bundler</h2>
+    <pre><code>{`<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/universal-datetime-picker@2.1.1/dist/style.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/universal-datetime-picker@2.1.1/dist/cdn/universal-datetime-picker.iife.js"></script>
+<script>
+  UniversalDateTimePicker.defineCustomElements();
+</script>`}</code></pre>
+
+    <p>
+      More detail: <a href="/docs/web-components/">Web Components &amp; CDN</a>. Live demos: <a href="/examples/">examples</a>. Stuck? <a href="/docs/troubleshooting/">Troubleshooting</a>.
+    </p>
+  </article>
+</DocsLayout>

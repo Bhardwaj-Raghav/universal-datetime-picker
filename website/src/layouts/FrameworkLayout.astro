@@ -3,23 +3,29 @@ import BaseLayout from "./BaseLayout.astro";
 import SiteNav from "../components/SiteNav.astro";
 import CopyInstall from "../components/CopyInstall.astro";
 import type { FrameworkDef } from "../frameworks";
-import { GITHUB_URL, NPM_URL } from "../site.config";
+import {
+  frameworkDocsHref,
+  GITHUB_URL,
+  NPM_URL,
+} from "../site.config";
 
 interface Props {
   framework: FrameworkDef;
 }
 
 const { framework } = Astro.props;
+const docsPrimary = frameworkDocsHref(framework.slug);
 
 const breadcrumbs = [
   { label: "Home", href: "/" },
-  { label: `${framework.label} date time picker`, href: `/${framework.slug}/` },
+  { label: `${framework.label}`, href: `/${framework.slug}/` },
 ];
 ---
 
 <BaseLayout
   title={framework.pageTitle}
   description={framework.pageDescription}
+  keywords={framework.pageKeywords}
   breadcrumbs={breadcrumbs}
 >
   <div class="site is-ready">
@@ -31,7 +37,7 @@ const breadcrumbs = [
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <ol>
           <li><a href="/">Home</a></li>
-          <li aria-current="page">{framework.label} demo</li>
+          <li aria-current="page">{framework.label}</li>
         </ol>
       </nav>
 
@@ -69,11 +75,27 @@ const breadcrumbs = [
           </section>
         ) : null
       }
+
+      <section class="framework-docs-links" aria-labelledby="framework-docs-heading">
+        <h2 id="framework-docs-heading">Documentation</h2>
+        <p class="framework-docs-lead">
+          Guides for this stack and the shared API.
+        </p>
+        <ul class="framework-docs-list">
+          <li><a href={docsPrimary}>Setup for {framework.label}</a></li>
+          <li><a href="/docs/getting-started/">Getting started</a></li>
+          <li><a href="/docs/props/">Props reference</a></li>
+          <li><a href="/docs/theming/">Theming</a></li>
+          <li><a href="/examples/">Examples playground</a></li>
+        </ul>
+      </section>
     </main>
 
     <footer class="footer">
       <p>
         MIT-licensed ·{" "}
+        <a href="/examples/">Examples</a> {" · "}
+        <a href="/docs/">Docs</a> {" · "}
         <a href={NPM_URL} target="_blank" rel="noreferrer">
           npm
         </a>{" "}

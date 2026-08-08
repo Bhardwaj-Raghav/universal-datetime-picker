@@ -1,0 +1,151 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Theming"
+  description="Theme the calendar with the theme prop, data-ctp-theme, CSS variables, and light/dark styles."
+  keywords="date picker theme, CSS variables calendar, dark theme date picker"
+  crumbLabel="Theming"
+  currentPath="/docs/theming/"
+>
+  <article class="docs-article">
+    <h1>Theming</h1>
+    <p>
+      Visual styling comes from <code>universal-datetime-picker/style.css</code>
+      and CSS custom properties prefixed with <code>--ctp-</code>. Light is
+      the default. Dark is available via attribute or prop.
+    </p>
+
+    <h2>theme prop</h2>
+    <p>
+      Pass <code>theme="light"</code> or <code>theme="dark"</code> on
+      <code>DateTime</code> / <code>DateTimeInput</code>. Use the prop for
+      portaled popovers so they stay dark even when the input sits outside a
+      dark wrapper. <code>DateTimeRange</code> has no <code>theme</code>
+      prop. Wrap it or set variables with CSS instead.
+    </p>
+    <pre><code>{`<DateTimeInput theme="dark" mode="date" onChange={setValue} />`}</code></pre>
+
+    <h2>data-ctp-theme</h2>
+    <p>
+      Set <code>data-ctp-theme="dark"</code> on a parent (or the picker root)
+      to apply the dark token set:
+    </p>
+    <pre><code>{`<div data-ctp-theme="dark">
+  <DateTime inline mode="time" onChange={setValue} />
+</div>`}</code></pre>
+
+    <h2>CSS variables</h2>
+    <p>
+      Override on <code>:root</code>, a wrapper, or
+      <code>[data-ctp-theme="dark"]</code>. Light defaults:
+    </p>
+    <pre><code>{`:root {
+  --ctp-primary: #7cb342;
+  --ctp-surface: #ffffff;
+  --ctp-fg: #1f2937;
+  --ctp-border: #e5e7eb;
+  --ctp-selected-bg: #558b2f;
+  --ctp-overlay: rgba(15, 23, 42, 0.45);
+  --ctp-shadow: 0 10px 30px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.06);
+  --ctp-border-radius: 12px;
+  --ctp-width: 320px;
+  --ctp-z-index: 1000;
+}`}</code></pre>
+
+    <div class="docs-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>Controls</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>--ctp-primary</code></td>
+            <td>Brand / accent color</td>
+          </tr>
+          <tr>
+            <td><code>--ctp-surface</code></td>
+            <td>Panel and input background</td>
+          </tr>
+          <tr>
+            <td><code>--ctp-fg</code></td>
+            <td>Primary text color</td>
+          </tr>
+          <tr>
+            <td><code>--ctp-border</code></td>
+            <td>Borders and dividers</td>
+          </tr>
+          <tr>
+            <td><code>--ctp-selected-bg</code></td>
+            <td>Selected day background</td>
+          </tr>
+          <tr>
+            <td><code>--ctp-overlay</code></td>
+            <td>Modal backdrop color</td>
+          </tr>
+          <tr>
+            <td><code>--ctp-shadow</code></td>
+            <td>Popover / panel shadow</td>
+          </tr>
+          <tr>
+            <td><code>--ctp-border-radius</code></td>
+            <td>Panel corner radius</td>
+          </tr>
+          <tr>
+            <td><code>--ctp-width</code></td>
+            <td>Calendar panel width</td>
+          </tr>
+          <tr>
+            <td><code>--ctp-z-index</code></td>
+            <td>Overlay stacking baseline</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Related tokens</h2>
+    <p>
+      The stylesheet also defines helpers such as
+      <code>--ctp-primary-dark</code>, <code>--ctp-focus</code>,
+      <code>--ctp-hover-bg</code>, <code>--ctp-range-bg</code>,
+      <code>--ctp-selected-fg</code>, and <code>--ctp-danger</code>. Override
+      those when you need finer control.
+    </p>
+
+    <h2>Dark via CSS only</h2>
+    <pre><code>{`[data-ctp-theme="dark"] {
+  --ctp-primary: #9ccc65;
+  --ctp-surface: #1f2937;
+  --ctp-fg: #f3f4f6;
+  --ctp-border: #374151;
+  --ctp-selected-bg: #8bc34a;
+  --ctp-overlay: rgba(0, 0, 0, 0.6);
+  --ctp-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}`}</code></pre>
+
+    <h2>Accessibility notes</h2>
+    <ul>
+      <li>
+        Focusable controls use <code>:focus-visible</code> rings via
+        <code>--ctp-focus</code>.
+      </li>
+      <li>
+        Open animation respects <code>prefers-reduced-motion</code>.
+      </li>
+      <li>
+        Keep contrast high when replacing <code>--ctp-fg</code> and
+        <code>--ctp-selected-bg</code>.
+      </li>
+    </ul>
+
+    <p>
+      <a href="/docs/props/">Props</a> ·
+      <a href="/examples/">Examples</a> ·
+      <a href="/docs/troubleshooting/">Troubleshooting</a>
+    </p>
+  </article>
+</DocsLayout>

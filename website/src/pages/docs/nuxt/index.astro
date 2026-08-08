@@ -1,0 +1,163 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Nuxt"
+  description="Register datetime-picker elements in Nuxt 3 with a .client plugin and ClientOnly to avoid SSR issues."
+  keywords="nuxt date picker, nuxt 3 date time picker"
+  crumbLabel="Nuxt"
+  currentPath="/docs/nuxt/"
+>
+  <article class="docs-article">
+    <h1>Nuxt</h1>
+
+    <p class="docs-callout">
+      <a href="/nuxt/">Try the live Nuxt demo</a>
+      — interactive picker and copy-paste snippets.
+    </p>
+
+    <h2>Support tier</h2>
+    <p class="docs-callout">
+      Full support through the Vue Web Components path. Register in a
+      <code>*.client.ts</code> plugin with
+      <code>defineCustomElements</code> from
+      <code>universal-datetime-picker/vue</code>, and wrap tags in
+      <code>ClientOnly</code>.
+    </p>
+
+    <h2>Install + deps</h2>
+    <pre><code>npm install universal-datetime-picker</code></pre>
+    <p>Nuxt 3 / Vue 3. React peers are not required.</p>
+
+    <h2>Setup</h2>
+    <p>
+      Custom element classes cannot run during SSR. Use a client-only plugin
+      for registration, mark <code>datetime-picker*</code> as custom elements
+      in <code>nuxt.config</code>, and render pickers inside
+      <code>ClientOnly</code>.
+    </p>
+
+    <h2>Exact import path</h2>
+    <pre><code>{`import { defineCustomElements } from "universal-datetime-picker/vue";
+import "universal-datetime-picker/style.css";`}</code></pre>
+
+    <h2>Minimal example</h2>
+    <pre><code>{`// plugins/datetime-picker.client.ts
+import { defineCustomElements } from "universal-datetime-picker/vue";
+import "universal-datetime-picker/style.css";
+
+export default defineNuxtPlugin(() => {
+  defineCustomElements();
+});`}</code></pre>
+    <pre><code>{`// nuxt.config.ts
+export default defineNuxtConfig({
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => tag.startsWith("datetime-picker"),
+    },
+  },
+});`}</code></pre>
+    <pre><code>{`<script setup lang="ts">
+const date = ref<Date | null>(null);
+function onChange(e: CustomEvent) {
+  date.value = e.detail instanceof Date ? e.detail : null;
+}
+</script>
+
+<template>
+  <ClientOnly>
+    <datetime-picker
+      inline
+      mode="date"
+      as-string="false"
+      @change="onChange"
+    />
+  </ClientOnly>
+</template>`}</code></pre>
+
+    <h2>Realistic example</h2>
+    <pre><code>{`<script setup lang="ts">
+const start = ref<Date | null>(null);
+
+function onChange(e: CustomEvent) {
+  start.value = e.detail instanceof Date ? e.detail : null;
+}
+
+function onOpenChange(e: CustomEvent) {
+  console.log("open", e.detail);
+}
+</script>
+
+<template>
+  <ClientOnly fallback-tag="div" fallback="Loading picker...">
+    <datetime-picker-input
+      placeholder="Arrival"
+      as-string="false"
+      @change="onChange"
+      @openchange="onOpenChange"
+    />
+    <p v-if="start">Arrival: {{ start.toLocaleString() }}</p>
+  </ClientOnly>
+</template>`}</code></pre>
+
+    <h2>Configuration notes</h2>
+    <ul>
+      <li>
+        Plugin filename must end with <code>.client.ts</code> so registration
+        never runs on the server.
+      </li>
+      <li>
+        Import path is <code>universal-datetime-picker/vue</code>, same as a
+        plain Vue SPA. There is no <code>./nuxt</code> export.
+      </li>
+      <li>
+        Set <code>vue.compilerOptions.isCustomElement</code> in
+        <code>nuxt.config</code> to silence unresolved component warnings.
+      </li>
+      <li>
+        Attribute names stay kebab-case on the custom elements.
+      </li>
+    </ul>
+
+    <h2>Events</h2>
+    <ul>
+      <li><code>@change</code> with value in <code>event.detail</code></li>
+      <li><code>@openchange</code> with open boolean in <code>event.detail</code></li>
+    </ul>
+
+    <h2>Customization links</h2>
+    <ul>
+      <li><a href="/docs/vue/">Vue guide</a></li>
+      <li><a href="/docs/theming/">Theming</a></li>
+      <li><a href="/docs/locales/">Locales</a></li>
+      <li><a href="/docs/props/">Props</a></li>
+    </ul>
+
+    <h2>Pitfalls</h2>
+    <ul>
+      <li>
+        Rendering tags outside <code>ClientOnly</code> can crash SSR or
+        hydrate with empty stubs.
+      </li>
+      <li>
+        A non-<code>.client</code> plugin that calls
+        <code>defineCustomElements</code> fails on the server.
+      </li>
+      <li>
+        Importing from the React main entry in Nuxt pulls optional React peers
+        you do not need.
+      </li>
+    </ul>
+
+    <h2>Troubleshooting</h2>
+    <p>
+      SSR and Vue CE warnings are covered in <a href="/docs/troubleshooting/">Troubleshooting</a>.
+    </p>
+
+    <h2>Related links</h2>
+    <p>
+      <a href="/nuxt/">Nuxt live demo</a> · <a href="/examples/">Examples</a> · <a href="/docs/props/">Props</a> · <a href="/docs/troubleshooting/">Troubleshooting</a> · <a href="/docs/vue/">Vue guide</a>
+    </p>
+  </article>
+</DocsLayout>

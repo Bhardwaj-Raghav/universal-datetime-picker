@@ -1,0 +1,188 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Universal DateTime Picker Documentation — Angular"
+  description="Use datetime-picker custom elements in Angular with registerDateTimePickerElements and CUSTOM_ELEMENTS_SCHEMA."
+  keywords="angular date picker, angular date time picker"
+  crumbLabel="Angular"
+  currentPath="/docs/angular/"
+>
+  <article class="docs-article">
+    <h1>Angular</h1>
+
+    <p class="docs-callout">
+      <a href="/angular/">Try the live Angular demo</a>
+      — interactive picker and copy-paste snippets.
+    </p>
+
+    <h2>Support tier</h2>
+    <p class="docs-callout">
+      Full support through Web Components. Call
+      <code>registerDateTimePickerElements()</code> from
+      <code>universal-datetime-picker/angular</code> and add
+      <code>CUSTOM_ELEMENTS_SCHEMA</code> on the consuming component or module.
+    </p>
+
+    <h2>Install + deps</h2>
+    <pre><code>npm install universal-datetime-picker</code></pre>
+    <p>Angular 15+ standalone or NgModule apps both work. React peers are optional.</p>
+
+    <h2>Setup</h2>
+    <p>
+      Register elements once at startup in <code>main.ts</code>, import the
+      stylesheet, and allow unknown tags with
+      <code>CUSTOM_ELEMENTS_SCHEMA</code>.
+    </p>
+
+    <h2>Exact import path</h2>
+    <pre><code>{`import { registerDateTimePickerElements } from "universal-datetime-picker/angular";
+import "universal-datetime-picker/style.css";
+
+registerDateTimePickerElements();`}</code></pre>
+    <p>
+      <code>registerCalendarTimeElements</code> still exists as a deprecated
+      alias. Prefer <code>registerDateTimePickerElements</code>.
+    </p>
+
+    <h2>Minimal example</h2>
+    <pre><code>{`// main.ts
+import { registerDateTimePickerElements } from "universal-datetime-picker/angular";
+import "universal-datetime-picker/style.css";
+
+registerDateTimePickerElements();`}</code></pre>
+    <pre><code>{`import { Component, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
+
+@Component({
+  selector: "app-booking",
+  standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: \`
+    <datetime-picker
+      inline
+      mode="date"
+      as-string="false"
+      (change)="onChange($event.detail)"
+    ></datetime-picker>
+    <p>Selected: {{ date }}</p>
+  \`,
+})
+export class BookingComponent {
+  date: Date | null = null;
+
+  onChange(detail: unknown) {
+    this.date = detail instanceof Date ? detail : null;
+  }
+}`}</code></pre>
+
+    <h2>Realistic example</h2>
+    <pre><code>{`import { Component, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
+
+@Component({
+  selector: "app-schedule",
+  standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: \`
+    <label for="when">When</label>
+    <datetime-picker-input
+      id="when"
+      placeholder="Pick date & time"
+      as-string="false"
+      (change)="onChange($event.detail)"
+      (openchange)="onOpenChange($event.detail)"
+    ></datetime-picker-input>
+
+    <datetime-picker-range
+      inline
+      as-string="false"
+      (change)="onRange($event.detail)"
+    ></datetime-picker-range>
+  \`,
+})
+export class ScheduleComponent {
+  date: Date | null = null;
+  open = false;
+  range: { start: Date | null; end: Date | null } = {
+    start: null,
+    end: null,
+  };
+
+  onChange(detail: unknown) {
+    this.date = detail instanceof Date ? detail : null;
+  }
+
+  onOpenChange(detail: unknown) {
+    this.open = Boolean(detail);
+  }
+
+  onRange(detail: unknown) {
+    this.range = detail as { start: Date | null; end: Date | null };
+  }
+}`}</code></pre>
+
+    <h2>Configuration notes</h2>
+    <ul>
+      <li>
+        Without <code>CUSTOM_ELEMENTS_SCHEMA</code>, Angular rejects
+        <code>datetime-picker*</code> tags at compile time.
+      </li>
+      <li>
+        Template bindings use <code>(change)</code> and
+        <code>(openchange)</code>. Read values from
+        <code>$event.detail</code>.
+      </li>
+      <li>
+        Attributes stay kebab-case in the template:
+        <code>as-string</code>, <code>show-seconds</code>.
+      </li>
+      <li>
+        NgModule apps can add <code>CUSTOM_ELEMENTS_SCHEMA</code> on the module
+        instead of each component.
+      </li>
+    </ul>
+
+    <h2>Events</h2>
+    <ul>
+      <li>
+        <code>(change)</code>: selected value in <code>$event.detail</code>
+      </li>
+      <li>
+        <code>(openchange)</code>: open boolean in <code>$event.detail</code>
+      </li>
+    </ul>
+
+    <h2>Customization links</h2>
+    <ul>
+      <li><a href="/docs/theming/">Theming</a></li>
+      <li><a href="/docs/locales/">Locales</a></li>
+      <li><a href="/docs/web-components/">Web Components</a></li>
+      <li><a href="/docs/props/">Props</a></li>
+    </ul>
+
+    <h2>Pitfalls</h2>
+    <ul>
+      <li>
+        Missing schema yields template errors for unknown elements.
+      </li>
+      <li>
+        Registering after the first template render can leave the first paint
+        inert. Call registration before bootstrap completes.
+      </li>
+      <li>
+        Do not import the React main entry unless you intentionally embed React
+        in Angular.
+      </li>
+    </ul>
+
+    <h2>Troubleshooting</h2>
+    <p>
+      Schema and registration mistakes are covered in <a href="/docs/troubleshooting/">Troubleshooting</a>.
+    </p>
+
+    <h2>Related links</h2>
+    <p>
+      <a href="/angular/">Angular live demo</a> · <a href="/examples/">Examples</a> · <a href="/docs/props/">Props</a> · <a href="/docs/troubleshooting/">Troubleshooting</a>
+    </p>
+  </article>
+</DocsLayout>
