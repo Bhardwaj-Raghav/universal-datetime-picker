@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.3
+
+Docs and npm listing only. No runtime or API behavior changes.
+
+### Changed
+- README trimmed for npm: short install, React / vanilla / CDN quick starts, and links to the docs site for props and per-framework guides.
+- npm `description` repositioned as framework-agnostic (React, vanilla, Web Components, Vue, Svelte, Angular, CDN) instead of React-first.
+
 ## 2.1.2
 
 ### Added
