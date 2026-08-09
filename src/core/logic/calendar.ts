@@ -6,17 +6,27 @@ import {
   type Dayjs,
 } from "./date";
 
+/** Options for {@link buildCalendarMonth}. */
 export interface BuildCalendarOptions {
+  /** Month being displayed (day-of-month is ignored; month/year matter). */
   viewMonth: Dayjs;
+  /** Selected day for single-picker highlighting. */
   selected?: Dayjs | null;
+  /** Range start day (range mode). */
   rangeStart?: Dayjs | null;
+  /** Range end day (range mode). */
   rangeEnd?: Dayjs | null;
   /** Tentative end for hover preview while selecting a range. */
   hoverEnd?: Dayjs | null;
+  /** Inclusive minimum selectable calendar day. */
   minDate?: DateTimeValue;
+  /** Inclusive maximum selectable calendar day. */
   maxDate?: DateTimeValue;
+  /** Disable days before today. */
   disablePastDates?: boolean;
+  /** Disable days after today. */
   disableFutureDates?: boolean;
+  /** First day of week: `0` Sunday … `6` Saturday. @default 0 */
   weekStartsOn?: number;
 }
 

@@ -16,9 +16,13 @@ import {
   type Cleanup,
 } from "./a11y";
 
+/** Imperative handle returned by {@link createDateTimeRangePicker}. */
 export interface DateTimeRangePickerHandle {
+  /** Merge new options and re-render. */
   update: (options: Partial<DateTimeRangeOptions>) => void;
+  /** Tear down DOM and listeners. */
   destroy: () => void;
+  /** Access the underlying {@link RangeController}. */
   getController: () => RangeController;
 }
 
@@ -176,7 +180,7 @@ function buildRangePickerContent(
   const statusText =
     snap.start && !snap.end
       ? snap.labels.selectEnd
-      : `${snap.start ? formatLocalized(snap.start, "MMM D, YYYY", snap.locale) : snap.labels.start} — ${
+      : `${snap.start ? formatLocalized(snap.start, "MMM D, YYYY", snap.locale) : snap.labels.start} - ${
           snap.end
             ? formatLocalized(snap.end, "MMM D, YYYY", snap.locale)
             : snap.labels.end
@@ -392,6 +396,10 @@ function buildRangePickerContent(
   };
 }
 
+/**
+ * Mount a date-range picker into `target` (inline or modal overlay).
+ * Does not support `popover` / `anchorEl`. Call `destroy()` when unmounting.
+ */
 export function createDateTimeRangePicker(
   target: HTMLElement,
   options: DateTimeRangeOptions = {}

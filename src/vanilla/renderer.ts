@@ -18,9 +18,13 @@ import {
   type Cleanup,
 } from "./a11y";
 
+/** Imperative handle returned by {@link createDateTimePicker}. */
 export interface DateTimePickerHandle {
+  /** Merge new options and re-render (keeps the same controller instance). */
   update: (options: Partial<PickerControllerOptions>) => void;
+  /** Tear down DOM, listeners, and portals. Safe to call more than once. */
   destroy: () => void;
+  /** Access the underlying {@link PickerController} for advanced control. */
   getController: () => PickerController;
 }
 
@@ -574,8 +578,24 @@ function updatePickerInPlace(
 }
 
 /**
- * Mount a date/time picker into `target` (or as overlay/popover).
- * Returns `{ update, destroy }` for imperative control.
+ * Mount a date/time picker into `target` (inline) or as an overlay/popover.
+ *
+ * Call {@link DateTimePickerHandle.destroy} when unmounting. Prefer
+ * `defaultOpen: false` (or controlled `open`) for trigger UIs so the picker
+ * does not open on mount.
+ *
+ * @example
+ * ```ts
+ * const handle = createDateTimePicker(root, {
+ *   mode: "date",
+ *   defaultOpen: false,
+ *   popover: true,
+ *   anchorEl: button,
+ *   onChange: (value) => console.log(value),
+ * });
+ * button.addEventListener("click", () => handle.update({ open: true }));
+ * // later: handle.destroy();
+ * ```
  */
 export function createDateTimePicker(
   target: HTMLElement,

@@ -103,6 +103,11 @@ abstract class BaseCalendarElement extends HTMLElement {
   }
 }
 
+/**
+ * Custom element `<datetime-picker>` (or `{prefix}-datetime-picker`).
+ * Attributes are kebab-case (`as-string`, `use12hours`, …). Emits `change` and `openchange`.
+ * For non-inline overlays, an absent `open` attribute means closed.
+ */
 export class DateTimePickerElement extends BaseCalendarElement {
   static get observedAttributes(): string[] {
     return [
@@ -206,6 +211,10 @@ export class DateTimePickerElement extends BaseCalendarElement {
   }
 }
 
+/**
+ * Custom element `<datetime-picker-input>` with a built-in text field trigger.
+ * Opens a popover picker; emits `change` with the selected value in `detail`.
+ */
 export class DateTimePickerInputElement extends HTMLElement {
   private handle: DateTimePickerHandle | null = null;
   private input: HTMLInputElement | null = null;
@@ -386,6 +395,10 @@ export class DateTimePickerInputElement extends HTMLElement {
   }
 }
 
+/**
+ * Custom element `<datetime-picker-range>` for start/end selection.
+ * Use `value-start` / `value-end` attributes; emits `change` and `openchange`.
+ */
 export class DateTimePickerRangeElement extends BaseCalendarElement {
   static get observedAttributes(): string[] {
     return [
@@ -496,6 +509,18 @@ function defineElementTag(
   customElements.define(tag, ctor as CustomElementConstructor);
 }
 
+/**
+ * Registers `<datetime-picker>`, `<datetime-picker-input>`, and
+ * `<datetime-picker-range>` (idempotent). Safe to call from SSR guards:
+ * no-ops when `customElements` is undefined.
+ *
+ * @example
+ * ```ts
+ * import { defineCustomElements } from "universal-datetime-picker/wc";
+ * defineCustomElements();
+ * // optional custom prefix: defineCustomElements({ prefix: "my" });
+ * ```
+ */
 export function defineCustomElements(
   options?: DefineCustomElementsOptions
 ): void {

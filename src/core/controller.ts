@@ -36,49 +36,92 @@ import {
   type Dayjs,
 } from "./logic/date";
 
+/** Subscriber notified when the controller snapshot changes. */
 export type Listener = () => void;
 
+/** Immutable view model for rendering a single picker (from {@link PickerController.getSnapshot}). */
 export interface PickerSnapshot {
+  /** Working draft datetime being edited. */
   draft: Dayjs;
+  /** Calendar month currently displayed. */
   viewMonth: Dayjs;
+  /** Day / month / year drill-down panel. */
   calPanel: CalendarPanel;
+  /** Active date vs time tab when `layout="tabs"`. */
   tab: "date" | "time";
+  /** Whether the hour column popover is open. */
   showHours: boolean;
+  /** Whether the minute column popover is open. */
   showMinutes: boolean;
+  /** Whether the seconds column popover is open. */
   showSecondsOpen: boolean;
+  /** Whether the AM/PM column popover is open. */
   showAmPm: boolean;
+  /** Keyboard-focused calendar day. */
   focusedDay: Dayjs;
+  /** Whether a non-inline overlay/popover is open. */
   open: boolean;
+  /** Active selection mode. */
   mode: DateTimeMode;
+  /** Datetime panel arrangement. */
   layout: DateTimeLayout;
+  /** Whether seconds are enabled in the time UI. */
   showSeconds: boolean;
+  /** Whether the time UI uses a 12-hour clock. */
   use12Hours: boolean;
+  /** True when rendered inline (always open). */
   inline: boolean;
+  /** True when positioned as a popover beside an anchor. */
   popover: boolean;
+  /** First day of the week (`0` Sunday … `6` Saturday). */
   weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  /** Active dayjs locale code. */
   locale: string;
+  /** Resolved UI labels (defaults merged with overrides). */
   labels: Required<DateTimeLabels>;
+  /** Format string used for parse/format/`asString` commits. */
   resolvedFormat: string;
+  /** Current `asString` option (`undefined` means object/`Date` payloads). */
   asString: boolean | undefined;
+  /** Extra class name on the picker root. */
   className?: string;
+  /** Active theme attribute. */
   theme?: "light" | "dark";
+  /** 6×7 month grid for the current `viewMonth`. */
   weeks: CalendarDay[][];
+  /** Localized weekday header labels for the grid. */
   weekdayLabels: string[];
+  /** Whether the date calendar should be shown for this mode. */
   showDate: boolean;
+  /** Whether the time columns should be shown for this mode. */
   showTime: boolean;
+  /** True when datetime mode uses tabbed date/time panels. */
   useTabs: boolean;
+  /** Whether the date panel is visible in the current tab/layout. */
   showDatePanel: boolean;
+  /** Whether the time panel is visible in the current tab/layout. */
   showTimePanel: boolean;
+  /** Whether Date/Time mode tabs are shown. */
   showModeTabs: boolean;
+  /** Draft hour in 0–23. */
   hour24: number;
+  /** Draft hour in 1–12. */
   hour12: number;
+  /** Whether the draft time is AM. */
   isAm: boolean;
+  /** Selectable hour option strings for the current clock mode. */
   hourOptions: string[];
+  /** Zero-padded hour shown in the time UI. */
   displayHour: string;
+  /** Zero-padded minute shown in the time UI. */
   displayMinute: string;
+  /** Zero-padded second shown in the time UI. */
   displaySecond: string;
+  /** Selectable minute option strings (`00`–`59`). */
   minuteOptions: string[];
+  /** Whether previous month/year navigation is allowed. */
   canNavigatePrev: boolean;
+  /** Whether next month/year navigation is allowed. */
   canNavigateNext: boolean;
 }
 
@@ -86,8 +129,17 @@ function padDisplay(n: number): string {
   return String(n).padStart(2, "0");
 }
 
+/** Options accepted by {@link PickerController} (same as {@link DateTimeBaseOptions}). */
 export type PickerControllerOptions = DateTimeBaseOptions;
 
+/**
+ * Headless controller for a single date/time picker.
+ *
+ * Subscribe with {@link PickerController.subscribe}, read
+ * {@link PickerController.getSnapshot}, and drive UI via methods such as
+ * {@link PickerController.setOpen}, {@link PickerController.selectDay}, and
+ * {@link PickerController.confirm}.
+ */
 export class PickerController {
   private listeners = new Set<Listener>();
   private options: PickerControllerOptions;
@@ -139,6 +191,7 @@ export class PickerController {
     this.snapshot = this.buildSnapshot();
   }
 
+  /** Register a listener; returns an unsubscribe function. */
   subscribe = (listener: Listener): (() => void) => {
     this.listeners.add(listener);
     return () => {
@@ -146,11 +199,13 @@ export class PickerController {
     };
   };
 
+  /** Current immutable snapshot for rendering. */
   getSnapshot = (): PickerSnapshot => this.snapshot;
 
-  /** Stable for useSyncExternalStore — returns same reference until mutate. */
+  /** Stable for useSyncExternalStore - returns same reference until mutate. */
   getServerSnapshot = (): PickerSnapshot => this.snapshot;
 
+  /** Merge options and refresh the snapshot (e.g. controlled `value` / `open`). */
   setOptions(partial: Partial<PickerControllerOptions>): void {
     const prev = this.options;
     this.options = { ...this.options, ...partial };
@@ -375,6 +430,16 @@ export class PickerController {
     return isDayDisabled(this.selectedDay, this.getDayDisableOptions());
   }
 
+  /**
+   * Open or close a non-inline overlay/popover. No-op when `inline`.
+   * Invokes `onOpenChange` and refreshes the snapshot.
+   *
+   * @example
+   * ```ts
+   * const controller = handle.getController();
+   * controller.setOpen(true);
+   * ```
+   */
   setOpen(open: boolean): void {
     if (this.options.inline) {
       return;
@@ -390,6 +455,7 @@ export class PickerController {
     this.emit();
   }
 
+  /** Close a non-inline picker (`setOpen(false)`). */
   close(): void {
     if (!this.options.inline) {
       this.setOpen(false);
@@ -631,6 +697,9 @@ export class PickerController {
     this.options.onChange(this.buildPayload());
   }
 
+  /**
+   * Commit the draft via `onChange`, close a non-inline picker, and return the payload.
+   */
   confirm(): DateTimeChangeValue {
     const payload = this.buildPayload();
     if (!this.isDraftDisabled()) {
@@ -640,6 +709,7 @@ export class PickerController {
     return payload;
   }
 
+  /** Clear the selection and notify `onChange` with `null` when applicable. */
   clear(): void {
     this.selectedDay = null;
     const mode = this.options.mode ?? "datetime";

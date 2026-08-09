@@ -86,6 +86,14 @@ function usePopoverPosition(
   return position;
 }
 
+/**
+ * React date / time / datetime picker.
+ *
+ * Renders inline, as a centered overlay, or as a `popover` beside `anchorEl`.
+ * Non-inline pickers default to open unless `open` / `defaultOpen` is set.
+ *
+ * @see DateTimeProps
+ */
 export function DateTime(props: DateTimeProps) {
   const {
     value,

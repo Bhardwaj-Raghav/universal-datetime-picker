@@ -72,7 +72,7 @@ function App() {
           }
         />
         <p className="value">
-          Range: {range.start ?? "—"} → {range.end ?? "—"}
+          Range: {range.start ?? "-"} → {range.end ?? "-"}
         </p>
       </section>
     </main>

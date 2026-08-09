@@ -7,9 +7,9 @@ export const PACKAGE_VERSION = packageJson.version;
 /** Canonical public origin (no trailing slash). Used for sitemap, robots, and JSON-LD. */
 export const SITE_ORIGIN = "https://universal-datetime-picker.vercel.app";
 
-/** Primary SERP title — brand-first, multi-stack positioning. */
+/** Primary SERP title: brand-first, multi-stack positioning. */
 export const SITE_TITLE =
-  "Universal DateTime Picker — Date & Time Picker for Any Framework";
+  "Universal DateTime Picker: Date & Time Picker for Any Framework";
 
 /** Meta description: accurate product positioning (~155 chars). */
 export const SITE_DESCRIPTION =

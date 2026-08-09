@@ -76,7 +76,7 @@ describe("DateTimeRange", () => {
 
     rerender(<DateTimeRange inline value={null} />);
     expect(document.querySelector(".ctp-range-title")?.textContent).toBe(
-      "Start — End"
+      "Start - End"
     );
   });
 

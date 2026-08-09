@@ -84,6 +84,20 @@ function DefaultCalendarIcon() {
   );
 }
 
+/**
+ * Text field that opens a popover date/time picker.
+ *
+ * Defaults to closed (`defaultOpen={false}`). Prefer `asString={false}` when
+ * you want `Date` / `TimeValue` from `onChange`.
+ *
+ * @example
+ * ```tsx
+ * const [value, setValue] = useState<Date | null>(null);
+ * <DateTimeInput asString={false} value={value} onChange={setValue} />
+ * ```
+ *
+ * @see DateTimeInputProps
+ */
 export function DateTimeInput(props: DateTimeInputProps) {
   const {
     value,

@@ -1,5 +1,5 @@
 /**
- * React a11y hooks — thin wrappers around framework-free vanilla helpers.
+ * React a11y hooks - thin wrappers around framework-free vanilla helpers.
  * Prefer importing from `universal-datetime-picker/vanilla` in non-React code.
  */
 import {

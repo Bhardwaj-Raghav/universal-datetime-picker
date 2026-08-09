@@ -2,8 +2,14 @@ import { DateTime } from "./DateTime";
 import { DateTimeInput } from "./DateTimeInput";
 import { DateTimeRange } from "./DateTimeRange";
 
+/**
+ * Default export shape: {@link DateTime} plus static shortcuts
+ * `DateTime.Input` ({@link DateTimeInput}) and `DateTime.Range` ({@link DateTimeRange}).
+ */
 type DateTimeComponent = typeof DateTime & {
+  /** Same as the named {@link DateTimeInput} export. */
   Input: typeof DateTimeInput;
+  /** Same as the named {@link DateTimeRange} export. */
   Range: typeof DateTimeRange;
 };
 

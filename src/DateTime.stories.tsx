@@ -243,7 +243,7 @@ function RangeDemo() {
         }
       />
       <p style={{ marginTop: 12 }}>
-        {range.start ?? "—"} → {range.end ?? "—"}
+        {range.start ?? "-"} → {range.end ?? "-"}
       </p>
     </div>
   );

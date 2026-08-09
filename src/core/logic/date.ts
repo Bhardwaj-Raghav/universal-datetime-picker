@@ -12,17 +12,29 @@ dayjs.extend(isSameOrBefore);
 dayjs.extend(localeData);
 dayjs.extend(weekday);
 
+/** Shared dayjs instance with plugins used by the picker (parse/format/locale helpers). */
 export { dayjs };
+/** dayjs `Dayjs` instance type. */
 export type { Dayjs };
 
+/** Default datetime format when `mode` is datetime and no custom `format` is set. */
 export const DEFAULT_FORMAT = "YYYY-MM-DD HH:mm:ss";
+/** Default date-only format. */
 export const DATE_FORMAT = "YYYY-MM-DD";
+/** Default 24-hour time format with seconds. */
 export const TIME_FORMAT = "HH:mm:ss";
 
+/**
+ * Resolves the dayjs format string from `format` or from `mode` / `use12Hours` / `showSeconds`.
+ */
 export function resolveFormat(options: {
+  /** Selection mode used when `format` is omitted. */
   mode?: DateTimeMode;
+  /** Explicit dayjs format; wins over derived defaults. */
   format?: string;
+  /** Prefer 12-hour time tokens when deriving a format. */
   use12Hours?: boolean;
+  /** Include seconds in the derived time format. @default true */
   showSeconds?: boolean;
 }): string {
   if (options.format) {
@@ -50,6 +62,7 @@ export function resolveFormat(options: {
   return `${DATE_FORMAT} ${timePart}`;
 }
 
+/** Builds a {@link TimeValue} from a dayjs instance for `mode="time"` commits. */
 export function buildTimeValue(value: Dayjs, format: string): TimeValue {
   const hour24 = value.hour();
   const { hour, isAm } = to12Hour(hour24);
@@ -63,6 +76,9 @@ export function buildTimeValue(value: Dayjs, format: string): TimeValue {
   };
 }
 
+/**
+ * Parses a picker value (`Date`, string, dayjs, etc.) into a dayjs instance, or `null` if invalid.
+ */
 export function parseValue(
   value: ConfigType | undefined | null,
   format: string = DEFAULT_FORMAT
@@ -93,6 +109,7 @@ export function parseValue(
   return parsed.isValid() ? parsed : null;
 }
 
+/** Formats a dayjs value, or returns `null` when missing/invalid. */
 export function formatValue(
   value: Dayjs | null,
   format: string = DEFAULT_FORMAT

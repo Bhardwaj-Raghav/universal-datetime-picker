@@ -11,7 +11,7 @@ import sitemap from "@astrojs/sitemap";
 const root = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(root, "..");
 
-/** Canonical production origin — must match the Search Console property. */
+/** Canonical production origin: must match the Search Console property. */
 const DEFAULT_SITE = "https://universal-datetime-picker.vercel.app";
 const LEGACY_SITE_HOSTS = ["react-calendar-time.vercel.app"];
 

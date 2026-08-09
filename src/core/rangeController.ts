@@ -28,27 +28,53 @@ import {
 import type { CalendarDay, CalendarPanel } from "./types";
 import type { Listener } from "./controller";
 
+/** Immutable view model for rendering a range picker ({@link RangeController.getSnapshot}). */
 export interface RangeSnapshot {
+  /** Committed or in-progress range start. */
   start: Dayjs | null;
+  /** Committed or in-progress range end. */
   end: Dayjs | null;
+  /** Tentative end while hovering during selection. */
   hoverEnd: Dayjs | null;
+  /** Calendar month currently displayed. */
   viewMonth: Dayjs;
+  /** Keyboard-focused calendar day. */
   focusedDay: Dayjs;
+  /** Day / month / year drill-down panel. */
   calPanel: CalendarPanel;
+  /** Whether a non-inline modal overlay is open. */
   open: boolean;
+  /** True when rendered inline (always open). */
   inline: boolean;
+  /** Format string used for parse/format/`asString` commits. */
   format: string;
+  /** Current `asString` option (`undefined` means `Date` payloads). */
   asString: boolean | undefined;
+  /** First day of the week (`0` Sunday … `6` Saturday). */
   weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  /** Active dayjs locale code. */
   locale: string;
+  /** Resolved UI labels (defaults merged with overrides). */
   labels: Required<DateTimeLabels>;
+  /** Extra class name on the picker root. */
   className?: string;
+  /** 6×7 month grid for the current `viewMonth`. */
   weeks: CalendarDay[][];
+  /** Localized weekday header labels for the grid. */
   weekdayLabels: string[];
+  /** Whether previous month/year navigation is allowed. */
   canNavigatePrev: boolean;
+  /** Whether next month/year navigation is allowed. */
   canNavigateNext: boolean;
 }
 
+/**
+ * Headless controller for a start/end date-range picker.
+ *
+ * Subscribe with {@link RangeController.subscribe} and read
+ * {@link RangeController.getSnapshot}. Range pickers support inline and modal
+ * overlays only (no popover/anchor).
+ */
 export class RangeController {
   private listeners = new Set<Listener>();
   private options: DateTimeRangeOptions;
@@ -88,6 +114,7 @@ export class RangeController {
     };
   }
 
+  /** Register a listener; returns an unsubscribe function. */
   subscribe = (listener: Listener): (() => void) => {
     this.listeners.add(listener);
     return () => {
@@ -95,7 +122,9 @@ export class RangeController {
     };
   };
 
+  /** Current immutable snapshot for rendering. */
   getSnapshot = (): RangeSnapshot => this.snapshot;
+  /** Stable snapshot reference for useSyncExternalStore. */
   getServerSnapshot = (): RangeSnapshot => this.snapshot;
 
   private sameDay(a: Dayjs | null, b: Dayjs | null): boolean {
@@ -250,6 +279,14 @@ export class RangeController {
     this.focusedDay = viewAnchor;
   }
 
+  /**
+   * Open or close a non-inline modal overlay. No-op when `inline`.
+   *
+   * @example
+   * ```ts
+   * rangeHandle.getController().setOpen(true);
+   * ```
+   */
   setOpen(open: boolean): void {
     if (this.options.inline) {
       return;
@@ -436,6 +473,7 @@ export class RangeController {
     return true;
   }
 
+  /** Commit a complete start/end range via `onChange`, then close. Returns `null` if incomplete. */
   confirm(): DateRangeValue | null {
     if (!this.start || !this.end) {
       return null;

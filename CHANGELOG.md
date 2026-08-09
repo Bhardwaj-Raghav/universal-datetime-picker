@@ -1,29 +1,37 @@
 # Changelog
 
+## 2.1.2
+
+### Added
+- JSDoc on the public API so editors show docs for components, props, controllers, and framework helpers.
+
+### Changed
+- Docs only. No runtime or API behavior changes.
+
 ## 2.1.1
 
 Month/year navigation flicker fix for vanilla, CDN, and Web Component integrations.
 
 ### Fixed
-- **Month/year flicker** — vanilla `paint()` reuses the open picker root instead of tearing down and remounting on every navigation emit (CDN, WC, Vue, Svelte, Angular). Enter animation runs only on first open (`.ctp-entering`).
-- **Web Component remount thrashing** — attribute/`value` updates call `handle.update()` when a handle already exists instead of destroy + recreate.
+- **Month/year flicker**: vanilla `paint()` reuses the open picker root instead of tearing down and remounting on every navigation emit (CDN, WC, Vue, Svelte, Angular). Enter animation runs only on first open (`.ctp-entering`).
+- **Web Component remount thrashing**: attribute/`value` updates call `handle.update()` when a handle already exists instead of destroy + recreate.
 
 ## 2.1.0
 
 UX and API improvements for single and range pickers.
 
 ### Changed
-- **`asString` default is now objects** — omitting `asString` returns `Date` / `TimeValue` / `{ start, end: Date | null }`. Set `asString={true}` for formatted strings. The one-time deprecation warning is removed.
-- **Commit on selection** — date-only overlays commit and close when a day is picked (no OK). Datetime and time overlays keep an OK button and commit on confirm. Clear and Close remain.
-- **Initial month respects bounds** — when today is outside `minDate` / `maxDate` (or past/future disables), the picker opens on the first or last selectable day.
-- **Month/year drill-down resets on close** — reopening always returns to the day grid at the committed value's month.
+- **`asString` default is now objects**: omitting `asString` returns `Date` / `TimeValue` / `{ start, end: Date | null }`. Set `asString={true}` for formatted strings. The one-time deprecation warning is removed.
+- **Commit on selection**: date-only overlays commit and close when a day is picked (no OK). Datetime and time overlays keep an OK button and commit on confirm. Clear and Close remain.
+- **Initial month respects bounds**: when today is outside `minDate` / `maxDate` (or past/future disables), the picker opens on the first or last selectable day.
+- **Month/year drill-down resets on close**: reopening always returns to the day grid at the committed value's month.
 - Website landing page and SEO metadata updated for react date picker / date time picker discoverability.
 - npm `description` and `keywords` tuned for searches like “react date picker”, “datetime picker”, and “react date time picker”.
 
 ### Added
 - **`DateTimeInput` calendar icon** at the end of the field (override with `icon`, hide with `icon={null}`).
-- **`DateTimeInput` `customInput`** — pass your own trigger element; ref/value/onClick are injected.
-- **`DateTimeInput` `noStyle`** — skip default input classes so you style via `className` / `inputClassName` / `style`.
+- **`DateTimeInput` `customInput`**: pass your own trigger element; ref/value/onClick are injected.
+- **`DateTimeInput` `noStyle`**: skip default input classes so you style via `className` / `inputClassName` / `style`.
 
 ### Fixed
 - No day is pre-selected when the initial value is null, empty, or invalid on first open.
@@ -103,7 +111,7 @@ Breaking rewrite of the library for production use.
 - Publish only `dist/` with a proper `exports` map
 - Move `react` / `react-dom` to peer dependencies
 - Replace Moment with `dayjs`
-- Ship plain CSS (`react-calendar-time/style.css`) — consumers no longer need Sass
+- Ship plain CSS (`react-calendar-time/style.css`): consumers no longer need Sass
 - Package renamed from `react-datetime-picker-component` to `react-calendar-time`
 
 ### API

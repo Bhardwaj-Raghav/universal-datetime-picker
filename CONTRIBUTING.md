@@ -33,14 +33,14 @@ npm run website:build # static build of the docs site → site-dist/
 
 ## Project layout
 
-- `src/` — component source
-  - `DateTime.tsx`, `DateTimeInput.tsx`, `DateTimeRange.tsx` — public components
-  - `hooks/`, `utils/`, `calendar.ts`, `types.ts` — supporting logic and types
-  - `index.ts` — public entry point and exports
-  - `styles/datepicker.scss` — component styles
-- `tests/` — Vitest + Testing Library tests
-- `playground/` — local dev sandbox (`npm run dev`)
-- `website/` — Astro docs and landing site
+- `src/`: component source
+  - `DateTime.tsx`, `DateTimeInput.tsx`, `DateTimeRange.tsx`: public components
+  - `hooks/`, `utils/`, `calendar.ts`, `types.ts`: supporting logic and types
+  - `index.ts`: public entry point and exports
+  - `styles/datepicker.scss`: component styles
+- `tests/`: Vitest + Testing Library tests
+- `playground/`: local dev sandbox (`npm run dev`)
+- `website/`: Astro docs and landing site
 
 ## Making changes
 

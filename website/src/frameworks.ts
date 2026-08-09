@@ -53,9 +53,9 @@ export const FRAMEWORKS: FrameworkDef[] = [
     slug: "react",
     label: "React",
     tagline: "Native components with optional React 18+ peers.",
-    pageTitle: "Universal DateTime Picker — React Live Demo",
+    pageTitle: "Universal DateTime Picker: React Live Demo",
     pageDescription:
-      "Try DateTime, DateTimeInput, and DateTimeRange in React. Native components, TypeScript types, and accessible keyboard navigation—no Web Components required.",
+      "Try DateTime, DateTimeInput, and DateTimeRange in React. Native components, TypeScript types, and accessible keyboard navigation. No Web Components required.",
     pageKeywords:
       "react date picker, react date time picker, react datetime picker, date range picker",
     intro:
@@ -74,7 +74,7 @@ export const FRAMEWORKS: FrameworkDef[] = [
     slug: "vue",
     label: "Vue",
     tagline: "Web Components with defineCustomElements from ./vue.",
-    pageTitle: "Universal DateTime Picker — Vue Integration",
+    pageTitle: "Universal DateTime Picker: Vue Integration",
     pageDescription:
       "Live Vue 3 demo of datetime-picker custom elements. Register once with defineCustomElements, listen with @change, and share the same themes as React.",
     pageKeywords: "vue date picker, vue date time picker, vue 3 datetime picker",
@@ -131,7 +131,7 @@ function onChange(e: CustomEvent) {
     slug: "svelte",
     label: "Svelte",
     tagline: "Custom elements with onchange in Svelte 5.",
-    pageTitle: "Universal DateTime Picker — Svelte Integration",
+    pageTitle: "Universal DateTime Picker: Svelte Integration",
     pageDescription:
       "Live Svelte demo: register datetime-picker elements once, bind onchange, and reuse the shared stylesheet and themes.",
     pageKeywords: "svelte date picker, svelte date time picker, svelte datetime picker",
@@ -173,7 +173,7 @@ defineCustomElements();`,
     slug: "angular",
     label: "Angular",
     tagline: "CUSTOM_ELEMENTS_SCHEMA + registerDateTimePickerElements().",
-    pageTitle: "Universal DateTime Picker — Angular Integration",
+    pageTitle: "Universal DateTime Picker: Angular Integration",
     pageDescription:
       "Live Angular demo using datetime-picker custom elements after registerDateTimePickerElements and CUSTOM_ELEMENTS_SCHEMA.",
     pageKeywords: "angular date picker, angular date time picker, angular datetime picker",
@@ -224,7 +224,7 @@ export class BookingComponent {
     slug: "vanilla",
     label: "Vanilla JS",
     tagline: "createDateTimePicker imperative mount API.",
-    pageTitle: "Universal DateTime Picker — Vanilla JavaScript",
+    pageTitle: "Universal DateTime Picker: Vanilla JavaScript",
     pageDescription:
       "Mount createDateTimePicker without a framework. Live demo of inline calendars and popovers with the imperative vanilla API.",
     pageKeywords:
@@ -257,7 +257,7 @@ createDateTimePicker(root, {
     slug: "web-components",
     label: "Web Components",
     tagline: "defineCustomElements from universal-datetime-picker/wc.",
-    pageTitle: "Universal DateTime Picker — Web Components",
+    pageTitle: "Universal DateTime Picker: Web Components",
     pageDescription:
       "Live demo of datetime-picker, datetime-picker-input, and datetime-picker-range custom elements via defineCustomElements.",
     pageKeywords:
@@ -293,9 +293,9 @@ el?.addEventListener("change", (e) => console.log((e as CustomEvent).detail));`,
     slug: "cdn",
     label: "CDN",
     tagline: "jsDelivr IIFE + stylesheet, no bundler.",
-    pageTitle: "Universal DateTime Picker — CDN (No Bundler)",
+    pageTitle: "Universal DateTime Picker: CDN (No Bundler)",
     pageDescription:
-      "Load the picker from jsDelivr in plain HTML—no npm or bundler. Live custom-element demo with stylesheet and IIFE script.",
+      "Load the picker from jsDelivr in plain HTML, no npm or bundler. Live custom-element demo with stylesheet and IIFE script.",
     pageKeywords: "cdn date picker, jsdelivr date picker, html date time picker",
     intro:
       "Add the jsDelivr stylesheet and IIFE script to any static HTML page. No npm or bundler required. Custom elements register automatically; attach change listeners for values. Pin a package version in production URLs for reproducible deploys.",
@@ -324,9 +324,9 @@ el?.addEventListener("change", (e) => console.log((e as CustomEvent).detail));`,
     slug: "solid",
     label: "Solid",
     tagline: "Custom elements with Solid signals and onchange.",
-    pageTitle: "Universal DateTime Picker — Solid (Web Components)",
+    pageTitle: "Universal DateTime Picker: Solid (Web Components)",
     pageDescription:
-      "SolidJS live demo using datetime-picker Web Components from ./wc. No ./solid export—register once and bind signals.",
+      "SolidJS live demo using datetime-picker Web Components from ./wc. No ./solid export; register once and bind signals.",
     pageKeywords: "solidjs date picker, solid date time picker, web component date picker",
     intro:
       "SolidJS has no dedicated package subpath. Import defineCustomElements from universal-datetime-picker/wc in your client entry, then render datetime-picker tags with onchange handlers and signals. Keep registration and rendering client-side only; custom element classes cannot run during SSR.",
@@ -373,7 +373,7 @@ export function App() {
     slug: "preact",
     label: "Preact",
     tagline: "Custom elements with Preact props and onChange.",
-    pageTitle: "Universal DateTime Picker — Preact (Web Components)",
+    pageTitle: "Universal DateTime Picker: Preact (Web Components)",
     pageDescription:
       "Preact live demo with datetime-picker Web Components from ./wc, or use preact/compat with the React entry.",
     pageKeywords: "preact date picker, preact date time picker, web component date picker",
@@ -420,7 +420,7 @@ export function App() {
     slug: "nextjs",
     label: "Next.js",
     tagline: "React components in a client boundary.",
-    pageTitle: "Universal DateTime Picker — Next.js App Router",
+    pageTitle: "Universal DateTime Picker: Next.js App Router",
     pageDescription:
       "Use DateTime and DateTimeInput in the Next.js App Router with a \"use client\" boundary and CSS import. Live React demo.",
     pageKeywords: "nextjs date picker, next.js date time picker, app router date picker",
@@ -458,7 +458,7 @@ export function BookingDatePicker() {
     slug: "nuxt",
     label: "Nuxt",
     tagline: "Vue + custom elements in a client-only island.",
-    pageTitle: "Universal DateTime Picker — Nuxt 3 Integration",
+    pageTitle: "Universal DateTime Picker: Nuxt 3 Integration",
     pageDescription:
       "Nuxt 3 live demo pattern: register datetime-picker in a .client plugin and render inside ClientOnly to avoid SSR issues.",
     pageKeywords: "nuxt date picker, nuxt 3 date time picker, vue nuxt datetime picker",

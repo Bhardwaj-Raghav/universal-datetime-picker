@@ -20,6 +20,14 @@ function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(" ");
 }
 
+/**
+ * React date-range picker (start/end calendar).
+ *
+ * Supports inline and modal overlay open state. Does **not** accept
+ * `popover` / `anchorEl`. Drive `open` / `defaultOpen` for overlays.
+ *
+ * @see DateTimeRangeProps
+ */
 export function DateTimeRange(props: DateTimeRangeProps) {
   const {
     value,
@@ -151,7 +159,7 @@ export function DateTimeRange(props: DateTimeRangeProps) {
   const statusText =
     snap.start && !snap.end
       ? snap.labels.selectEnd
-      : `${snap.start ? formatLocalized(snap.start, "MMM D, YYYY", snap.locale) : snap.labels.start} — ${
+      : `${snap.start ? formatLocalized(snap.start, "MMM D, YYYY", snap.locale) : snap.labels.start} - ${
           snap.end
             ? formatLocalized(snap.end, "MMM D, YYYY", snap.locale)
             : snap.labels.end
